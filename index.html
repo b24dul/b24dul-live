@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B24DUL Live</title>
+<meta name="description" content="Watch B24DUL live on PS5 and chat along.">
+<style>
+  :root {
+    --bg: #0e0f12;
+    --panel: #17191e;
+    --panel-2: #1f2229;
+    --line: #2a2e37;
+    --text: #e9eaee;
+    --muted: #9097a3;
+    --plate: #ffd400;
+    --plate-text: #111;
+    --live: #ff3b3b;
+    --ok: #3ddc84;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .plate {
+    background: var(--plate);
+    color: var(--plate-text);
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 2px solid #111;
+    font-size: 20px;
+    font-family: "Arial Black", Arial, sans-serif;
+  }
+  .badge {
+    background: var(--live);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  header .spacer { flex: 1; }
+  header a.sub {
+    background: var(--live);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+  }
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: 0;
+  }
+  .player {
+    padding: 18px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 0;
+  }
+  .frame {
+    width: 100%;
+    max-width: 1280px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .frame iframe { width: 100%; height: 100%; border: 0; }
+  .chat {
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chat-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 700;
+  }
+  .chat-head .spacer { flex: 1; }
+  .chat-head button { font-size: 12px; padding: 5px 10px; }
+  #messages {
+    list-style: none;
+    margin: 0;
+    padding: 10px 14px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+  #messages li {
+    padding: 5px 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+    font-size: 14px;
+  }
+  #messages .name { font-weight: 700; margin-right: 6px; }
+  #messages .host { background: var(--plate); color: var(--plate-text); font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 3px; margin-right: 5px; vertical-align: 1px; }
+  #messages .time { color: var(--muted); font-size: 11px; margin-right: 6px; }
+  #messages .tools { display: none; margin-left: 6px; }
+  body.admin #messages .tools { display: inline; }
+  #messages .tools button { font-size: 11px; padding: 1px 6px; margin-left: 3px; }
+  .empty { color: var(--muted); font-size: 13px; padding: 10px 0; }
+  .composer { border-top: 1px solid var(--line); padding: 12px 14px; }
+  .composer form { display: flex; gap: 8px; }
+  input {
+    flex: 1;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-width: 0;
+  }
+  input:focus { outline: 2px solid var(--plate); outline-offset: -1px; }
+  button {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.primary { background: var(--plate); color: var(--plate-text); border-color: var(--plate); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #note { color: var(--muted); font-size: 12px; margin: 8px 0 0; min-height: 16px; }
+  #adminBar { display: none; flex-direction: column; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--line); background: #241d00; font-size: 12px; }
+  body.admin #adminBar { display: flex; }
+  #adminBar .arow { display: flex; align-items: center; gap: 8px; }
+  #adminBar .agrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #adminBar .spacer { flex: 1; }
+  #adminBar button { padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+  #adminBar .atag { background: var(--plate); color: var(--plate-text); font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; }
+  [hidden] { display: none !important; }
+  #messages .edited { color: var(--muted); font-size: 11px; margin-left: 4px; }
+  #messages .edit-row { display: flex; gap: 6px; margin-top: 4px; }
+  #messages .edit-row input { padding: 6px 8px; font-size: 13px; }
+  #messages .edit-row button { padding: 4px 8px; font-size: 12px; }
+  #userPanel { display: none; border-top: 1px solid var(--line); background: #241d00; padding: 10px 14px; font-size: 13px; }
+  body.admin #userPanel.open { display: block; }
+  #userPanel h4 { margin: 0 0 8px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  #userPanel h4 .spacer { flex: 1; }
+  #userPanel .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+  #userPanel .label { color: var(--muted); width: 100%; font-size: 12px; }
+  #userPanel button { padding: 5px 10px; font-size: 12px; }
+  #userPanel input { padding: 6px 8px; font-size: 13px; }
+  #userPanel .status { color: var(--plate); font-size: 12px; margin-top: 4px; min-height: 14px; }
+  #gate { position: fixed; inset: 0; background: rgba(8,9,12,0.96); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #gate .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 26px; width: 100%; max-width: 380px; text-align: center; }
+  #gate .plate { display: inline-block; margin-bottom: 14px; }
+  #gate h2 { margin: 0 0 6px; font-size: 20px; }
+  #gate p { color: var(--muted); font-size: 13px; margin: 0 0 16px; line-height: 1.45; }
+  #gate form { display: flex; flex-direction: column; gap: 10px; }
+  #gate .small { font-size: 11px; margin: 14px 0 0; }
+  #gate .err { color: #ff8a8a; font-size: 12px; min-height: 14px; margin: 0; }
+  #statsModal { position: fixed; top: 70px; left: 40px; z-index: 40; width: 380px; max-width: calc(100vw - 16px); max-height: 80vh; display: flex; }
+  #statsModal[hidden] { display: none !important; }
+  #statsModal .sm-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.55); }
+  #statsModal .sm-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--panel-2); cursor: move; user-select: none; touch-action: none; }
+  #statsModal .sm-head h3 { margin: 0; font-size: 14px; }
+  #statsModal .sm-head .grip { color: var(--muted); font-size: 14px; letter-spacing: -2px; }
+  #statsModal .sm-head .spacer { flex: 1; }
+  #statsModal .sm-head button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  #statsModal.dragging .sm-card { opacity: 0.92; }
+  #statsSearch { margin: 10px 12px 0; padding: 7px 10px; font-size: 13px; flex: none; }
+  #viewersBox { overflow-y: auto; flex: 1; padding: 10px 12px 12px; font-size: 12px; }
+  #viewersBox .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  #viewersBox .card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+  #viewersBox .card .num { font-size: 16px; font-weight: 800; color: var(--plate); }
+  #viewersBox .card .lbl { color: var(--muted); font-size: 11px; }
+  #viewersBox .vcard { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; background: #15171c; }
+  #viewersBox .vtop { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  #viewersBox .vtop .spacer { flex: 1; }
+  #viewersBox .vtop button { padding: 3px 9px; font-size: 11px; }
+  #viewersBox .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+  #viewersBox .kv .k { color: var(--muted); }
+  #viewersBox .more { margin-top: 6px; }
+  #viewersBox .more summary { cursor: pointer; color: var(--muted); font-size: 11px; user-select: none; }
+  #viewersBox .more summary:hover { color: var(--text); }
+  #viewersBox .more .kv { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); }
+  #viewersBox .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #555; flex: none; }
+  #viewersBox .dot.on { background: var(--ok); }
+  #viewersBox .real { font-weight: 700; font-size: 13px; }
+  #viewersBox .muted { color: var(--muted); }
+  #viewersBox .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; }
+  #viewersBox .tag.ban { background: #6b1f1f; color: #ffd0d0; }
+  #viewersBox .tag.to { background: #5a4500; color: var(--plate); }
+  #viewersBox .yes { color: var(--ok); font-weight: 700; }
+  #viewersBox .warn { color: #ff8a8a; font-weight: 700; }
+  #viewersBox .empty { color: var(--muted); padding: 16px; text-align: center; }
+  #messages .realname { color: var(--muted); font-weight: 400; margin-left: 4px; font-size: 12px; }
+  #adminBar .toggle { display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+  #adminBar .toggle input { flex: none; width: 16px; height: 16px; padding: 0; margin: 0; accent-color: var(--plate); }
+  #adminBar .toggle.off { color: #ff8a8a; }
+  button.danger { background: #3a1212; border-color: #6b1f1f; color: #ffb4b4; }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .player { padding: 0; }
+    .frame { border-radius: 0; }
+    .chat { border-left: 0; border-top: 1px solid var(--line); min-height: 50vh; }
+    header a.sub { padding: 6px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="card">
+    <span class="plate">B24DUL</span>
+    <h2>Welcome to the stream</h2>
+    <p>Enter your name to join. Other viewers will only see a random nickname, never your real name.</p>
+    <p><b>Chat rule:</b> keep it anonymous. Don't ask anyone for their name, age, gender, location or socials, and don't share your own.</p>
+    <form id="gateForm">
+      <input id="gateName" maxlength="40" placeholder="Your name" autocomplete="off" required>
+      <button class="primary" type="submit">Enter site</button>
+      <p class="err" id="gateErr"></p>
+    </form>
+    <p class="small">Your name is only shown to B24DUL. This site records how long you watch, the messages you send, your device type, how you found the page and whether you click Subscribe. This helps run the stream and moderate chat.</p>
+  </div>
+</div>
+<header>
+  <span class="plate">B24DUL</span>
+  <span class="badge">LIVE ON PS5</span>
+  <span class="spacer"></span>
+  <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
+</header>
+
+<main>
+  <section class="player">
+    <div class="frame">
+      <!-- Always shows whatever B24DUL is streaming right now -->
+      <iframe
+        src="https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1"
+        title="B24DUL live stream"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <aside class="chat">
+    <div class="chat-head">
+      Chat
+      <span class="spacer"></span>
+      <button id="adminBtn" hidden>Admin sign in</button>
+    </div>
+    <div id="adminBar">
+      <div class="arow">
+        <span class="atag">ADMIN</span>
+        <label class="toggle" id="chatToggleLabel"><input type="checkbox" id="chatToggle" checked> <span id="chatToggleText">Chat on</span></label>
+        <span class="spacer"></span>
+        <button id="signOutBtn">Sign out</button>
+      </div>
+      <div class="agrid">
+        <button id="viewersBtn">Viewers</button>
+        <button id="clearBtn">Clear chat</button>
+      </div>
+    </div>
+    <ul id="messages"><li class="empty">Loading chat...</li></ul>
+    <div id="userPanel"></div>
+    <div class="composer">
+      <form id="sendForm">
+        <input id="msgInput" maxlength="200" placeholder="Say something..." autocomplete="off" required>
+        <button class="primary" id="sendBtn" type="submit">Send</button>
+      </form>
+      <p id="note"></p>
+    </div>
+  </aside>
+</main>
+
+<div id="statsModal" hidden>
+  <div class="sm-card">
+    <div class="sm-head" id="statsHandle" title="Drag to move">
+      <span class="grip">⋮⋮</span>
+      <h3>Viewer analytics</h3>
+      <span class="spacer"></span>
+      <button id="statsClose">Close</button>
+    </div>
+    <input id="statsSearch" placeholder="Search names" autocomplete="off">
+    <div id="viewersBox"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInAnonymously, onAuthStateChanged,
+    GoogleAuthProvider, signInWithPopup, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getDatabase, ref, push, update, remove, set, get, query, limitToLast, increment, onDisconnect,
+    onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ===== 1. FIREBASE CONFIG (safe to be public, the database rules protect the data) =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFMLu84doQ_vZHARS8jvZ5BPGhs75e43o",
+    authDomain: "b24duls-anonymous-chat.firebaseapp.com",
+    databaseURL: "https://b24duls-anonymous-chat-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "b24duls-anonymous-chat",
+    storageBucket: "b24duls-anonymous-chat.firebasestorage.app",
+    messagingSenderId: "924473401038",
+    appId: "1:924473401038:web:6b760053d17da3f74c7a9f"
+  };
+
+  // ===== 2. SETTINGS =====
+  const SLOW_MODE_SECONDS = 5;      // must match the 5000 in the database rules
+  const MAX_MESSAGES_SHOWN = 100;
+  const TIMEOUT_OPTIONS = [1, 5, 10, 30, 60];   // minutes, shown as buttons in the admin panel
+  const WATCH_TICK_SECONDS = 30;    // how often watch time is saved (rules allow up to 120)
+  // Words to hide with ***. Add your own, lower case, comma separated.
+  const BLOCKED_WORDS = ["fuck", "shit", "cunt", "bitch", "wanker", "twat", "dickhead"];
+
+  // ===== Chat code (no need to edit below) =====
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  const list = $("messages");
+  const panel = $("userPanel");
+  const vbox = $("viewersBox");
+  const note = (text) => { $("note").textContent = text || ""; };
+
+  let me = null;
+  let isAdmin = false;
+  let entered = false;            // viewer has passed the name screen
+  let banned = false;
+  let chatOn = true;              // host can switch chat off for everyone else
+  let timeoutUntil = 0;
+  let cooldownUntil = 0;
+  let names = {};                 // admin name overrides, by viewer id
+  let viewers = {};               // admin only: viewer records
+  let online = {};                // admin only: who is online now
+  let bans = {};                  // admin only
+  let timeouts = {};              // admin only
+  const msgs = new Map();         // message id -> { m, li }
+  let watchers = [];
+  let adminWatchers = [];
+  let panelUid = null;
+
+  // Admin button only shows if you open the page with ?admin on the end
+  const adminPage = new URLSearchParams(location.search).has("admin");
+  if (adminPage) $("adminBtn").hidden = false;
+
+  const colours = ["#ffd400", "#4fc3f7", "#81c784", "#ff8a65", "#ba68c8", "#f06292", "#4db6ac", "#aed581"];
+  const colourFor = (uid) => {
+    let h = 0;
+    for (const c of uid) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return colours[h % colours.length];
+  };
+
+  const cleanText = (text) => {
+    let out = text.replace(/\s+/g, " ").trim();
+    for (const w of BLOCKED_WORDS) {
+      if (!w) continue;
+      const safe = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      out = out.replace(new RegExp(safe, "gi"), "*".repeat(w.length));
+    }
+    return out;
+  };
+  const hasLink = (t) => /(https?:|www\.|\.com|\.co\.uk)/i.test(t);
+
+  // ----- Privacy filter: blocks asking for or sharing personal info -----
+  const PRIVACY_PATTERNS = [
+    /\b(what|wats|whats|wat|wht|wuts?)\s*(is|s)?\s*(your|ur|yo)\s*(real\s*|actual\s*)?(name|age|snap|insta|ig|number|num|discord|tiktok|address|school|gamertag|psn|tag)\b/,
+    /\bwho\s+(are|r)\s+(you|u|ya)\s*(irl|really|in real life|for real)?\s*$/,
+    /\b(are|r)\s+(you|u|ya)\s+(a\s+)?(boy|girl|guy|male|female|man|woman|lad|lass|single|taken)\b/,
+    /\b(boy|girl|guy|m|f|male|female)\s+or\s+(boy|girl|guy|m|f|male|female)\b/,
+    /\b(asl|a\/s\/l)\b/,
+    /\bhow\s+old\s+(are|r|is)\s+(you|u|ya|everyone|people)\b/,
+    /\b(your|ur)\s+(age|gender|real\s*name)\b/,
+    /\bwhere\s+(do|d)\s+(you|u|ya)\s+(live|stay|go\s+to\s+school|come\s+from)\b/,
+    /\bwhere\s+(are|r)\s+(you|u|ya)\s+from\b/,
+    /\b(what|which|wat)\s+(school|college|uni|area|city|town)\b/,
+    /\b(dm|message|msg|text|call|follow)\s+me\b/,
+    /\badd\s+me\s+(on|at|@)\b/,
+    /\b(snap|snapchat|sc|insta|instagram|whatsapp|whats\s*app|discord|telegram|kik|tiktok|facebook|fb|psn\s*id)\b/,
+    /\b(send|show)\s+(me\s+)?(a\s+|ur\s+|your\s+)?(pic|pics|picture|photo|face|selfie|nudes?)\b/,
+    /\bmy\s+(real\s+)?(name|number|snap|insta|discord|address|school)\s+(is|s)\b/,
+    /\b(i\s*am|im|i\s*m)\s+\d{1,2}\s*(yo|y\/o|years?|yrs?)\b/,
+    /\b(0|\+44)\s*7\d{3}\s*\d{3}\s*\d{3}\b/,
+    /\d{3}[\s.-]?\d{3,4}[\s.-]?\d{4}/,
+    /[a-z0-9._-]+@[a-z0-9-]+\.[a-z]{2,}/
+  ];
+  const normalise = (t) => t.toLowerCase()
+    .replace(/[\u200b-\u200d\ufeff]/g, "")
+    .replace(/[’`']/g, "")
+    .replace(/[^a-z0-9@+./\s-]/g, " ")
+    .replace(/\s+/g, " ").trim();
+  const isPersonal = (t) => {
+    const n = normalise(t);
+    return PRIVACY_PATTERNS.some((p) => p.test(n));
+  };
+
+  // ----- Anonymous names -----
+  const ADJECTIVES = ["Quiet", "Swift", "Lucky", "Brave", "Sneaky", "Chill", "Fuzzy", "Rapid", "Silent", "Happy",
+    "Cosmic", "Frosty", "Golden", "Mighty", "Sleepy", "Clever", "Wild", "Shady", "Turbo", "Calm"];
+  const ANIMALS = ["Otter", "Fox", "Panda", "Falcon", "Badger", "Tiger", "Koala", "Wolf", "Owl", "Gecko",
+    "Shark", "Raven", "Bison", "Lynx", "Moose", "Hare", "Cobra", "Yak", "Crab", "Heron"];
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const makeName = () => pick(ADJECTIVES) + pick(ANIMALS) + String(Math.floor(Math.random() * 90) + 10);
+
+  let anonName = localStorage.getItem("b24dul_anon");
+  if (!anonName || !/^[A-Z][a-z]+[A-Z][a-z]+[0-9]{2}$/.test(anonName)) {
+    anonName = makeName();
+    localStorage.setItem("b24dul_anon", anonName);
+  }
+  const myName = () => {
+    if (isAdmin) return "B24DUL";
+    if (me && names[me.uid]) return names[me.uid];
+    return anonName;
+  };
+  const shownName = (m) => (m.name === "B24DUL" ? "B24DUL" : (names[m.uid] || m.name));
+  const realNameOf = (uid) => (viewers[uid] && viewers[uid].realName) || "";
+
+  // ----- Small helpers for stats -----
+  const fmt = (ms) => {
+    const s = Math.max(0, Math.ceil(ms / 1000));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  };
+  const fmtWatch = (secs) => {
+    const m = Math.floor((secs || 0) / 60);
+    return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`;
+  };
+  const ago = (ts) => {
+    if (!ts) return "never";
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    return `${Math.floor(s / 86400)}d ago`;
+  };
+  const dateStr = (ts) => (ts ? new Date(ts).toLocaleDateString([], { day: "numeric", month: "short" }) : "?");
+  const deviceInfo = () => {
+    const ua = navigator.userAgent;
+    const type = /iPad|Tablet/i.test(ua) ? "Tablet" : /Mobi|Android|iPhone/i.test(ua) ? "Mobile" : "Desktop";
+    const os = /PlayStation/i.test(ua) ? "PlayStation" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : /Android/i.test(ua) ? "Android"
+      : /Windows/i.test(ua) ? "Windows" : /Mac OS/i.test(ua) ? "Mac" : /Linux|CrOS/i.test(ua) ? "Linux" : "Other";
+    const br = /Edg\//.test(ua) ? "Edge" : /OPR\//.test(ua) ? "Opera" : /Firefox\//.test(ua) ? "Firefox"
+      : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Browser";
+    return `${type}, ${os}, ${br}`.slice(0, 60);
+  };
+  const sourceInfo = () => {
+    try {
+      if (!document.referrer) return "Direct link";
+      const host = new URL(document.referrer).hostname.replace(/^www\./, "");
+      return host === location.hostname ? "Direct link" : host.slice(0, 60);
+    } catch { return "Unknown"; }
+  };
+
+  // ----- Composer state (ban, timeout, normal) -----
+  function updateComposer() {
+    const form = $("sendForm");
+    if (banned && !isAdmin) {
+      form.hidden = true;
+      note("You can't send messages in this chat.");
+      return;
+    }
+    form.hidden = false;
+    if (!chatOn && !isAdmin) {
+      $("msgInput").disabled = true;
+      $("sendBtn").disabled = true;
+      note("Chat is turned off right now.");
+      return;
+    }
+    const left = timeoutUntil - Date.now();
+    if (left > 0 && !isAdmin) {
+      $("msgInput").disabled = true;
+      $("sendBtn").disabled = true;
+      note(`You're in a timeout. You can chat again in ${fmt(left)}.`);
+      return;
+    }
+    if ($("msgInput").disabled) {
+      $("msgInput").disabled = false;
+      $("sendBtn").disabled = false;
+    }
+    if (!$("note").dataset.hold) note(`You're chatting as ${myName()}. Be nice. Slow mode is ${SLOW_MODE_SECONDS}s.`);
+  }
+  setInterval(updateComposer, 1000);
+  const flash = (text) => {
+    $("note").dataset.hold = "1";
+    note(text);
+    setTimeout(() => { delete $("note").dataset.hold; updateComposer(); }, 3000);
+  };
+
+  // ----- Entry screen (viewers type their real name, only the host sees it) -----
+  function showGate() {
+    $("gate").hidden = false;
+    setTimeout(() => $("gateName").focus(), 50);
+  }
+  function hideGate() { $("gate").hidden = true; }
+
+  async function startVisit() {
+    if (!me || entered) return;
+    entered = true;
+    hideGate();
+    const base = `viewers/${me.uid}`;
+    const updates = {};
+    updates[`${base}/anonName`] = anonName;
+    updates[`${base}/lastSeen`] = serverTimestamp();
+    updates[`${base}/visits`] = increment(1);
+    updates[`${base}/device`] = deviceInfo();
+    updates[`${base}/source`] = sourceInfo();
+    try { await update(ref(db), updates); } catch { /* stats are best effort */ }
+
+    // Online status for the host's viewer list
+    const statusRef = ref(db, `status/${me.uid}`);
+    onValue(ref(db, ".info/connected"), (snap) => {
+      if (snap.val() !== true || !me || isAdmin) return;
+      onDisconnect(statusRef).remove().then(() => set(statusRef, serverTimestamp())).catch(() => {});
+    });
+  }
+
+  // Count watch time only while the page is open and visible
+  setInterval(() => {
+    if (!me || isAdmin || !entered || document.hidden) return;
+    const base = `viewers/${me.uid}`;
+    update(ref(db), {
+      [`${base}/watchSeconds`]: increment(WATCH_TICK_SECONDS),
+      [`${base}/lastSeen`]: serverTimestamp()
+    }).catch(() => {});
+  }, WATCH_TICK_SECONDS * 1000);
+
+  $("gateForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const real = $("gateName").value.replace(/\s+/g, " ").trim().slice(0, 40);
+    if (real.length < 2) { $("gateErr").textContent = "Please enter your name."; return; }
+    if (!me) { $("gateErr").textContent = "Still connecting, try again in a second."; return; }
+    try {
+      const base = `viewers/${me.uid}`;
+      const first = await get(ref(db, `${base}/firstSeen`)).catch(() => null);
+      const updates = { [`${base}/realName`]: real };
+      if (!first || !first.exists()) updates[`${base}/firstSeen`] = serverTimestamp();
+      await update(ref(db), updates);
+      startVisit();
+    } catch {
+      $("gateErr").textContent = "Couldn't connect. Refresh the page and try again.";
+    }
+  });
+
+  // Track clicks on the Subscribe button (YouTube doesn't tell us who actually subscribed)
+  $("subLink").addEventListener("click", () => {
+    if (!me || isAdmin || !entered) return;
+    const base = `viewers/${me.uid}`;
+    update(ref(db), {
+      [`${base}/subscribeClicks`]: increment(1),
+      [`${base}/lastSubscribeClick`]: serverTimestamp()
+    }).catch(() => {});
+  });
+
+  // ----- Sign in and watch this viewer's ban / timeout -----
+  onAuthStateChanged(auth, async (user) => {
+    me = user;
+    watchers.forEach((stop) => stop());
+    watchers = [];
+    adminWatchers.forEach((stop) => stop());
+    adminWatchers = [];
+    if (!user) {
+      signInAnonymously(auth).catch(() => note("Chat could not connect. Refresh the page."));
+      return;
+    }
+    isAdmin = !user.isAnonymous;
+    document.body.classList.toggle("admin", isAdmin);
+    $("adminBtn").hidden = isAdmin || !adminPage;
+    if (!isAdmin) { closePanel(); closeStats(); }
+
+    if (isAdmin) {
+      hideGate();
+      startAdminFeeds();
+    } else if (!adminPage) {
+      // Skip the name screen if this viewer has already entered their name before
+      try {
+        const snap = await get(ref(db, `viewers/${user.uid}/realName`));
+        if (snap.exists()) startVisit(); else showGate();
+      } catch { showGate(); }
+    }
+
+    watchers.push(onValue(ref(db, `banned/${user.uid}`), (snap) => { banned = snap.exists(); updateComposer(); }, () => {}));
+    watchers.push(onValue(ref(db, `timeouts/${user.uid}`), (snap) => { timeoutUntil = Number(snap.val()) || 0; updateComposer(); }, () => {}));
+    msgs.forEach(({ m, li }, key) => drawMessage(key, m, li));
+    updateComposer();
+  });
+
+  // Name overrides set by the admin (shared with everyone so renamed viewers show the new name)
+  onValue(ref(db, "names"), (snap) => {
+    names = snap.val() || {};
+    msgs.forEach(({ m, li }, key) => drawMessage(key, m, li));
+    if (panelUid) openPanel(panelUid);
+    renderViewers();
+    updateComposer();
+  });
+
+  // ----- Chat on / off switch (host only can change it) -----
+  onValue(ref(db, "settings/chatEnabled"), (snap) => {
+    chatOn = snap.val() !== false;
+    $("chatToggle").checked = chatOn;
+    $("chatToggleText").textContent = chatOn ? "Chat on" : "Chat off for viewers";
+    $("chatToggleLabel").classList.toggle("off", !chatOn);
+    updateComposer();
+  }, () => {});
+  $("chatToggle").addEventListener("change", (e) => {
+    const want = e.target.checked;
+    set(ref(db, "settings/chatEnabled"), want).catch(() => {
+      e.target.checked = chatOn;
+      flash("Couldn't change the chat setting.");
+    });
+  });
+
+  // ----- Admin data feeds -----
+  function startAdminFeeds() {
+    const redrawAll = () => {
+      msgs.forEach(({ m, li }, key) => drawMessage(key, m, li));
+      renderViewers();
+    };
+    adminWatchers.push(onValue(ref(db, "viewers"), (s) => { viewers = s.val() || {}; redrawAll(); }, () => {}));
+    adminWatchers.push(onValue(ref(db, "status"), (s) => { online = s.val() || {}; renderViewers(); }, () => {}));
+    adminWatchers.push(onValue(ref(db, "banned"), (s) => { bans = s.val() || {}; renderViewers(); }, () => {}));
+    adminWatchers.push(onValue(ref(db, "timeouts"), (s) => { timeouts = s.val() || {}; renderViewers(); }, () => {}));
+  }
+  // ----- Viewer analytics pop-out -----
+  const statsOpen = () => !$("statsModal").hidden;
+  const openDetails = new Set();   // viewer cards you've expanded
+  function placeStats(left, top) {
+    const m = $("statsModal");
+    const maxLeft = Math.max(0, window.innerWidth - m.offsetWidth - 8);
+    const maxTop = Math.max(0, window.innerHeight - 60);
+    m.style.left = `${Math.min(Math.max(8, left), maxLeft)}px`;
+    m.style.top = `${Math.min(Math.max(8, top), maxTop)}px`;
+  }
+  function openStats() {
+    if (!isAdmin) return;
+    $("statsModal").hidden = false;
+    let pos = null;
+    try { pos = JSON.parse(localStorage.getItem("b24dul_stats_pos") || "null"); } catch { pos = null; }
+    if (pos) placeStats(pos.left, pos.top);
+    else placeStats(window.innerWidth - $("statsModal").offsetWidth - 400, 70);
+    renderViewers();
+  }
+  // Drag the box around by its header
+  (() => {
+    const m = $("statsModal");
+    const handle = $("statsHandle");
+    let dx = 0, dy = 0, dragging = false;
+    handle.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      dragging = true;
+      dx = e.clientX - m.offsetLeft;
+      dy = e.clientY - m.offsetTop;
+      m.classList.add("dragging");
+      handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      placeStats(e.clientX - dx, e.clientY - dy);
+    });
+    const stop = () => {
+      if (!dragging) return;
+      dragging = false;
+      m.classList.remove("dragging");
+      try { localStorage.setItem("b24dul_stats_pos", JSON.stringify({ left: m.offsetLeft, top: m.offsetTop })); } catch { /* ignore */ }
+    };
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
+    window.addEventListener("resize", () => { if (!m.hidden) placeStats(m.offsetLeft, m.offsetTop); });
+  })();
+  function closeStats() { $("statsModal").hidden = true; }
+  $("viewersBtn").addEventListener("click", () => (statsOpen() ? closeStats() : openStats()));
+  $("statsClose").addEventListener("click", closeStats);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && statsOpen()) closeStats(); });
+  $("statsSearch").addEventListener("input", () => renderViewers());
+  setInterval(() => { if (isAdmin && statsOpen()) renderViewers(); }, 30000);
+
+  function renderViewers() {
+    const ids = Object.keys(viewers);
+    const onlineCount = ids.filter((id) => online[id]).length;
+    $("viewersBtn").textContent = `Viewers (${onlineCount} online)`;
+    if (!isAdmin || !statsOpen()) return;
+
+    const keepScroll = vbox.scrollTop;
+    vbox.replaceChildren();
+
+    // Summary cards
+    const totalWatch = ids.reduce((a, id) => a + (viewers[id].watchSeconds || 0), 0);
+    const totalMsgs = ids.reduce((a, id) => a + (viewers[id].messages || 0), 0);
+    const totalVisits = ids.reduce((a, id) => a + (viewers[id].visits || 0), 0);
+    const subClicks = ids.filter((id) => viewers[id].subscribeClicks).length;
+    const returning = ids.filter((id) => (viewers[id].visits || 0) > 1).length;
+    const avgWatch = ids.length ? totalWatch / ids.length : 0;
+    const cards = el("div", "cards");
+    const card = (num, lbl) => { const c = el("div", "card"); c.append(el("div", "num", String(num)), el("div", "lbl", lbl)); return c; };
+    cards.append(
+      card(onlineCount, "Online now"),
+      card(ids.length, "Total viewers"),
+      card(returning, "Returning viewers"),
+      card(totalVisits, "Total visits"),
+      card(fmtWatch(totalWatch), "Total watch time"),
+      card(fmtWatch(avgWatch), "Average watch time"),
+      card(totalMsgs, "Chat messages"),
+      card(subClicks, "Clicked subscribe")
+    );
+    vbox.append(cards);
+
+    // Viewer table
+    const q = $("statsSearch").value.trim().toLowerCase();
+    const shown = ids.filter((id) => {
+      if (!q) return true;
+      const v = viewers[id];
+      return [v.realName, v.anonName, names[id]].some((s) => (s || "").toLowerCase().includes(q));
+    });
+    if (!shown.length) {
+      vbox.append(el("div", "empty", ids.length ? "No viewers match that search." : "No viewers yet."));
+      return;
+    }
+    shown.sort((a, b) => (online[b] ? 1 : 0) - (online[a] ? 1 : 0) || (viewers[b].lastSeen || 0) - (viewers[a].lastSeen || 0));
+
+    for (const id of shown) {
+      const v = viewers[id];
+      const box = el("div", "vcard");
+
+      const top = el("div", "vtop");
+      top.append(el("span", online[id] ? "dot on" : "dot"), el("span", "real", v.realName || "No name given"));
+      if (bans[id]) top.append(el("span", "tag ban", "BANNED"));
+      if (timeouts[id] && timeouts[id] > Date.now()) top.append(el("span", "tag to", `TIMEOUT ${fmt(timeouts[id] - Date.now())}`));
+      top.append(el("span", "spacer"));
+      const manage = el("button", "", "Manage");
+      manage.onclick = () => openPanel(id);
+      top.append(manage);
+
+      const mkRow = (kv, k, val, cls) => kv.append(el("span", "k", k), el("span", cls || "", val));
+
+      // Always shown
+      const kv = el("div", "kv");
+      mkRow(kv, "Chat name", names[id] || v.anonName || "?");
+      mkRow(kv, "Watched", fmtWatch(v.watchSeconds));
+
+      // Hidden until you click "More details"
+      const more = el("details", "more");
+      if (openDetails.has(id)) more.open = true;
+      more.addEventListener("toggle", () => { if (more.open) openDetails.add(id); else openDetails.delete(id); });
+      more.append(el("summary", "", "More details"));
+      const kv2 = el("div", "kv");
+      mkRow(kv2, "Status", online[id] ? "Online now" : `Seen ${ago(v.lastSeen)}`, online[id] ? "yes" : "");
+      mkRow(kv2, "Messages", String(v.messages || 0));
+      mkRow(kv2, "Visits", String(v.visits || 0));
+      mkRow(kv2, "First visit", dateStr(v.firstSeen));
+      mkRow(kv2, "Device", v.device || "Unknown");
+      mkRow(kv2, "Came from", v.source || "Unknown");
+      mkRow(kv2, "Blocked messages", String(v.blocked || 0), v.blocked ? "warn" : "muted");
+      mkRow(kv2, "Subscribe", v.subscribeClicks ? `Clicked, ${ago(v.lastSubscribeClick)}` : "Not clicked", v.subscribeClicks ? "yes" : "muted");
+      more.append(kv2);
+
+      box.append(top, kv, more);
+      vbox.append(box);
+    }
+    vbox.scrollTop = keepScroll;
+  }
+
+  // ----- Messages -----
+  const recent = query(ref(db, "messages"), limitToLast(MAX_MESSAGES_SHOWN));
+  let firstLoad = true;
+  onValue(recent, (snap) => {
+    if (firstLoad) {
+      firstLoad = false;
+      if (!snap.exists()) list.innerHTML = '<li class="empty">No messages yet. Say hello!</li>';
+    }
+  }, () => { list.innerHTML = '<li class="empty">Chat is offline right now.</li>'; });
+
+  function drawMessage(key, m, li) {
+    li.replaceChildren();
+    li.dataset.id = key;
+
+    const d = new Date(m.ts || Date.now());
+    const time = el("span", "time", d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+
+    const name = el("span", "name", shownName(m));
+    name.style.color = colourFor(m.uid || "x");
+    if (m.name === "B24DUL") {
+      name.style.color = "var(--plate)";
+      name.prepend(el("span", "host", "HOST"));
+    } else if (isAdmin && realNameOf(m.uid)) {
+      // Only the host sees the real name, with the chat name in brackets
+      name.textContent = realNameOf(m.uid);
+      name.append(el("span", "realname", `(${shownName(m)})`));
+    }
+
+    const text = el("span", "", cleanText(m.text));
+    li.append(time, name, text);
+    if (m.edited) li.append(el("span", "edited", "(edited)"));
+
+    if (isAdmin) {
+      const tools = el("span", "tools");
+      const edit = el("button", "", "Edit");
+      edit.onclick = () => startEdit(key, m, li);
+      const del = el("button", "", "Delete");
+      del.onclick = () => remove(ref(db, `messages/${key}`)).catch(() => flash("Delete failed."));
+      tools.append(edit, del);
+      if (m.name !== "B24DUL") {
+        const manage = el("button", "", "Manage");
+        manage.onclick = () => openPanel(m.uid);
+        tools.append(manage);
+      }
+      li.append(tools);
+    }
+  }
+
+  function startEdit(key, m, li) {
+    if (li.querySelector(".edit-row")) return;
+    const row = el("div", "edit-row");
+    const input = el("input");
+    input.value = m.text;
+    input.maxLength = 200;
+    const save = el("button", "primary", "Save");
+    const cancel = el("button", "", "Cancel");
+    save.onclick = () => {
+      const t = input.value.replace(/\s+/g, " ").trim().slice(0, 200);
+      if (!t) { flash("A message can't be empty. Use Delete instead."); return; }
+      if (hasLink(t)) { flash("Links aren't allowed in chat."); return; }
+      update(ref(db, `messages/${key}`), { text: t, edited: true }).catch(() => flash("Edit failed."));
+    };
+    cancel.onclick = () => row.remove();
+    input.onkeydown = (e) => { if (e.key === "Enter") save.onclick(); if (e.key === "Escape") row.remove(); };
+    row.append(input, save, cancel);
+    li.append(row);
+    input.focus();
+  }
+
+  onChildAdded(recent, (snap) => {
+    const m = snap.val();
+    if (!m || typeof m.text !== "string") return;
+    const empty = list.querySelector(".empty");
+    if (empty) empty.remove();
+    const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+    const li = el("li");
+    msgs.set(snap.key, { m, li });
+    drawMessage(snap.key, m, li);
+    list.appendChild(li);
+    if (nearBottom) list.scrollTop = list.scrollHeight;
+  });
+
+  onChildChanged(recent, (snap) => {
+    const item = msgs.get(snap.key);
+    if (!item) return;
+    item.m = snap.val();
+    drawMessage(snap.key, item.m, item.li);
+  });
+
+  onChildRemoved(recent, (snap) => {
+    const item = msgs.get(snap.key);
+    if (item) item.li.remove();
+    msgs.delete(snap.key);
+  });
+
+  // ----- Admin panel for one viewer -----
+  function closePanel() {
+    panelUid = null;
+    panel.classList.remove("open");
+    panel.replaceChildren();
+  }
+
+  async function openPanel(uid) {
+    if (!isAdmin || !uid) return;
+    panelUid = uid;
+    const last = [...msgs.values()].reverse().find((x) => x.m.uid === uid);
+    const chatName = names[uid] || (viewers[uid] && viewers[uid].anonName) || (last ? last.m.name : "Viewer");
+    const real = realNameOf(uid);
+    const count = [...msgs.values()].filter((x) => x.m.uid === uid).length;
+
+    let isBanned = false, until = 0;
+    try {
+      isBanned = (await get(ref(db, `banned/${uid}`))).exists();
+      until = Number((await get(ref(db, `timeouts/${uid}`))).val()) || 0;
+    } catch { /* still show the panel */ }
+    if (panelUid !== uid) return;
+
+    panel.replaceChildren();
+    const h = el("h4");
+    h.append(el("span", "", real ? `Managing ${real} (${chatName})` : `Managing ${chatName}`), el("span", "spacer"));
+    const close = el("button", "", "Close");
+    close.onclick = closePanel;
+    h.append(close);
+
+    const status = el("div", "status");
+    const parts = [];
+    if (isBanned) parts.push("Banned");
+    if (until > Date.now()) parts.push(`Timed out, ${fmt(until - Date.now())} left`);
+    if (names[uid]) parts.push("Renamed by you");
+    status.textContent = parts.join(" | ") || `${count} message${count === 1 ? "" : "s"} showing in chat`;
+
+    // Rename
+    const renameRow = el("div", "row");
+    renameRow.append(el("span", "label", "Rename chat name (letters, numbers, spaces, 2 to 20 characters)"));
+    const nameInput = el("input");
+    nameInput.maxLength = 20;
+    nameInput.placeholder = "New name";
+    nameInput.value = names[uid] || "";
+    const saveName = el("button", "primary", "Save name");
+    saveName.onclick = () => {
+      const n = nameInput.value.replace(/\s+/g, " ").trim();
+      if (!/^[A-Za-z0-9 _-]{2,20}$/.test(n) || /^b24dul$/i.test(n) || cleanText(n) !== n) {
+        status.textContent = "That name isn't allowed.";
+        return;
+      }
+      set(ref(db, `names/${uid}`), n).catch(() => { status.textContent = "Rename failed."; });
+    };
+    renameRow.append(nameInput, saveName);
+    if (names[uid]) {
+      const reset = el("button", "", "Reset name");
+      reset.onclick = () => remove(ref(db, `names/${uid}`)).catch(() => { status.textContent = "Reset failed."; });
+      renameRow.append(reset);
+    }
+
+    // Timeout
+    const toRow = el("div", "row");
+    toRow.append(el("span", "label", "Timeout from chat"));
+    for (const mins of TIMEOUT_OPTIONS) {
+      const b = el("button", "", mins === 60 ? "1 hour" : `${mins} min`);
+      b.onclick = () => set(ref(db, `timeouts/${uid}`), Date.now() + mins * 60000)
+        .then(() => openPanel(uid)).catch(() => { status.textContent = "Timeout failed."; });
+      toRow.append(b);
+    }
+    if (until > Date.now()) {
+      const lift = el("button", "", "Lift timeout");
+      lift.onclick = () => remove(ref(db, `timeouts/${uid}`)).then(() => openPanel(uid))
+        .catch(() => { status.textContent = "Couldn't lift timeout."; });
+      toRow.append(lift);
+    }
+
+    // Ban and clean up
+    const banRow = el("div", "row");
+    banRow.append(el("span", "label", "Other actions"));
+    const banBtn = el("button", "danger", isBanned ? "Unban" : "Ban");
+    let banArmed = false;
+    banBtn.onclick = () => {
+      if (isBanned) {
+        remove(ref(db, `banned/${uid}`)).then(() => openPanel(uid)).catch(() => { status.textContent = "Unban failed."; });
+        return;
+      }
+      if (!banArmed) { banArmed = true; banBtn.textContent = "Click again to ban"; return; }
+      set(ref(db, `banned/${uid}`), true).then(() => openPanel(uid)).catch(() => { status.textContent = "Ban failed."; });
+    };
+    const wipe = el("button", "danger", "Delete all their messages");
+    let wipeArmed = false;
+    wipe.onclick = () => {
+      if (!wipeArmed) { wipeArmed = true; wipe.textContent = "Click again to delete"; return; }
+      const jobs = [...msgs.entries()].filter(([, x]) => x.m.uid === uid).map(([k]) => remove(ref(db, `messages/${k}`)));
+      Promise.all(jobs).then(() => openPanel(uid)).catch(() => { status.textContent = "Some deletes failed."; });
+    };
+    banRow.append(banBtn, wipe);
+
+    panel.append(h, status, renameRow, toRow, banRow);
+    panel.classList.add("open");
+  }
+
+  // ----- Send a message (the rules also check entry, slow mode, timeouts, bans, length and links) -----
+  $("sendForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!me || (banned && !isAdmin)) return;
+    if (!isAdmin && !entered) { showGate(); return; }
+    if (timeoutUntil > Date.now() && !isAdmin) return;
+    if (!chatOn && !isAdmin) return;
+    const name = myName();
+    const text = cleanText($("msgInput").value).slice(0, 200);
+    if (!text) return;
+    if (hasLink(text)) { flash("Links aren't allowed in chat."); return; }
+    if (!isAdmin && isPersonal($("msgInput").value)) {
+      flash("Keep it anonymous. Asking for or sharing personal info isn't allowed here.");
+      if (entered) update(ref(db), { [`viewers/${me.uid}/blocked`]: increment(1) }).catch(() => {});
+      return;
+    }
+
+    const wait = Math.ceil((cooldownUntil - Date.now()) / 1000);
+    if (wait > 0) { flash(`Slow mode: wait ${wait}s.`); return; }
+
+    const key = push(ref(db, "messages")).key;
+    const updates = {};
+    updates[`messages/${key}`] = { uid: me.uid, name, text, ts: serverTimestamp() };
+    updates[`lastPost/${me.uid}`] = serverTimestamp();
+    if (!isAdmin) updates[`viewers/${me.uid}/messages`] = increment(1);
+
+    $("sendBtn").disabled = true;
+    try {
+      await update(ref(db), updates);
+      $("msgInput").value = "";
+      cooldownUntil = Date.now() + SLOW_MODE_SECONDS * 1000;
+    } catch {
+      // Slow mode, timeouts and bans are checked above, so a refusal here is
+      // almost always the server-side word filter.
+      flash("That message isn't allowed in this chat.");
+      if (!isAdmin && entered) update(ref(db), { [`viewers/${me.uid}/blocked`]: increment(1) }).catch(() => {});
+    } finally {
+      setTimeout(() => { if (!(timeoutUntil > Date.now()) || isAdmin) $("sendBtn").disabled = false; }, SLOW_MODE_SECONDS * 1000);
+    }
+  });
+
+  // ----- Admin sign in, sign out and clear chat -----
+  $("adminBtn").addEventListener("click", () => {
+    signInWithPopup(auth, new GoogleAuthProvider()).catch(() => flash("Admin sign in failed."));
+  });
+  $("signOutBtn").addEventListener("click", () => signOut(auth));
+  let clearArmed = false;
+  $("clearBtn").addEventListener("click", () => {
+    if (!clearArmed) { clearArmed = true; flash("Click Clear chat again to delete every message."); return; }
+    clearArmed = false;
+    remove(ref(db, "messages")).then(() => {
+      list.innerHTML = '<li class="empty">Chat cleared.</li>';
+    }).catch(() => flash("Clear failed."));
+  });
+</script>
+</body>
+</html>
