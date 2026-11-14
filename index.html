@@ -218,7 +218,68 @@
   #adminBar .toggle.off { color: #ff8a8a; }
   button.danger { background: #3a1212; border-color: #6b1f1f; color: #ffb4b4; }
 
+  .badge.off { background: #3a3f4a; color: #c9ccd3; }
+  .frame { position: relative; }
+  .frame.offline { aspect-ratio: auto; background: var(--panel); border: 1px solid var(--line); overflow: visible; }
+  #ytFrame[hidden] { display: none !important; }
+  #offline { padding: 16px; position: relative; }
+  .sd-msg { text-align: center; font-weight: 700; font-size: 17px; margin-bottom: 14px; }
+  .heart { color: var(--live); display: inline-block; animation: beat 1.2s ease-in-out infinite; }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+  .sd-wrap { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .sd-board { display: grid; grid-template-columns: repeat(9, 1fr); width: min(440px, 88vw); aspect-ratio: 1; border: 3px solid #c9ccd3; border-radius: 6px; overflow: hidden; background: #0b0c0f; user-select: none; }
+  .sd-cell { position: relative; display: flex; align-items: center; justify-content: center; font-size: clamp(16px, 3vw, 24px); border-right: 1px solid #333a46; border-bottom: 1px solid #333a46; cursor: pointer; color: var(--plate); font-weight: 600; }
+  .sd-cell.c2 { border-right: 2px solid #c9ccd3; }
+  .sd-cell.r2 { border-bottom: 2px solid #c9ccd3; }
+  .sd-cell.c8 { border-right: 0; }
+  .sd-cell.r8 { border-bottom: 0; }
+  .sd-cell.given { color: var(--text); font-weight: 800; }
+  .sd-cell.peer { background: #171b23; }
+  .sd-cell.same { background: #2b2a12; }
+  .sd-cell.sel { background: #4a3f05; }
+  .sd-cell.hint { color: var(--ok); }
+  .sd-cell.wrong { color: #ff6b6b; }
+  .sd-notes { position: absolute; inset: 2px; display: grid; grid-template-columns: repeat(3, 1fr); font-size: clamp(7px, 1vw, 10px); color: var(--muted); font-weight: 500; }
+  .sd-notes span { display: flex; align-items: center; justify-content: center; }
+  .sd-side { width: 240px; display: flex; flex-direction: column; gap: 10px; }
+  .sd-side button { padding: 9px 0; font-size: 13px; }
+  .sd-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .sd-levels button.on, .sd-tools button.on { background: var(--plate); color: var(--plate-text); border-color: var(--plate); }
+  .sd-stats { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
+  .sd-stats b { color: var(--text); }
+  .sd-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .sd-pad button { font-size: 20px; padding: 10px 0; position: relative; }
+  .sd-pad button small { position: absolute; top: 3px; right: 6px; font-size: 10px; color: var(--muted); }
+  .sd-pad button.full { opacity: 0.35; }
+  .sd-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .sd-tools button { font-size: 12px; }
+  .sd-opt { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .sd-opt input { flex: none; width: 16px; height: 16px; padding: 0; accent-color: var(--plate); }
+  .sd-links { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sd-watch { font-size: 12px; color: var(--muted); text-align: center; }
+  .sd-watch button { background: none; border: 0; color: var(--plate); text-decoration: underline; padding: 0; font-size: 12px; }
+  .sd-overlay { position: absolute; inset: 0; background: rgba(8,9,12,0.82); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 5; border-radius: 10px; }
+  .sd-overlay[hidden] { display: none !important; }
+  .sd-overlay.tut { background: rgba(8,9,12,0.45); align-items: flex-end; pointer-events: none; }
+  .sd-overlay.tut .sd-ov-card { pointer-events: auto; }
+  .sd-ov-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; max-width: 440px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .sd-ov-card h3 { margin: 0 0 8px; }
+  .sd-ov-card p { margin: 0 0 8px; line-height: 1.45; font-size: 14px; }
+  .sd-ov-card p.small { color: var(--muted); font-size: 12px; }
+  .sd-ov-card ul { margin: 0 0 8px; padding-left: 18px; font-size: 13px; line-height: 1.5; }
+  .sd-ov-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 10px; }
+  .sd-ov-btns button { padding: 8px 14px; }
+  .sd-spot { outline: 3px solid var(--plate); outline-offset: 3px; border-radius: 6px; position: relative; z-index: 6; }
+  #adminBar .toggles { gap: 14px; }
+  #liveToggleLabel.off { color: #c9ccd3; }
+  #gate .card { max-width: 440px; max-height: 92vh; overflow-y: auto; }
+  #gate .track { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 14px; font-size: 12px; color: var(--muted); }
+  #gate .track b { color: var(--text); font-size: 13px; }
+  #gate .track p { margin: 6px 0; font-size: 12px; }
+  #gate .track ul { margin: 6px 0; padding-left: 18px; line-height: 1.5; }
+
   @media (max-width: 900px) {
+    .sd-side { width: min(440px, 88vw); }
     main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .player { padding: 0; }
     .frame { border-radius: 0; }
@@ -239,25 +300,66 @@
       <button class="primary" type="submit">Enter site</button>
       <p class="err" id="gateErr"></p>
     </form>
-    <p class="small">Your name is only shown to B24DUL. This site records how long you watch, the messages you send, your device type, how you found the page and whether you click Subscribe. This helps run the stream and moderate chat.</p>
+    <div class="track">
+      <b>What this site records, in plain English</b>
+      <p>No hidden tracking and no "accept cookies" trick. Here is everything, and only B24DUL can see it:</p>
+      <ul>
+        <li>The name you type here (other viewers never see it)</li>
+        <li>How long you watch, how often you visit, and when you were last here</li>
+        <li>The chat messages you send, and how many get blocked by the filters</li>
+        <li>Your device type (for example "Mobile, iOS, Safari") and the website that sent you here</li>
+        <li>Whether you click the Subscribe button</li>
+        <li>Your Sudoku games: how many you play and finish, your best times, hints, mistakes and time spent playing</li>
+      </ul>
+      <p>That's it. No adverts, no selling or sharing your info, and no tracking on other websites. This site saves your random chat name and Sudoku progress on your device so they're still there next time. The YouTube video player is run by YouTube, which may use its own cookies.</p>
+      <p>By clicking Enter site you're OK with the above. Want your info removed? Ask B24DUL on stream.</p>
+    </div>
   </div>
 </div>
 <header>
   <span class="plate">B24DUL</span>
-  <span class="badge">LIVE ON PS5</span>
+  <span class="badge" id="liveBadge">LIVE ON PS5</span>
   <span class="spacer"></span>
   <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
 </header>
 
 <main>
   <section class="player">
-    <div class="frame">
-      <!-- Always shows whatever B24DUL is streaming right now -->
-      <iframe
-        src="https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1"
+    <div class="frame" id="playerFrame">
+      <!-- Shows whatever B24DUL is streaming when the host marks the stream as live -->
+      <iframe id="ytFrame" hidden
         title="B24DUL live stream"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         allowfullscreen></iframe>
+      <div id="offline" hidden>
+        <div class="sd-msg">Charge your brain while you wait for the streamer to return <span class="heart">❤</span></div>
+        <div class="sd-wrap">
+          <div class="sd-board" id="sdBoard"></div>
+          <div class="sd-side">
+            <div class="sd-levels" id="sdLevels">
+              <button data-level="easy">Easy</button>
+              <button data-level="medium">Medium</button>
+              <button data-level="hard">Hard</button>
+            </div>
+            <div class="sd-stats"><span>⏱ <b id="sdTimer">0:00</b></span><span id="sdLevel">Easy</span><span id="sdMist">Mistakes 0</span></div>
+            <div class="sd-pad" id="sdPad"></div>
+            <div class="sd-tools">
+              <button id="sdUndo">Undo</button>
+              <button id="sdErase">Erase</button>
+              <button id="sdNotes">Notes</button>
+              <button id="sdHint">Hint</button>
+            </div>
+            <label class="sd-opt" id="sdMistOpt"><input type="checkbox" id="sdShowMist" checked> Highlight mistakes</label>
+            <div class="sd-links">
+              <button id="sdHelpBtn">How to play</button>
+              <button id="sdTutBtn">Tutorial</button>
+            </div>
+            <button id="sdNew">New game</button>
+            <div class="sd-watch">Stream started? <button id="sdShowVideo">Show video</button></div>
+          </div>
+        </div>
+        <div class="sd-overlay" id="sdOverlay" hidden><div class="sd-ov-card" id="sdOvCard"></div></div>
+      </div>
     </div>
   </section>
 
@@ -270,9 +372,12 @@
     <div id="adminBar">
       <div class="arow">
         <span class="atag">ADMIN</span>
-        <label class="toggle" id="chatToggleLabel"><input type="checkbox" id="chatToggle" checked> <span id="chatToggleText">Chat on</span></label>
         <span class="spacer"></span>
         <button id="signOutBtn">Sign out</button>
+      </div>
+      <div class="arow toggles">
+        <label class="toggle" id="chatToggleLabel"><input type="checkbox" id="chatToggle" checked> <span id="chatToggleText">Chat on</span></label>
+        <label class="toggle" id="liveToggleLabel"><input type="checkbox" id="liveToggle"> <span id="liveToggleText">Stream offline</span></label>
       </div>
       <div class="agrid">
         <button id="viewersBtn">Viewers</button>
@@ -647,6 +752,392 @@
     adminWatchers.push(onValue(ref(db, "banned"), (s) => { bans = s.val() || {}; renderViewers(); }, () => {}));
     adminWatchers.push(onValue(ref(db, "timeouts"), (s) => { timeouts = s.val() || {}; renderViewers(); }, () => {}));
   }
+  // ===================================================================
+  // ----- Stream live switch and Sudoku game for when you're offline -----
+  // ===================================================================
+  const YT_URL = "https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1";
+  let streamLive = false;
+  let forceVideo = false;
+  function applyLive() {
+    const showVideo = streamLive || forceVideo;
+    const yt = $("ytFrame");
+    $("playerFrame").classList.toggle("offline", !showVideo);
+    yt.hidden = !showVideo;
+    $("offline").hidden = showVideo;
+    if (showVideo && yt.getAttribute("src") !== YT_URL) yt.setAttribute("src", YT_URL);
+    if (!showVideo && yt.getAttribute("src")) yt.removeAttribute("src");
+    $("liveBadge").textContent = streamLive ? "LIVE ON PS5" : "OFFLINE";
+    $("liveBadge").classList.toggle("off", !streamLive);
+    $("liveToggle").checked = streamLive;
+    $("liveToggleText").textContent = streamLive ? "Stream live" : "Stream offline";
+    $("liveToggleLabel").classList.toggle("off", !streamLive);
+    if (!showVideo) sdEnsureGame();
+  }
+  onValue(ref(db, "settings/live"), (snap) => {
+    streamLive = snap.val() === true;
+    if (streamLive) forceVideo = false;
+    applyLive();
+  }, () => applyLive());
+  $("liveToggle").addEventListener("change", (e) => {
+    const want = e.target.checked;
+    set(ref(db, "settings/live"), want).catch(() => {
+      e.target.checked = streamLive;
+      flash("Couldn't change the stream setting.");
+    });
+  });
+  $("sdShowVideo").addEventListener("click", () => { forceVideo = true; applyLive(); });
+
+  // ----- Sudoku engine -----
+  const SD_CLUES = { easy: 42, medium: 33, hard: 27 };
+  const SD_NAMES = { easy: "Easy", medium: "Medium", hard: "Hard" };
+  const ROW = (i) => Math.floor(i / 9), COL = (i) => i % 9;
+  const BOX = (i) => Math.floor(ROW(i) / 3) * 3 + Math.floor(COL(i) / 3);
+  const PEERS = Array.from({ length: 81 }, (_, i) => {
+    const s = [];
+    for (let j = 0; j < 81; j++) if (j !== i && (ROW(j) === ROW(i) || COL(j) === COL(i) || BOX(j) === BOX(i))) s.push(j);
+    return s;
+  });
+  const bits = (m) => { let c = 0; while (m) { m &= m - 1; c++; } return c; };
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const cands = (g, i) => { let m = 0x3FE; for (const p of PEERS[i]) if (g[p]) m &= ~(1 << g[p]); return m; };
+  function pickCell(g) {
+    let best = -1, bestM = 0, bestC = 10;
+    for (let i = 0; i < 81; i++) {
+      if (g[i]) continue;
+      const m = cands(g, i), c = bits(m);
+      if (c === 0) return { dead: true };
+      if (c < bestC) { best = i; bestM = m; bestC = c; if (c === 1) break; }
+    }
+    return { i: best, m: bestM };
+  }
+  function countSolutions(g, limit) {
+    const p = pickCell(g);
+    if (p.dead) return 0;
+    if (p.i < 0) return 1;
+    let total = 0;
+    for (let d = 1; d <= 9 && total < limit; d++) {
+      if (!(p.m & (1 << d))) continue;
+      g[p.i] = d;
+      total += countSolutions(g, limit - total);
+      g[p.i] = 0;
+    }
+    return total;
+  }
+  function fillGrid(g) {
+    const p = pickCell(g);
+    if (p.dead) return false;
+    if (p.i < 0) return true;
+    for (const d of shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9].filter((d) => p.m & (1 << d)))) {
+      g[p.i] = d;
+      if (fillGrid(g)) return true;
+    }
+    g[p.i] = 0;
+    return false;
+  }
+  function makePuzzle(level) {
+    const sol = Array(81).fill(0);
+    fillGrid(sol);
+    const puz = sol.slice();
+    let filled = 81;
+    for (const i of shuffle([...Array(81).keys()])) {
+      if (filled <= SD_CLUES[level]) break;
+      const v = puz[i];
+      puz[i] = 0;
+      if (countSolutions(puz.slice(), 2) !== 1) puz[i] = v; else filled--;
+    }
+    return { puz, sol };
+  }
+
+  // ----- Sudoku state -----
+  let sd = null;
+  const SD_KEY = "b24dul_sudoku";
+  const sdSave = () => { try { localStorage.setItem(SD_KEY, JSON.stringify(sd)); } catch { /* ignore */ } };
+  const sdLoad = () => { try { return JSON.parse(localStorage.getItem(SD_KEY) || "null"); } catch { return null; } };
+  const sdStat = (updates) => {
+    if (!me || isAdmin || !entered) return;
+    const out = {};
+    for (const [k, v] of Object.entries(updates)) out[`viewers/${me.uid}/sudoku/${k}`] = v;
+    update(ref(db), out).catch(() => {});
+  };
+
+  function sdNewGame(level) {
+    const { puz, sol } = makePuzzle(level);
+    sd = {
+      level, puzzle: puz, solution: sol, grid: puz.slice(), notes: Array(81).fill(0),
+      hinted: [], sel: -1, notesMode: false, history: [], hints: 0, mistakes: 0,
+      elapsed: 0, done: false, showMistakes: sd ? sd.showMistakes : true
+    };
+    sdSave();
+    sdStat({ started: increment(1) });
+    sdRender();
+  }
+  function sdEnsureGame() {
+    if (sd) { sdRender(); return; }
+    const saved = sdLoad();
+    if (saved && Array.isArray(saved.grid) && saved.grid.length === 81) { sd = saved; sd.history = []; sdRender(); }
+    else sdNewGame("easy");
+    try {
+      if (!localStorage.getItem("b24dul_sd_seen")) { localStorage.setItem("b24dul_sd_seen", "1"); sdWelcome(); }
+    } catch { /* ignore */ }
+  }
+
+  // ----- Sudoku board drawing -----
+  const board = $("sdBoard");
+  const cells = [];
+  for (let i = 0; i < 81; i++) {
+    const c = el("div", "sd-cell");
+    if (COL(i) === 2 || COL(i) === 5) c.classList.add("c2");
+    if (ROW(i) === 2 || ROW(i) === 5) c.classList.add("r2");
+    if (COL(i) === 8) c.classList.add("c8");
+    if (ROW(i) === 8) c.classList.add("r8");
+    c.addEventListener("click", () => { sd.sel = i; sdRender(); });
+    board.append(c);
+    cells.push(c);
+  }
+  const pad = $("sdPad");
+  const padBtns = [];
+  for (let d = 1; d <= 9; d++) {
+    const b = el("button", "", String(d));
+    b.append(el("small", "", ""));
+    b.addEventListener("click", () => sdInput(d));
+    pad.append(b);
+    padBtns.push(b);
+  }
+
+  function sdRender() {
+    if (!sd) return;
+    const selVal = sd.sel >= 0 ? sd.grid[sd.sel] : 0;
+    for (let i = 0; i < 81; i++) {
+      const c = cells[i];
+      const v = sd.grid[i];
+      c.className = c.className.split(" ").filter((k) => ["sd-cell", "c2", "r2", "c8", "r8"].includes(k)).join(" ");
+      if (sd.puzzle[i]) c.classList.add("given");
+      if (sd.hinted.includes(i)) c.classList.add("hint");
+      if (sd.sel >= 0) {
+        if (i === sd.sel) c.classList.add("sel");
+        else if (ROW(i) === ROW(sd.sel) || COL(i) === COL(sd.sel) || BOX(i) === BOX(sd.sel)) c.classList.add("peer");
+        if (selVal && v === selVal && i !== sd.sel) c.classList.add("same");
+      }
+      if (v && sd.showMistakes && !sd.puzzle[i] && v !== sd.solution[i]) c.classList.add("wrong");
+      c.replaceChildren();
+      if (v) c.textContent = String(v);
+      else if (sd.notes[i]) {
+        const n = el("div", "sd-notes");
+        for (let d = 1; d <= 9; d++) n.append(el("span", "", sd.notes[i] & (1 << d) ? String(d) : ""));
+        c.append(n);
+      }
+    }
+    for (let d = 1; d <= 9; d++) {
+      const placed = sd.grid.filter((v, i) => v === d && v === sd.solution[i]).length;
+      padBtns[d - 1].querySelector("small").textContent = String(9 - placed);
+      padBtns[d - 1].classList.toggle("full", placed >= 9);
+    }
+    $("sdNotes").classList.toggle("on", sd.notesMode);
+    $("sdNotes").textContent = sd.notesMode ? "Notes on" : "Notes";
+    $("sdLevel").textContent = SD_NAMES[sd.level];
+    $("sdMist").textContent = `Mistakes ${sd.mistakes}`;
+    $("sdTimer").textContent = fmt(sd.elapsed * 1000);
+    $("sdShowMist").checked = sd.showMistakes;
+    document.querySelectorAll("#sdLevels button").forEach((b) => b.classList.toggle("on", b.dataset.level === sd.level));
+  }
+
+  // ----- Sudoku moves -----
+  const snapshot = () => ({ grid: sd.grid.slice(), notes: sd.notes.slice(), hinted: sd.hinted.slice() });
+  function sdInput(d) {
+    if (!sd || sd.done || sd.sel < 0 || sd.puzzle[sd.sel] || sd.hinted.includes(sd.sel)) return;
+    const i = sd.sel;
+    sd.history.push(snapshot());
+    if (sd.notesMode) {
+      if (sd.grid[i]) return;
+      sd.notes[i] ^= 1 << d;
+    } else if (sd.grid[i] === d) {
+      sd.grid[i] = 0;
+    } else {
+      sd.grid[i] = d;
+      sd.notes[i] = 0;
+      for (const p of PEERS[i]) sd.notes[p] &= ~(1 << d);
+      if (d !== sd.solution[i]) { sd.mistakes++; sdStat({ mistakes: increment(1) }); }
+    }
+    sdAfterMove();
+  }
+  function sdErase() {
+    if (!sd || sd.done || sd.sel < 0 || sd.puzzle[sd.sel] || sd.hinted.includes(sd.sel)) return;
+    sd.history.push(snapshot());
+    sd.grid[sd.sel] = 0;
+    sd.notes[sd.sel] = 0;
+    sdAfterMove();
+  }
+  function sdUndo() {
+    if (!sd || sd.done || !sd.history.length) return;
+    const s = sd.history.pop();
+    sd.grid = s.grid; sd.notes = s.notes; sd.hinted = s.hinted;
+    sdAfterMove();
+  }
+  function sdHint() {
+    if (!sd || sd.done) return;
+    let i = sd.sel;
+    if (i < 0 || sd.puzzle[i] || sd.grid[i] === sd.solution[i]) {
+      const open = [...Array(81).keys()].filter((k) => sd.grid[k] !== sd.solution[k]);
+      if (!open.length) return;
+      i = open[Math.floor(Math.random() * open.length)];
+    }
+    sd.history.push(snapshot());
+    sd.grid[i] = sd.solution[i];
+    sd.notes[i] = 0;
+    for (const p of PEERS[i]) sd.notes[p] &= ~(1 << sd.solution[i]);
+    sd.hinted.push(i);
+    sd.sel = i;
+    sd.hints++;
+    sdStat({ hints: increment(1) });
+    sdAfterMove();
+  }
+  function sdAfterMove() {
+    if (sd.grid.every((v, i) => v === sd.solution[i])) {
+      sd.done = true;
+      sdStat({ completed: increment(1), [`${sd.level}Done`]: increment(1) });
+      if (me && !isAdmin && entered) {
+        const bestKey = `best${sd.level[0].toUpperCase()}${sd.level.slice(1)}`;
+        get(ref(db, `viewers/${me.uid}/sudoku/${bestKey}`)).then((snap) => {
+          if (!snap.exists() || sd.elapsed < snap.val()) sdStat({ [bestKey]: sd.elapsed });
+        }).catch(() => {});
+      }
+      sdSave();
+      sdRender();
+      sdWin();
+      return;
+    }
+    sdSave();
+    sdRender();
+  }
+
+  // Timer and play time (only while the game is on screen)
+  let playTick = 0;
+  setInterval(() => {
+    if (!sd || sd.done || $("offline").hidden || document.hidden) return;
+    sd.elapsed++;
+    $("sdTimer").textContent = fmt(sd.elapsed * 1000);
+    if (sd.elapsed % 5 === 0) sdSave();
+    if (++playTick >= 30) { playTick = 0; sdStat({ playSeconds: increment(30) }); }
+  }, 1000);
+
+  // ----- Sudoku controls -----
+  $("sdNotes").addEventListener("click", () => { if (sd) { sd.notesMode = !sd.notesMode; sdSave(); sdRender(); } });
+  $("sdErase").addEventListener("click", sdErase);
+  $("sdUndo").addEventListener("click", sdUndo);
+  $("sdHint").addEventListener("click", sdHint);
+  $("sdShowMist").addEventListener("change", (e) => { if (sd) { sd.showMistakes = e.target.checked; sdSave(); sdRender(); } });
+  document.querySelectorAll("#sdLevels button").forEach((b) => {
+    b.addEventListener("click", () => {
+      const lvl = b.dataset.level;
+      const started = sd && !sd.done && sd.grid.some((v, i) => v && !sd.puzzle[i]);
+      if (started) sdConfirmNew(lvl); else sdNewGame(lvl);
+    });
+  });
+  $("sdNew").addEventListener("click", () => {
+    const started = sd && !sd.done && sd.grid.some((v, i) => v && !sd.puzzle[i]);
+    if (started) sdConfirmNew(sd.level); else sdNewGame(sd ? sd.level : "easy");
+  });
+  $("sdHelpBtn").addEventListener("click", sdHelp);
+  $("sdTutBtn").addEventListener("click", () => sdTutorial(0));
+
+  document.addEventListener("keydown", (e) => {
+    if (!sd || $("offline").hidden || !$("sdOverlay").hidden || !$("gate").hidden) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    const k = e.key;
+    if (/^[1-9]$/.test(k)) { sdInput(Number(k)); e.preventDefault(); return; }
+    if (k === "Backspace" || k === "Delete" || k === "0") { sdErase(); e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === "z") { sdUndo(); e.preventDefault(); return; }
+    if (k.toLowerCase() === "n") { sd.notesMode = !sd.notesMode; sdRender(); return; }
+    if (k.toLowerCase() === "h") { sdHint(); return; }
+    const move = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 }[k];
+    if (move !== undefined) {
+      e.preventDefault();
+      if (sd.sel < 0) sd.sel = 40;
+      else {
+        const n = sd.sel + move;
+        if (n >= 0 && n < 81 && !(move === -1 && COL(sd.sel) === 0) && !(move === 1 && COL(sd.sel) === 8)) sd.sel = n;
+      }
+      sdRender();
+    }
+  });
+
+  // ----- Pop-ups inside the game: welcome, help, tutorial, win -----
+  function sdOverlay(build, tutorial) {
+    const ov = $("sdOverlay");
+    const card = $("sdOvCard");
+    card.replaceChildren();
+    ov.classList.toggle("tut", !!tutorial);
+    build(card);
+    ov.hidden = false;
+  }
+  function sdCloseOverlay() {
+    $("sdOverlay").hidden = true;
+    document.querySelectorAll(".sd-spot").forEach((x) => x.classList.remove("sd-spot"));
+  }
+  const btnRow = (...btns) => { const r = el("div", "sd-ov-btns"); r.append(...btns); return r; };
+  const mkBtn = (text, fn, cls) => { const b = el("button", cls || "", text); b.addEventListener("click", fn); return b; };
+
+  function sdWelcome() {
+    sdOverlay((c) => {
+      c.append(el("h3", "", "Fancy a Sudoku?"),
+        el("p", "", "Fill the grid so every row, column and 3×3 box has the numbers 1 to 9. New to it? The quick tutorial shows you everything in under a minute."),
+        btnRow(mkBtn("Just play", sdCloseOverlay), mkBtn("Start tutorial", () => sdTutorial(0), "primary")));
+    });
+  }
+  function sdConfirmNew(level) {
+    sdOverlay((c) => {
+      c.append(el("h3", "", `Start a new ${SD_NAMES[level]} game?`),
+        el("p", "", "Your current puzzle will be lost."),
+        btnRow(mkBtn("Keep playing", sdCloseOverlay), mkBtn("New game", () => { sdCloseOverlay(); sdNewGame(level); }, "primary")));
+    });
+  }
+  function sdWin() {
+    sdOverlay((c) => {
+      c.append(el("h3", "", "Solved! 🎉"),
+        el("p", "", `${SD_NAMES[sd.level]} puzzle done in ${fmt(sd.elapsed * 1000)} with ${sd.hints} hint${sd.hints === 1 ? "" : "s"} and ${sd.mistakes} mistake${sd.mistakes === 1 ? "" : "s"}.`));
+      const r = el("div", "sd-ov-btns");
+      for (const lvl of ["easy", "medium", "hard"]) r.append(mkBtn(SD_NAMES[lvl], () => { sdCloseOverlay(); sdNewGame(lvl); }, lvl === sd.level ? "primary" : ""));
+      c.append(el("p", "small", "Play again:"), r);
+    });
+  }
+  function sdHelp() {
+    sdOverlay((c) => {
+      c.append(el("h3", "", "How to play"));
+      const ul = el("ul");
+      for (const t of [
+        "Every row, column and 3×3 box must contain the numbers 1 to 9, each once.",
+        "Click a square, then pick a number from the pad or type it.",
+        "Notes lets you pencil in small numbers you think might fit.",
+        "Hint fills in one correct number. Undo takes back your last move.",
+        "Red numbers are wrong. Untick Highlight mistakes for a tougher game.",
+        "Keyboard: 1 to 9 to fill, Backspace to erase, arrows to move, N for notes, H for a hint, Ctrl+Z to undo.",
+        "Tip: look for a row, column or box that's nearly full and work out what's missing."
+      ]) ul.append(el("li", "", t));
+      c.append(ul, btnRow(mkBtn("Tutorial", () => sdTutorial(0)), mkBtn("Got it", sdCloseOverlay, "primary")));
+    });
+  }
+  const TUT = [
+    ["sdBoard", "The goal: fill every square so each row, column and 3×3 box has 1 to 9, with no repeats."],
+    ["sdBoard", "Click any empty square to select it. Its row, column and box light up so you can see which numbers are already used."],
+    ["sdPad", "Pick a number here or type it on your keyboard. The small number shows how many of each are left to place."],
+    ["sdNotes", "Not sure yet? Turn on Notes to pencil in small possibilities. Placing a real number clears matching notes nearby."],
+    ["sdHint", "Stuck? Hint fills in a correct number for you. Undo and Erase are right next to it."],
+    ["sdMistOpt", "Wrong numbers show in red. Untick this if you'd rather find your own mistakes."],
+    ["sdLevels", "Choose Easy, Medium or Hard to start a new puzzle. Your game saves itself, so you can come back to it. Good luck!"]
+  ];
+  function sdTutorial(step) {
+    document.querySelectorAll(".sd-spot").forEach((x) => x.classList.remove("sd-spot"));
+    const [target, text] = TUT[step];
+    $(target).classList.add("sd-spot");
+    sdOverlay((c) => {
+      c.append(el("p", "small", `Tutorial ${step + 1} of ${TUT.length}`), el("p", "", text));
+      const back = step > 0 ? mkBtn("Back", () => sdTutorial(step - 1)) : mkBtn("Skip", sdCloseOverlay);
+      const next = step < TUT.length - 1 ? mkBtn("Next", () => sdTutorial(step + 1), "primary") : mkBtn("Let's play", sdCloseOverlay, "primary");
+      c.append(btnRow(back, next));
+    }, true);
+  }
+
   // ----- Viewer analytics pop-out -----
   const statsOpen = () => !$("statsModal").hidden;
   const openDetails = new Set();   // viewer cards you've expanded
@@ -726,7 +1217,9 @@
       card(fmtWatch(totalWatch), "Total watch time"),
       card(fmtWatch(avgWatch), "Average watch time"),
       card(totalMsgs, "Chat messages"),
-      card(subClicks, "Clicked subscribe")
+      card(subClicks, "Clicked subscribe"),
+      card(ids.reduce((a, id) => a + ((viewers[id].sudoku || {}).started || 0), 0), "Sudoku games"),
+      card(ids.reduce((a, id) => a + ((viewers[id].sudoku || {}).completed || 0), 0), "Sudoku solved")
     );
     vbox.append(cards);
 
@@ -776,6 +1269,15 @@
       mkRow(kv2, "Device", v.device || "Unknown");
       mkRow(kv2, "Came from", v.source || "Unknown");
       mkRow(kv2, "Blocked messages", String(v.blocked || 0), v.blocked ? "warn" : "muted");
+      const sg = v.sudoku || {};
+      const best = (s) => (s ? fmt(s * 1000) : "–");
+      mkRow(kv2, "Sudoku", sg.started ? `${sg.started} played, ${sg.completed || 0} solved` : "Not played", sg.started ? "" : "muted");
+      if (sg.started) {
+        mkRow(kv2, "Solved by level", `Easy ${sg.easyDone || 0} · Medium ${sg.mediumDone || 0} · Hard ${sg.hardDone || 0}`);
+        mkRow(kv2, "Best times", `Easy ${best(sg.bestEasy)} · Medium ${best(sg.bestMedium)} · Hard ${best(sg.bestHard)}`);
+        mkRow(kv2, "Hints / mistakes", `${sg.hints || 0} / ${sg.mistakes || 0}`);
+        mkRow(kv2, "Time playing", fmtWatch(sg.playSeconds));
+      }
       mkRow(kv2, "Subscribe", v.subscribeClicks ? `Clicked, ${ago(v.lastSubscribeClick)}` : "Not clicked", v.subscribeClicks ? "yes" : "muted");
       more.append(kv2);
 
