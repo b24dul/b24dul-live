@@ -603,6 +603,8 @@
   const msgs = new Map();         // message id -> { m, li }
   let watchers = [];
   let adminWatchers = [];
+  let presenceStop = null;
+  let authEpoch = 0;
   let panelUid = null;
 
   // Admin button only shows if you open the page with ?admin on the end
@@ -783,10 +785,12 @@
   function hideGate() { $("gate").hidden = true; }
 
   async function startVisit() {
-    if (!me || entered) return;
+    if (!me || isAdmin || entered) return;
+    const visitUid = me.uid;
+    const visitEpoch = authEpoch;
     entered = true;
     hideGate();
-    const base = `viewers/${me.uid}`;
+    const base = `viewers/${visitUid}`;
     const updates = {};
     updates[`${base}/anonName`] = anonName;
     updates[`${base}/lastSeen`] = serverTimestamp();
@@ -795,11 +799,20 @@
     updates[`${base}/source`] = sourceInfo();
     try { await update(ref(db), updates); } catch { /* stats are best effort */ }
 
-    // Online status for the host's viewer list
-    const statusRef = ref(db, `status/${me.uid}`);
-    onValue(ref(db, ".info/connected"), (snap) => {
-      if (snap.val() !== true || !me || isAdmin) return;
-      onDisconnect(statusRef).remove().then(() => set(statusRef, serverTimestamp())).catch(() => {});
+    // Only one connection listener belongs to the current visitor session.
+    // Keep the server's onDisconnect registration for older sessions so stale
+    // presence can still be removed when the network connection closes.
+    if (visitEpoch !== authEpoch || me?.uid !== visitUid || isAdmin) return;
+    if (presenceStop) presenceStop();
+    const statusRef = ref(db, `status/${visitUid}`);
+    presenceStop = onValue(ref(db, ".info/connected"), (snap) => {
+      if (snap.val() !== true || visitEpoch !== authEpoch || me?.uid !== visitUid || isAdmin) return;
+      onDisconnect(statusRef).remove()
+        .then(() => {
+          if (visitEpoch !== authEpoch || me?.uid !== visitUid || isAdmin) return;
+          return set(statusRef, serverTimestamp());
+        })
+        .catch(() => {});
     });
   }
 
@@ -818,13 +831,15 @@
     const real = $("gateName").value.replace(/\s+/g, " ").trim().slice(0, 40);
     if (real.length < 2) { $("gateErr").textContent = "Please enter your name."; return; }
     if (!me) { $("gateErr").textContent = "Still connecting, try again in a second."; return; }
+    const visitorUid = me.uid;
+    const visitorEpoch = authEpoch;
     try {
-      const base = `viewers/${me.uid}`;
+      const base = `viewers/${visitorUid}`;
       const first = await get(ref(db, `${base}/firstSeen`)).catch(() => null);
       const updates = { [`${base}/realName`]: real };
       if (!first || !first.exists()) updates[`${base}/firstSeen`] = serverTimestamp();
       await update(ref(db), updates);
-      startVisit();
+      if (me?.uid === visitorUid && authEpoch === visitorEpoch) startVisit();
     } catch {
       $("gateErr").textContent = "Couldn't connect. Refresh the page and try again.";
     }
@@ -843,12 +858,30 @@
 
   // ----- Sign in and watch this viewer's ban / timeout -----
   onAuthStateChanged(auth, async (user) => {
-    me = user;
+    const epoch = ++authEpoch;
+    if (presenceStop) { presenceStop(); presenceStop = null; }
     watchers.forEach((stop) => stop());
     watchers = [];
     adminWatchers.forEach((stop) => stop());
     adminWatchers = [];
+    // Never carry the previous identity's entry, moderation or private admin data
+    // into a new Firebase authentication session.
+    me = user;
+    entered = false;
+    banned = false;
+    timeoutUntil = 0;
+    cooldownUntil = 0;
+    viewers = {};
+    online = {};
+    bans = {};
+    timeouts = {};
+    isAdmin = false;
+    document.body.classList.remove("admin");
+    closePanel();
+    closeStats();
     if (!user) {
+      hideGate();
+      $("adminBtn").hidden = !adminPage;
       signInAnonymously(auth).catch(() => note("Chat could not connect. Refresh the page."));
       return;
     }
@@ -865,8 +898,11 @@
       // Skip the name screen if this viewer has already entered their name before
       try {
         const snap = await get(ref(db, `viewers/${user.uid}/realName`));
+        if (epoch !== authEpoch || me?.uid !== user.uid) return;
         if (snap.exists()) startVisit(); else showGate();
-      } catch { showGate(); }
+      } catch {
+        if (epoch === authEpoch && me?.uid === user.uid) showGate();
+      }
     }
 
     watchers.push(onValue(ref(db, `banned/${user.uid}`), (snap) => { banned = snap.exists(); updateComposer(); }, () => {}));
