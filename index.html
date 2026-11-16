@@ -558,6 +558,31 @@
     #visitorNav button { padding:8px 7px; }
   }
 
+  /* Clear section navigation and a small, non-blocking broadcast announcement. */
+  body:not(.admin) #visitorNav button[aria-disabled="true"] { color:#68707c; opacity:.55; cursor:not-allowed; }
+  body:not(.admin) #visitorNav button[aria-disabled="true"]:hover { color:#68707c; background:transparent; }
+  body:not(.admin) #visitorNav button[data-visitor-view="watch"].is-live { color:#ff6262; font-weight:800; }
+  body:not(.admin) #visitorNav button[data-visitor-view="watch"].is-live.active { color:#111; }
+  body:not(.admin) main > .chat.visitor-chat-focused { outline:2px solid var(--plate); outline-offset:2px; }
+  #streamStartedNotice[hidden] { display:none!important; }
+  #streamStartedNotice { position:fixed; z-index:45; bottom:22px; right:22px; width:min(420px,calc(100vw - 28px)); display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding:16px; background:#21242b; border:1px solid var(--plate); border-radius:12px; box-shadow:0 16px 48px rgba(0,0,0,.65); }
+  .stream-notice-copy { display:grid; gap:4px; flex:1 1 195px; }
+  .stream-notice-copy strong { font-size:14px; }
+  .stream-notice-copy > span:last-child { font-size:12px; color:var(--muted); }
+  .stream-notice-live { font-size:10px; font-weight:800; letter-spacing:1px; color:#ff6262; }
+  .stream-notice-actions { display:flex; gap:7px; flex-wrap:wrap; }
+  .stream-notice-actions button { padding:8px 10px; font-size:12px; }
+  @media (min-width:761px) {
+    body:not(.admin) main { scroll-behavior:smooth; }
+  }
+  @media (max-width:760px) {
+    body:not(.admin) main[data-mobile-section="chat"] > .player { display:none; }
+    body:not(.admin) main[data-mobile-section="chat"] > .chat { display:flex; height:calc(100dvh - 145px); min-height:360px; max-height:none; }
+    body:not(.admin) main:not([data-mobile-section="chat"]) > .chat { display:none; }
+    body:not(.admin) main[data-mobile-section="chat"] { flex:1; padding-bottom:12px; }
+    #streamStartedNotice { right:14px; left:14px; bottom:14px; width:auto; }
+  }
+
   @media (max-width: 900px) {
     .sd-side { width: min(440px, 88vw); }
     main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
@@ -602,13 +627,24 @@
 </header>
 <nav id="visitorNav" aria-label="Explore B24DUL Live">
   <button type="button" data-visitor-view="home" class="active" aria-current="page">Home</button>
-  <button type="button" data-visitor-view="watch">Live stream</button>
+  <button type="button" data-visitor-view="watch" aria-disabled="true" title="Stream is offline">Live · Offline</button>
   <button type="button" data-visitor-view="games">Games</button>
   <button type="button" data-visitor-view="videos">Videos</button>
   <button type="button" data-visitor-view="chat">Chat</button>
   <span class="visitor-nav-spacer"></span>
   <span id="visitorNavStatus" class="visitor-nav-status">Connecting…</span>
 </nav>
+<div id="streamStartedNotice" role="status" aria-live="polite" hidden>
+  <div class="stream-notice-copy">
+    <span class="stream-notice-live">● LIVE NOW</span>
+    <strong>B24DUL has started streaming!</strong>
+    <span>Jump into the broadcast, or carry on where you are.</span>
+  </div>
+  <div class="stream-notice-actions">
+    <button type="button" id="streamNoticeWatch" class="primary">Watch stream</button>
+    <button type="button" id="streamNoticeDismiss">Not now</button>
+  </div>
+</div>
 
 <main>
   <div id="adminWorkspace" aria-label="Administrator management dashboard">
@@ -1353,6 +1389,8 @@
   let forceVideo = false;
   let visitorView = "home";
   let activeVisitorTab = "home";
+  let hasLiveSnapshot = false;
+  let currentLiveNoticeId = 0;
   const visitorViews = {
     home: ["B24DUL COMMUNITY", "Welcome to B24DUL Live", "Games, videos and anonymous community chat — all in one place."],
     watch: ["LIVE ON PS5", "Watch B24DUL live", "Catch the broadcast and chat with the community in real time."],
@@ -1367,6 +1405,13 @@
     $("visitorHeading").textContent = heading[1];
     $("visitorSubtitle").textContent = heading[2];
     $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : "Broadcast offline";
+    const liveButton = $('visitorNav').querySelector('[data-visitor-view="watch"]');
+    liveButton.setAttribute("aria-disabled", String(!streamLive));
+    liveButton.title = streamLive ? "Watch the live stream" : "Stream is currently offline";
+    liveButton.textContent = streamLive ? "● Live now" : "Live · Offline";
+    liveButton.classList.toggle("is-live", streamLive);
+    document.querySelector("main").dataset.mobileSection = activeVisitorTab === "chat" ? "chat" : "content";
+    document.querySelector("main > .chat").classList.toggle("visitor-chat-focused", activeVisitorTab === "chat");
     for (const button of $("visitorNav").querySelectorAll("button[data-visitor-view]")) {
       const selected = button.dataset.visitorView === activeVisitorTab;
       button.classList.toggle("active", selected);
@@ -1400,15 +1445,19 @@
     if (view === "chat") {
       activeVisitorTab = "chat";
       renderVisitorView();
-      document.querySelector("main > .chat").scrollIntoView({ behavior: "smooth", block: "start" });
+      const chat = document.querySelector("main > .chat");
+      // The main grid scrolls internally on desktop, while the mobile tab
+      // switches sections entirely. Focus makes navigation useful in both.
+      chat.setAttribute("tabindex", "-1");
+      chat.focus({ preventScroll:true });
+      chat.scrollIntoView({ behavior:"smooth", block:"nearest" });
       return;
     }
     if (view === "watch") {
-      if (streamLive || forceVideo) {
-        visitorView = "watch";
-        activeVisitorTab = "watch";
-        applyLive();
-      } else showOffline("choose", "home");
+      if (!streamLive) return;
+      visitorView = "watch";
+      activeVisitorTab = "watch";
+      applyLive();
     } else if (view === "videos") {
       showOffline("videos");
     } else if (view === "games") {
@@ -1421,6 +1470,22 @@
   $("visitorNav").querySelectorAll("button[data-visitor-view]").forEach((button) => {
     button.addEventListener("click", () => navigateVisitor(button.dataset.visitorView));
   });
+  const streamNotice = $("streamStartedNotice");
+  function dismissStreamNotice() {
+    streamNotice.hidden = true;
+    // One reminder per observed live session, including across same-tab reloads.
+    try { sessionStorage.setItem("b24dul-live-notice", String(currentLiveNoticeId)); } catch {}
+  }
+  $("streamNoticeWatch").addEventListener("click", () => {
+    dismissStreamNotice();
+    navigateVisitor("watch");
+  });
+  $("streamNoticeDismiss").addEventListener("click", dismissStreamNotice);
+  function announceStreamStart() {
+    if (isAdmin || !me || !entered) return;
+    currentLiveNoticeId = Date.now();
+    streamNotice.hidden = false;
+  }
 
   // ----- Offline chooser: game or old videos -----
   const UPLOADS = "UUnXAfqk5I7QE3frLhHHyImQ";   // channel uploads playlist (UC -> UU)
@@ -1578,10 +1643,21 @@
     const wasLive = streamLive;
     streamLive = snap.val() === true;
     if (streamLive) forceVideo = false;
-    if (!isAdmin && streamLive && !wasLive && visitorView === "home") {
-      visitorView = "watch";
-      activeVisitorTab = "watch";
-    } else if (!isAdmin && !streamLive && visitorView === "watch" && !forceVideo) {
+    // The first snapshot represents the current state, not a new broadcast.
+    // Never pull an existing visitor out of a game when live begins.
+    if (!hasLiveSnapshot) {
+      hasLiveSnapshot = true;
+      if (!isAdmin && streamLive && visitorView === "home") {
+        visitorView = "watch";
+        activeVisitorTab = "watch";
+      }
+    } else if (!wasLive && streamLive) {
+      announceStreamStart();
+    }
+    if (!streamLive) {
+      streamNotice.hidden = true;
+    }
+    if (!isAdmin && !streamLive && visitorView === "watch" && !forceVideo) {
       visitorView = "home";
       activeVisitorTab = "home";
       ofView = "choose";
