@@ -1848,7 +1848,7 @@
     const shown = ids.filter((id) => {
       if (!q) return true;
       const v = viewers[id];
-      return [v.realName, v.anonName, names[id]].some((s) => (s || "").toLowerCase().includes(q));
+      return [id, v.realName, v.anonName, names[id]].some((s) => (s || "").toLowerCase().includes(q));
     });
     if (!shown.length) {
       vbox.append(el("div", "empty", ids.length ? "No viewers match that search." : "No viewers yet."));
@@ -2039,6 +2039,8 @@
     h.append(close);
 
     const status = el("div", "status");
+    const uidInfo = el("p", "small", `Visitor account ID: ${uid}`);
+    uidInfo.style.overflowWrap = "anywhere";
     const parts = [];
     if (isBanned) parts.push("Banned");
     if (until > Date.now()) parts.push(`Timed out, ${fmt(until - Date.now())} left`);
@@ -2106,7 +2108,50 @@
     };
     banRow.append(banBtn, wipe);
 
-    panel.append(h, status, renameRow, toRow, banRow);
+    // Remove only this visitor's private profile/analytics subtree.
+    // Public messages, leaderboard entries, moderation records and nicknames
+    // are separate records and are NOT erased by this action.
+    const privacyRow = el("div", "row");
+    privacyRow.append(el("span", "label", "Visitor data deletion request"));
+    const privacyHelp = el("p", "small",
+      "Deletes the private name, visit and activity records for this account. " +
+      "Public chat, leaderboard scores and moderation data remain. " +
+      "An active visitor may recreate a profile after deletion.");
+    const confirmInput = el("input");
+    confirmInput.type = "text";
+    confirmInput.placeholder = "Paste the full visitor account ID";
+    confirmInput.autocomplete = "off";
+    confirmInput.setAttribute("aria-label", "Confirm visitor account ID for deletion");
+    const deleteProfile = el("button", "danger", "Delete private visitor record");
+    deleteProfile.disabled = true;
+    confirmInput.addEventListener("input", () => {
+      deleteProfile.disabled = confirmInput.value.trim() !== uid;
+    });
+    deleteProfile.onclick = async () => {
+      if (!isAdmin || !me || panelUid !== uid || me.uid === uid ||
+          confirmInput.value.trim() !== uid) return;
+      deleteProfile.disabled = true;
+      confirmInput.disabled = true;
+      status.textContent = "Deleting private visitor record…";
+      try {
+        // The database rules must authorize this administrator write.
+        // Only one UID subtree is touched; no bulk or cross-path deletion.
+        await remove(ref(db, `viewers/${uid}`));
+        if (panelUid === uid) {
+          closePanel();
+          flash("Private visitor record deleted. Public chat and leaderboard entries are unchanged.");
+        }
+      } catch {
+        if (panelUid === uid) {
+          status.textContent = "Deletion failed. Check your Firebase administrator permissions.";
+          confirmInput.disabled = false;
+          deleteProfile.disabled = confirmInput.value.trim() !== uid;
+        }
+      }
+    };
+    privacyRow.append(privacyHelp, confirmInput, deleteProfile);
+
+    panel.append(h, status, uidInfo, renameRow, toRow, banRow, privacyRow);
     panel.classList.add("open");
   }
 
