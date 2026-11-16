@@ -356,6 +356,14 @@
   #privacyDialog code { overflow-wrap: anywhere; }
   #privacyDialog .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   #privacyDialog .actions a { color: var(--plate); }
+  #privacyHistory { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 12px 0; }
+  #privacyHistory h4 { margin: 0 0 8px; }
+  #privacyLogForm { display: flex; gap: 8px; flex-wrap: wrap; }
+  #privacyLogUid { flex: 1 1 180px; min-width: 0; }
+  #privacyHistoryList { display: grid; gap: 8px; margin-top: 10px; max-height: 210px; overflow-y: auto; }
+  #privacyHistoryList .privacy-item { border-top: 1px solid var(--line); padding-top: 8px; overflow-wrap: anywhere; }
+  #privacyHistoryList .privacy-actions { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+  #privacyHistoryList button { font-size: 12px; }
 
 
   @media (max-width: 900px) {
@@ -561,6 +569,16 @@
       <button id="statsClose">Close</button>
     </div>
     <input id="statsSearch" placeholder="Search names" autocomplete="off">
+    <section id="privacyHistory" aria-label="Privacy request history">
+      <h4>Privacy request history</h4>
+      <p class="small">Log requests received by email, and track their progress. Nothing is deleted automatically.</p>
+      <form id="privacyLogForm">
+        <input id="privacyLogUid" placeholder="Visitor account ID" maxlength="128" autocomplete="off" aria-label="Visitor account ID" required>
+        <button type="submit">Log request</button>
+      </form>
+      <p id="privacyLogFeedback" class="small" aria-live="polite"></p>
+      <div id="privacyHistoryList"><p class="small">Sign in as administrator to load requests.</p></div>
+    </section>
     <div id="viewersBox"></div>
   </div>
 </div>
@@ -667,6 +685,8 @@
   const msgs = new Map();         // message id -> { m, li }
   let watchers = [];
   let adminWatchers = [];
+  let privacyRequests = {};
+  let privacyHistoryError = "";
   let presenceStop = null;
   let authEpoch = 0;
   let panelUid = null;
@@ -941,6 +961,10 @@
     online = {};
     bans = {};
     timeouts = {};
+    privacyRequests = {};
+    privacyHistoryError = "";
+    if ($("privacyLogUid")) $("privacyLogUid").value = "";
+    renderPrivacyHistory();
     isAdmin = false;
     document.body.classList.remove("admin");
     closePanel();
@@ -1012,6 +1036,14 @@
     adminWatchers.push(onValue(ref(db, "status"), (s) => { online = s.val() || {}; renderViewers(); }, () => {}));
     adminWatchers.push(onValue(ref(db, "banned"), (s) => { bans = s.val() || {}; renderViewers(); }, () => {}));
     adminWatchers.push(onValue(ref(db, "timeouts"), (s) => { timeouts = s.val() || {}; renderViewers(); }, () => {}));
+    adminWatchers.push(onValue(ref(db, "privacyRequests"), (s) => {
+      privacyHistoryError = "";
+      privacyRequests = s.val() || {};
+      renderPrivacyHistory();
+    }, () => {
+      privacyHistoryError = "History is unavailable. Add the private Firebase rules before using this feature.";
+      renderPrivacyHistory();
+    }));
   }
   // ===================================================================
   // ----- Stream live switch and Sudoku game for when you're offline -----
@@ -1751,6 +1783,89 @@
     }, true);
   }
 
+  // ----- Administrator-only privacy request history -----
+  // Email requests are logged manually after receipt; nothing is submitted by
+  // visitors directly into this restricted database collection.
+  const validPrivacyUid = (uid) => /^[A-Za-z0-9:_-]{6,128}$/.test(uid);
+  function renderPrivacyHistory() {
+    const box = $("privacyHistoryList");
+    if (!box) return;
+    box.replaceChildren();
+    if (!isAdmin) {
+      box.append(el("p", "small", "Administrator sign-in required."));
+      return;
+    }
+    if (privacyHistoryError) {
+      box.append(el("p", "small", privacyHistoryError));
+      return;
+    }
+    const rows = Object.entries(privacyRequests)
+      .filter(([, record]) => record && typeof record.uid === "string")
+      .sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+    if (!rows.length) {
+      box.append(el("p", "small", "No requests logged yet."));
+      return;
+    }
+    rows.forEach(([id, record]) => {
+      const item = el("div", "privacy-item");
+      item.append(el("strong", "", record.status === "completed" ? "Completed" :
+        record.status === "processing" ? "Processing" : "Pending"));
+      item.append(el("div", "small", "Account ID: " + record.uid));
+      item.append(el("div", "small", "Received: " +
+        (record.createdAt ? new Date(record.createdAt).toLocaleString() : "Unknown")));
+      const actions = el("div", "privacy-actions");
+      for (const [state, title] of [["pending", "Reopen"], ["processing", "Processing"], ["completed", "Complete"]]) {
+        if (record.status === state) continue;
+        const btn = el("button", "", title);
+        btn.onclick = async () => {
+          if (!isAdmin || !me) return;
+          btn.disabled = true;
+          try {
+            await update(ref(db, `privacyRequests/${id}`),
+              { status: state, updatedAt: serverTimestamp() });
+            $("privacyLogFeedback").textContent = "Request status updated.";
+          } catch {
+            btn.disabled = false;
+            $("privacyLogFeedback").textContent = "Status update failed. Check Firebase permissions.";
+          }
+        };
+        actions.append(btn);
+      }
+      const manage = el("button", "", "Manage visitor");
+      manage.onclick = () => openPanel(record.uid);
+      actions.append(manage);
+      item.append(actions);
+      box.append(item);
+    });
+  }
+  $("privacyLogForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!isAdmin || !me) return;
+    const uid = $("privacyLogUid").value.trim();
+    const feedback = $("privacyLogFeedback");
+    if (!validPrivacyUid(uid)) {
+      feedback.textContent = "Enter a valid Firebase visitor account ID.";
+      return;
+    }
+    if (Object.values(privacyRequests).some((r) => r && r.uid === uid && r.status !== "completed")) {
+      feedback.textContent = "A pending or processing request already exists for that account.";
+      return;
+    }
+    const submit = $("privacyLogForm").querySelector('button[type="submit"]');
+    submit.disabled = true;
+    try {
+      await set(push(ref(db, "privacyRequests")), {
+        uid, status: "pending", createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      });
+      $("privacyLogUid").value = "";
+      feedback.textContent = "Request logged as pending.";
+    } catch {
+      feedback.textContent = "Could not log request. The private Firebase rules may not be published yet.";
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
   // ----- Viewer analytics pop-out -----
   const statsOpen = () => !$("statsModal").hidden;
   const openDetails = new Set();   // viewer cards you've expanded
@@ -2151,6 +2266,16 @@
     };
     privacyRow.append(privacyHelp, confirmInput, deleteProfile);
 
+    const logHistory = el("button", "", "Log privacy request for this visitor");
+    logHistory.onclick = () => {
+      if (!isAdmin) return;
+      $("privacyLogUid").value = uid;
+      $("privacyLogFeedback").textContent = "Account ID ready. Select Log request in Viewer analytics.";
+      openStats();
+      closePanel();
+      $("privacyLogUid").focus();
+    };
+    privacyRow.append(logHistory);
     panel.append(h, status, uidInfo, renameRow, toRow, banRow, privacyRow);
     panel.classList.add("open");
   }
