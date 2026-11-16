@@ -198,6 +198,11 @@
   #statsModal .sm-head button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   #statsModal.dragging .sm-card { opacity: 0.92; }
   #statsSearch { margin: 10px 12px 0; padding: 7px 10px; font-size: 13px; flex: none; }
+  #statsTabs { display: flex; gap: 6px; padding: 10px 12px 0; }
+  #statsTabs button { flex: 1; padding: 7px 8px; font-size: 12px; }
+  #statsTabs button.active { background: var(--plate); color: var(--plate-text); border-color: var(--plate); }
+  #statsModal .sm-card { min-height: 0; }
+  #privacyHistory { overflow-y: auto; min-height: 0; flex: 1; }
   #viewersBox { overflow-y: auto; flex: 1; padding: 10px 12px 12px; font-size: 12px; }
   #viewersBox .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
   #viewersBox .card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
@@ -356,7 +361,7 @@
   #privacyDialog code { overflow-wrap: anywhere; }
   #privacyDialog .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   #privacyDialog .actions a { color: var(--plate); }
-  #privacyHistory { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 12px 0; }
+  #privacyHistory { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 10px 12px 12px; }
   #privacyHistory h4 { margin: 0 0 8px; }
   #privacyLogForm { display: flex; gap: 8px; flex-wrap: wrap; }
   #privacyLogUid { flex: 1 1 180px; min-width: 0; }
@@ -568,8 +573,12 @@
       <span class="spacer"></span>
       <button id="statsClose">Close</button>
     </div>
+    <div id="statsTabs" role="group" aria-label="Viewer analytics sections">
+      <button id="statsViewersTab" class="active" type="button" aria-pressed="true">Viewers</button>
+      <button id="statsPrivacyTab" type="button" aria-pressed="false">Privacy requests</button>
+    </div>
     <input id="statsSearch" placeholder="Search names" autocomplete="off">
-    <section id="privacyHistory" aria-label="Privacy request history">
+    <section id="privacyHistory" aria-label="Privacy request history" hidden>
       <h4>Privacy request history</h4>
       <p class="small">Log requests received by email, and track their progress. Nothing is deleted automatically.</p>
       <form id="privacyLogForm">
@@ -1832,7 +1841,10 @@
         actions.append(btn);
       }
       const manage = el("button", "", "Manage visitor");
-      manage.onclick = () => openPanel(record.uid);
+      manage.onclick = () => {
+        closeStats();
+        openPanel(record.uid);
+      };
       actions.append(manage);
       item.append(actions);
       box.append(item);
@@ -1868,6 +1880,22 @@
 
   // ----- Viewer analytics pop-out -----
   const statsOpen = () => !$("statsModal").hidden;
+  let statsSection = "viewers";
+  function showStatsSection(section) {
+    statsSection = section === "privacy" ? "privacy" : "viewers";
+    const privacy = statsSection === "privacy";
+    $("privacyHistory").hidden = !privacy;
+    $("statsSearch").hidden = privacy;
+    $("viewersBox").hidden = privacy;
+    $("statsPrivacyTab").classList.toggle("active", privacy);
+    $("statsViewersTab").classList.toggle("active", !privacy);
+    $("statsPrivacyTab").setAttribute("aria-pressed", String(privacy));
+    $("statsViewersTab").setAttribute("aria-pressed", String(!privacy));
+    if (privacy) renderPrivacyHistory();
+    else renderViewers();
+  }
+  $("statsPrivacyTab").addEventListener("click", () => showStatsSection("privacy"));
+  $("statsViewersTab").addEventListener("click", () => showStatsSection("viewers"));
   const openDetails = new Set();   // viewer cards you've expanded
   function placeStats(left, top) {
     const m = $("statsModal");
@@ -1883,7 +1911,7 @@
     try { pos = JSON.parse(localStorage.getItem("b24dul_stats_pos") || "null"); } catch { pos = null; }
     if (pos) placeStats(pos.left, pos.top);
     else placeStats(window.innerWidth - $("statsModal").offsetWidth - 400, 70);
-    renderViewers();
+    showStatsSection(statsSection);
   }
   // Drag the box around by its header
   (() => {
@@ -2272,6 +2300,7 @@
       $("privacyLogUid").value = uid;
       $("privacyLogFeedback").textContent = "Account ID ready. Select Log request in Viewer analytics.";
       openStats();
+      showStatsSection("privacy");
       closePanel();
       $("privacyLogUid").focus();
     };
