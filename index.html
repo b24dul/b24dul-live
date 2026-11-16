@@ -1117,6 +1117,11 @@
 
   // ----- Composer state (ban, timeout, normal) -----
   function updateComposer() {
+    if (!isAdmin && $("visitorChatIdentity")) {
+      $("visitorChatIdentity").textContent = me && entered
+        ? "Chatting as " + myName() + " · anonymous to other viewers"
+        : "Your anonymous nickname appears when you join";
+    }
     const form = $("sendForm");
     if (banned && !isAdmin) {
       form.hidden = true;
@@ -1346,8 +1351,31 @@
   const YT_URL = "https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1";
   let streamLive = false;
   let forceVideo = false;
+  let visitorView = "home";
+  let activeVisitorTab = "home";
+  const visitorViews = {
+    home: ["B24DUL COMMUNITY", "Welcome to B24DUL Live", "Games, videos and anonymous community chat — all in one place."],
+    watch: ["LIVE ON PS5", "Watch B24DUL live", "Catch the broadcast and chat with the community in real time."],
+    games: ["COMMUNITY ARCADE", "Choose your next challenge", "Play Sudoku or 2048 and compete for the top spot."],
+    game: ["SUDOKU", "Sudoku challenge", "Pick your difficulty and see how fast you can solve the puzzle."],
+    g2048: ["2048", "Join the 2048 challenge", "Merge tiles, beat your best and climb the leaderboard."],
+    videos: ["CATCH UP", "Past videos & streams", "Watch B24DUL uploads and highlights."],
+  };
+  function renderVisitorView() {
+    const heading = visitorViews[visitorView] || visitorViews.home;
+    $("visitorEyebrow").textContent = heading[0];
+    $("visitorHeading").textContent = heading[1];
+    $("visitorSubtitle").textContent = heading[2];
+    $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : "Broadcast offline";
+    for (const button of $("visitorNav").querySelectorAll("button[data-visitor-view]")) {
+      const selected = button.dataset.visitorView === activeVisitorTab;
+      button.classList.toggle("active", selected);
+      if (selected) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    }
+  }
   function applyLive() {
-    const showVideo = streamLive || forceVideo;
+    const showVideo = (streamLive || forceVideo) && (isAdmin || visitorView === "watch");
     const yt = $("ytFrame");
     $("playerFrame").classList.toggle("offline", !showVideo);
     yt.hidden = !showVideo;
@@ -1364,13 +1392,45 @@
     $("streamStatusSummary").classList.toggle("state-off", !streamLive);
     if (showVideo) stopOldVideo();
     else if (ofView === "game") sdEnsureGame();
+    renderVisitorView();
   }
+
+  function navigateVisitor(view) {
+    if (isAdmin) return;
+    if (view === "chat") {
+      activeVisitorTab = "chat";
+      renderVisitorView();
+      document.querySelector("main > .chat").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (view === "watch") {
+      if (streamLive || forceVideo) {
+        visitorView = "watch";
+        activeVisitorTab = "watch";
+        applyLive();
+      } else showOffline("choose", "home");
+    } else if (view === "videos") {
+      showOffline("videos");
+    } else if (view === "games") {
+      showOffline("choose", "games");
+    } else {
+      showOffline("choose", "home");
+    }
+    $("visitorContent").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  $("visitorNav").querySelectorAll("button[data-visitor-view]").forEach((button) => {
+    button.addEventListener("click", () => navigateVisitor(button.dataset.visitorView));
+  });
 
   // ----- Offline chooser: game or old videos -----
   const UPLOADS = "UUnXAfqk5I7QE3frLhHHyImQ";   // channel uploads playlist (UC -> UU)
   let ofView = "choose";
   let videos = null;
-  function showOffline(view) {
+  function showOffline(view, section = null) {
+    if (!isAdmin) {
+      visitorView = section || (view === "choose" ? "games" : view);
+      activeVisitorTab = visitorView === "game" || visitorView === "g2048" ? "games" : visitorView;
+    }
     ofView = view;
     $("ofChoose").hidden = view !== "choose";
     $("ofGame").hidden = view !== "game";
@@ -1382,7 +1442,8 @@
     if (view === "g2048") g2Ensure();
     if (view === "videos") loadVideos();
     watchBoards(view === "g2048" ? ["g2048"] : []);
-    $("playerFrame").scrollIntoView({ block: "nearest" });
+    if (!isAdmin) applyLive();
+    $("visitorContent").scrollIntoView({ block: "nearest" });
   }
   function stopOldVideo() {
     const f = $("vidFrame");
@@ -1514,8 +1575,21 @@
   boardListeners.add((b) => { if (b === "g2048") drawBoard($("g2Lb"), "g2048", 8); });
   document.querySelectorAll(".of-back").forEach((b) => b.addEventListener("click", () => showOffline("choose")));
   onValue(ref(db, "settings/live"), (snap) => {
+    const wasLive = streamLive;
     streamLive = snap.val() === true;
     if (streamLive) forceVideo = false;
+    if (!isAdmin && streamLive && !wasLive && visitorView === "home") {
+      visitorView = "watch";
+      activeVisitorTab = "watch";
+    } else if (!isAdmin && !streamLive && visitorView === "watch" && !forceVideo) {
+      visitorView = "home";
+      activeVisitorTab = "home";
+      ofView = "choose";
+      $("ofChoose").hidden = false;
+      $("ofGame").hidden = true;
+      $("of2048").hidden = true;
+      $("ofVideos").hidden = true;
+    }
     applyLive();
   }, () => applyLive());
   $("liveToggle").addEventListener("change", (e) => {
@@ -1525,7 +1599,12 @@
       flash("Couldn't change the stream setting.");
     });
   });
-  document.querySelectorAll(".of-live").forEach((b) => b.addEventListener("click", () => { forceVideo = true; applyLive(); track("live/show", "Opened live video while offline"); }));
+  document.querySelectorAll(".of-live").forEach((b) => b.addEventListener("click", () => {
+    forceVideo = true;
+    if (!isAdmin) { visitorView = "watch"; activeVisitorTab = "watch"; }
+    applyLive();
+    track("live/show", "Opened live video while offline");
+  }));
 
   // ----- Sudoku engine -----
   const SD_CLUES = { easy: 42, medium: 33, hard: 27 };
