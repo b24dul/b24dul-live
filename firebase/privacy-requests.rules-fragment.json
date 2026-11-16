@@ -1,0 +1,24 @@
+{
+  "privacyRequests": {
+    ".read": "auth != null && auth.token.email === 'b24dul@gmail.com' && auth.token.email_verified === true",
+    "$requestId": {
+      ".write": "auth != null && auth.token.email === 'b24dul@gmail.com' && auth.token.email_verified === true && newData.exists()",
+      ".validate": "newData.hasChildren(['uid', 'status', 'createdAt', 'updatedAt'])",
+      "uid": {
+        ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9:_-]{6,128}$/) && (!data.exists() || newData.val() === data.val())"
+      },
+      "status": {
+        ".validate": "newData.isString() && (newData.val() === 'pending' || newData.val() === 'processing' || newData.val() === 'completed') && (data.exists() || newData.val() === 'pending')"
+      },
+      "createdAt": {
+        ".validate": "newData.isNumber() && (data.exists() ? newData.val() === data.val() : newData.val() === now)"
+      },
+      "updatedAt": {
+        ".validate": "newData.isNumber() && newData.val() === now"
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
+  }
+}
