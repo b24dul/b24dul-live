@@ -488,6 +488,76 @@
     .adm-card-head { padding: 12px; }
   }
 
+  /* Visitor-only experience: keep the verified administration workspace untouched. */
+  #visitorNav, .visitor-content-head, .visitor-offline-intro, .visitor-card-cta, .visitor-composer-info { display:none; }
+  body:not(.admin) #visitorNav { display:flex; align-items:center; gap:5px; padding:9px max(18px, calc((100vw - 1480px)/2)); background:#14161b; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; flex:none; }
+  body:not(.admin) #visitorNav::-webkit-scrollbar { display:none; }
+  #visitorNav button { border:0; background:transparent; color:var(--muted); padding:9px 14px; border-radius:8px; white-space:nowrap; font-size:13px; }
+  #visitorNav button.active { color:var(--plate-text); background:var(--plate); }
+  #visitorNav button:hover:not(.active) { color:var(--text); background:var(--panel-2); }
+  #visitorNav button:focus-visible, .of-card:focus-visible { outline:2px solid var(--plate); outline-offset:2px; }
+  .visitor-nav-spacer { flex:1; min-width:8px; }
+  .visitor-nav-status { color:var(--muted); font-size:11px; white-space:nowrap; padding-right:6px; }
+  body:not(.admin) main { display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,360px); gap:16px; max-width:1540px; width:100%; margin:0 auto; padding:18px; overflow:auto; align-items:start; min-height:0; }
+  body:not(.admin) .player { display:flex; flex-direction:column; align-items:stretch; min-width:0; padding:0; gap:14px; }
+  body:not(.admin) .visitor-content-head { display:flex; gap:14px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
+  .visitor-content-head h1 { font-size:clamp(21px,2.4vw,30px); margin:3px 0 7px; letter-spacing:-.6px; line-height:1.2; }
+  .visitor-content-head p { color:var(--muted); margin:0; font-size:13px; line-height:1.5; max-width:620px; }
+  .visitor-eyebrow { color:var(--plate); font-size:10px; letter-spacing:1.6px; font-weight:800; }
+  .visitor-yt-link { color:var(--text); border:1px solid var(--line); background:var(--panel); border-radius:8px; text-decoration:none; padding:9px 12px; font-size:12px; white-space:nowrap; }
+  body:not(.admin) #playerFrame { max-width:none; width:100%; border-radius:13px; background:#000; border:1px solid var(--line); }
+  body:not(.admin) #playerFrame.offline { aspect-ratio:auto; min-height:0; background:transparent; border:0; overflow:visible; }
+  body:not(.admin) #offline { width:100%; min-height:0; padding:0; }
+  body:not(.admin) .visitor-offline-intro { display:block; margin:0 0 16px; padding:21px 23px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(125deg,#28230e 0%,#1b1d22 65%); }
+  .visitor-kicker { font-size:10px; color:var(--plate); font-weight:800; letter-spacing:1.4px; }
+  .visitor-offline-intro h2 { font-size:clamp(19px,2.2vw,27px); margin:8px 0 7px; }
+  .visitor-offline-intro p { color:#bec2cb; font-size:13px; line-height:1.55; max-width:680px; margin:0; }
+  body:not(.admin) .of-choices { max-width:none; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; margin:0; }
+  body:not(.admin) .of-card { align-items:flex-start; text-align:left; padding:19px; gap:9px; background:var(--panel); min-height:215px; }
+  body:not(.admin) .of-card .of-icon { font-size:31px; }
+  body:not(.admin) .of-card .of-head { font-size:18px; }
+  body:not(.admin) .of-card .of-sub { line-height:1.5; flex:1; font-size:12px; }
+  body:not(.admin) .visitor-card-cta { display:flex; justify-content:space-between; gap:10px; width:100%; border-top:1px solid var(--line); padding-top:11px; font-size:12px; font-weight:800; color:var(--plate); }
+  body:not(.admin) #ofGame, body:not(.admin) #of2048, body:not(.admin) #ofVideos { padding:18px; background:var(--panel); border:1px solid var(--line); border-radius:12px; min-height:350px; }
+  body:not(.admin) .sd-wrap, body:not(.admin) .g2-wrap { justify-content:center; }
+  body:not(.admin) .chat { border:1px solid var(--line); border-radius:12px; overflow:hidden; min-height:0; height:min(750px,calc(100vh - 172px)); position:sticky; top:0; }
+  body:not(.admin) .chat-head { background:var(--panel-2); }
+  .visitor-chat-heading { display:flex; flex-direction:column; gap:3px; }
+  .visitor-chat-heading small { font-size:10px; color:var(--muted); font-weight:400; }
+  body:not(.admin) #messages { padding:12px; }
+  body:not(.admin) #messages li { padding:8px 2px; border-bottom:1px solid #252831; }
+  body:not(.admin) .composer { padding:12px; background:#191c22; }
+  body:not(.admin) .visitor-composer-info { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:11px; margin-bottom:9px; }
+  .visitor-composer-dot { width:7px; height:7px; background:var(--ok); border-radius:50%; flex:none; }
+  body:not(.admin) .composer input { font-size:13px; }
+  body:not(.admin) .composer button { padding:9px 12px; }
+  @media (max-width: 1060px) {
+    body:not(.admin) main { grid-template-columns:minmax(0,1fr) 305px; gap:12px; padding:12px; }
+    body:not(.admin) .of-choices { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    body:not(.admin) .of-card:last-child { grid-column:1/-1; min-height:150px; }
+  }
+  @media (max-width: 760px) {
+    body:not(.admin) #visitorNav { padding:8px 10px; position:sticky; top:0; z-index:12; }
+    #visitorNav button { font-size:12px; padding:8px 11px; }
+    .visitor-nav-spacer, .visitor-nav-status { display:none; }
+    body:not(.admin) main { display:flex; flex-direction:column; align-items:stretch; gap:14px; padding:12px; overflow:visible; }
+    body:not(.admin) .player { gap:12px; width:100%; }
+    body:not(.admin) .visitor-content-head h1 { font-size:23px; }
+    body:not(.admin) .visitor-yt-link { display:none; }
+    body:not(.admin) .chat { width:100%; height:470px; position:static; }
+    body:not(.admin) .of-choices { grid-template-columns:1fr; gap:10px; }
+    body:not(.admin) .of-card, body:not(.admin) .of-card:last-child { grid-column:auto; min-height:140px; padding:16px; }
+    body:not(.admin) .of-card .of-icon { font-size:27px; }
+    body:not(.admin) .visitor-offline-intro { padding:17px; }
+    body:not(.admin) #ofGame, body:not(.admin) #of2048, body:not(.admin) #ofVideos { padding:11px; }
+    body:not(.admin) .sd-board { width:min(100%,88vw); }
+    body:not(.admin) .g2-board { width:min(100%,88vw); }
+  }
+  @media (max-width: 390px) {
+    body:not(.admin) #visitorNav { gap:1px; }
+    #visitorNav button { padding:8px 7px; }
+  }
+
   @media (max-width: 900px) {
     .sd-side { width: min(440px, 88vw); }
     main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
@@ -530,6 +600,15 @@
   <span class="spacer"></span>
   <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
 </header>
+<nav id="visitorNav" aria-label="Explore B24DUL Live">
+  <button type="button" data-visitor-view="home" class="active" aria-current="page">Home</button>
+  <button type="button" data-visitor-view="watch">Live stream</button>
+  <button type="button" data-visitor-view="games">Games</button>
+  <button type="button" data-visitor-view="videos">Videos</button>
+  <button type="button" data-visitor-view="chat">Chat</button>
+  <span class="visitor-nav-spacer"></span>
+  <span id="visitorNavStatus" class="visitor-nav-status">Connecting…</span>
+</nav>
 
 <main>
   <div id="adminWorkspace" aria-label="Administrator management dashboard">
@@ -569,7 +648,14 @@
       </div>
     </div>
   </div>
-  <section class="player">
+  <section class="player" id="visitorContent" aria-label="Stream and activities">
+    <div class="visitor-content-head">
+      <div><div class="visitor-eyebrow" id="visitorEyebrow">B24DUL COMMUNITY</div>
+        <h1 id="visitorHeading">Welcome to B24DUL Live</h1>
+        <p id="visitorSubtitle">Watch the stream, join the conversation and compete with the community.</p>
+      </div>
+      <a class="visitor-yt-link" href="https://www.youtube.com/@B24DUL" target="_blank" rel="noopener noreferrer">Visit YouTube ↗</a>
+    </div>
     <div class="frame" id="playerFrame">
       <!-- Shows whatever B24DUL is streaming when the host marks the stream as live -->
       <iframe id="ytFrame" hidden
@@ -578,22 +664,29 @@
         allowfullscreen></iframe>
       <div id="offline" hidden>
         <div id="ofChoose">
-          <div class="sd-msg">The stream is offline right now. What do you fancy while you wait? <span class="heart">❤</span></div>
+          <div class="visitor-offline-intro">
+            <span class="visitor-kicker">THE COMMUNITY HUB</span>
+            <h2>There's always something to play.</h2>
+            <p>The broadcast might be offline, but the community doesn't have to be. Pick a game, chase the leaderboard or catch up on videos.</p>
+          </div>
           <div class="of-choices">
             <button class="of-card" id="ofPickGame">
               <span class="of-icon">🧩</span>
-              <span class="of-head">Play Sudoku</span>
-              <span class="of-sub">Beat the leaderboard times</span>
+              <span class="of-head">Sudoku</span>
+              <span class="of-sub">Choose a difficulty, solve puzzles and beat the best times.</span>
+              <span class="visitor-card-cta">Play Sudoku <span aria-hidden="true">↗</span></span>
             </button>
             <button class="of-card" id="ofPick2048">
               <span class="of-icon">🔢</span>
-              <span class="of-head">Play 2048</span>
-              <span class="of-sub">Slide, merge, chase the high score</span>
+              <span class="of-head">2048</span>
+              <span class="of-sub">Merge tiles, climb the rankings and beat your high score.</span>
+              <span class="visitor-card-cta">Play 2048 <span aria-hidden="true">↗</span></span>
             </button>
             <button class="of-card" id="ofPickVideo">
               <span class="of-icon">▶</span>
-              <span class="of-head">Watch an old video</span>
-              <span class="of-sub">Past streams and uploads from B24DUL</span>
+              <span class="of-head">Past videos</span>
+              <span class="of-sub">Watch earlier streams and uploads from the channel.</span>
+              <span class="visitor-card-cta">Browse videos <span aria-hidden="true">↗</span></span>
             </button>
           </div>
           <div class="sd-watch">Stream started? <button class="of-live">Show live video</button></div>
@@ -661,7 +754,7 @@
 
   <aside class="chat">
     <div class="chat-head">
-      Chat
+      <div class="visitor-chat-heading"><strong>Community chat</strong><small>Keep it friendly and anonymous</small></div>
       <span class="spacer"></span>
       <button id="adminBtn" hidden>Admin sign in</button>
     </div>
@@ -685,6 +778,7 @@
     <ul id="messages"><li class="empty">Loading chat...</li></ul>
     <div id="userPanel"></div>
     <div class="composer">
+      <div class="visitor-composer-info"><span class="visitor-composer-dot" aria-hidden="true"></span><span id="visitorChatIdentity">Your anonymous nickname is shown in chat</span></div>
       <form id="sendForm">
         <input id="msgInput" maxlength="200" placeholder="Say something..." autocomplete="off" required>
         <button class="primary" id="sendBtn" type="submit">Send</button>
