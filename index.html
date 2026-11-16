@@ -364,7 +364,7 @@
   <div class="card">
     <span class="plate">B24DUL</span>
     <h2>Welcome to the stream</h2>
-    <p>Enter your name to join. Other viewers will only see a random nickname, never your real name.</p>
+    <p>Enter your name to join. Only the site administrator can see your real name; other viewers see a random nickname.</p>
     <p><b>Chat rule:</b> keep it anonymous. Don't ask anyone for their name, age, gender, location or socials, and don't share your own.</p>
     <form id="gateForm">
       <input id="gateName" maxlength="40" placeholder="Your name" autocomplete="off" required>
@@ -836,6 +836,8 @@
     try {
       const base = `viewers/${visitorUid}`;
       const first = await get(ref(db, `${base}/firstSeen`)).catch(() => null);
+      // A sign-in change while the profile loads must not write the old name to the old account.
+      if (me?.uid !== visitorUid || authEpoch !== visitorEpoch || isAdmin) return;
       const updates = { [`${base}/realName`]: real };
       if (!first || !first.exists()) updates[`${base}/firstSeen`] = serverTimestamp();
       await update(ref(db), updates);
