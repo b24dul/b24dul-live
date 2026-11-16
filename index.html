@@ -372,6 +372,17 @@
   .cm-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 16px 0; }
   .cm-toolbar select, .privacy-queue-head select { padding:7px 9px; border:1px solid var(--line); background:var(--panel-2); border-radius:8px; color:var(--text); }
   .cm-pages { display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:12px; color:var(--muted); }
+  .cm-metrics summary { cursor:pointer; color:var(--muted); font-size:12px; margin-bottom:10px; }
+  .cm-metrics .cards { margin-top:10px; }
+  #viewersBox .cm-key-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+  #viewersBox .cm-key-stats .card { padding:10px; }
+  #viewersBox .cm-visitor-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  #viewersBox .cm-visitor-list .vcard { margin:0; min-width:0; }
+  #viewersBox .vtop .real { overflow-wrap:anywhere; min-width:0; }
+  @media (max-width:750px) {
+    #viewersBox .cm-key-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #viewersBox .cm-visitor-list { grid-template-columns:1fr; }
+  }
   .cm-pages button { padding:6px 12px; }
   .privacy-queue-head { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin:12px 0; }
   #privacyHistoryList .privacy-item { padding:12px; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; }
@@ -1988,7 +1999,7 @@
       filter === "all" || (filter === "completed"
         ? record.status === "completed" : record.status !== "completed"));
     if (!rows.length) {
-      box.append(el("p", "small", "No requests logged yet."));
+      box.append(el("p", "small", allRows.length ? "No requests in this view." : "No requests logged yet."));
       return;
     }
     rows.forEach(([id, record]) => {
@@ -2210,7 +2221,16 @@
       card(sumAct("videoPlays"), "Old videos played"),
       card(ids.filter((id) => (viewers[id].lastSeen || 0) > Date.now() - 7 * 86400000).length, "Active last 7 days")
     );
-    vbox.append(cards);
+    const overview = el("div", "cm-key-stats");
+    overview.append(card(ids.length, "Visitor profiles"),
+      card(onlineCount, "Online now"),
+      card(returning, "Returning"),
+      card(Object.values(privacyRequests).filter((r) => r && r.status !== "completed").length, "Open privacy requests"));
+    vbox.append(overview);
+    const extra = el("details", "cm-metrics");
+    extra.append(el("summary", "", "Show detailed analytics"));
+    extra.append(cards);
+    vbox.append(extra);
 
     // Viewer table
     const q = $("statsSearch").value.trim().toLowerCase();
@@ -2233,6 +2253,7 @@
     const pageCount = Math.max(1, Math.ceil(shown.length / VIEWER_PAGE_SIZE));
     viewerPage = Math.min(viewerPage, pageCount - 1);
     const pageRows = shown.slice(viewerPage * VIEWER_PAGE_SIZE, (viewerPage + 1) * VIEWER_PAGE_SIZE);
+    const visitorList = el("div", "cm-visitor-list");
     for (const id of pageRows) {
       const v = viewers[id];
       const box = el("div", "vcard");
@@ -2286,8 +2307,9 @@
       more.append(kv2);
 
       box.append(top, kv, more);
-      vbox.append(box);
+      visitorList.append(box);
     }
+    vbox.append(visitorList);
     const pager = el("div", "cm-pages");
     const back = el("button", "", "Previous");
     back.disabled = viewerPage === 0;
