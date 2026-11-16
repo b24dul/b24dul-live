@@ -443,6 +443,51 @@
   body.admin .adm-preview-wrap #offline { display: none !important; }
   .adm-offline-label { display: none; font-size: 12px; color: var(--muted); padding: 0 12px 12px; }
   body.admin .adm-preview-wrap .frame.offline + .adm-offline-label { display: block; }
+  /* Broadcast control centre: visual changes are limited to the verified admin workspace. */
+  body.admin .adm-controls { padding: 20px; }
+  .stream-centre-heading { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; margin-bottom:16px; }
+  .stream-centre-heading h2 { font-size:clamp(19px,2vw,24px); margin:0 0 5px; letter-spacing:-.3px; }
+  .stream-centre-heading p { color:var(--muted); font-size:12px; margin:0; }
+  .stream-centre-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+  .stream-centre-actions a { text-decoration:none; color:var(--text); border:1px solid var(--line); background:var(--panel-2); border-radius:8px; padding:8px 11px; font-weight:600; font-size:12px; }
+  .stream-centre-actions a:hover { border-color:var(--plate); }
+  .stream-overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-bottom:16px; }
+  .stream-overview > div { background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:12px; min-width:0; }
+  .stream-overview span { display:block; font-size:11px; color:var(--muted); margin-bottom:5px; }
+  .stream-overview strong { display:block; font-size:13px; overflow-wrap:anywhere; }
+  .stream-overview strong.state-live { color:var(--ok); }
+  .stream-overview strong.state-off { color:#ffb4b4; }
+  body.admin #adminBar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; background:none; border:0; padding:0; }
+  body.admin #adminBar > .sc-panel { background:#15171c; border:1px solid var(--line); border-radius:11px; padding:16px; min-width:0; }
+  .sc-panel-heading { display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; }
+  .sc-panel-icon { background:#302a0d; color:var(--plate); border-radius:9px; min-width:31px; height:31px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .sc-panel-heading h3 { font-size:14px; margin:0 0 3px; }
+  .sc-panel-heading p { font-size:11px; color:var(--muted); margin:0; line-height:1.45; }
+  .sc-toggle { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:13px; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; cursor:pointer; }
+  .sc-toggle-copy { display:flex; flex-direction:column; gap:4px; }
+  .sc-toggle-copy strong { font-size:13px; }
+  .sc-toggle-copy small { font-size:11px; color:var(--muted); }
+  body.admin #adminBar .sc-toggle input { width:22px; height:22px; padding:0; margin:0; flex:none; accent-color:var(--plate); }
+  .sc-hint, .sc-current { margin:10px 0 0; color:var(--muted); font-size:11px; line-height:1.5; }
+  .sc-current strong { color:var(--text); font-weight:600; overflow-wrap:anywhere; }
+  .sc-form { display:grid; gap:8px; }
+  .sc-form label { color:var(--muted); font-size:11px; font-weight:700; }
+  body.admin #adminBar .sc-form input { width:100%; min-width:0; }
+  .sc-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+  .sc-buttons button { flex:1 1 auto; }
+  .sc-operations { margin-top:12px; }
+  .sc-footer { grid-column:1/-1; display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:10px 4px 0; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+  .sc-footer button { margin-left:auto; }
+  .stream-feedback { font-size:12px; color:var(--plate); margin:12px 0 0; min-height:16px; }
+  @media (max-width:1100px) {
+    .stream-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:700px) {
+    body.admin #adminBar { grid-template-columns:1fr; }
+    body.admin #adminBar > .sc-panel, body.admin #adminBar > .sc-footer { grid-column:1; }
+    body.admin .adm-controls { padding:13px; }
+  }
+
   @media (max-width: 1100px) {
     .adm-grid { grid-template-columns: minmax(0, 1fr); }
     .adm-rail { grid-template-columns: 1fr 1fr; }
@@ -512,8 +557,25 @@
       <div class="adm-quick"><span class="adm-pill"><strong>ADMIN</strong> · Verified access</span><span class="adm-pill">Live site controls</span></div>
     </div>
     <section class="adm-controls" aria-label="Stream and chat controls">
-      <h2 class="adm-section-title">Control centre <small>Stream settings and moderation shortcuts</small></h2>
+      <div class="stream-centre-heading">
+        <div>
+          <div class="adm-overline">Broadcast operations</div>
+          <h2>Stream Control Centre</h2>
+          <p>Set what viewers see, manage announcements and prepare your next stream.</p>
+        </div>
+        <div class="stream-centre-actions">
+          <a href="https://b24dul.github.io/b24dul-live/" target="_blank" rel="noopener noreferrer">Open visitor page ↗</a>
+          <a href="https://www.youtube.com/@B24DUL" target="_blank" rel="noopener noreferrer">YouTube channel ↗</a>
+        </div>
+      </div>
+      <div class="stream-overview" aria-label="Current published settings" aria-live="polite">
+        <div><span>Broadcast</span><strong id="streamStatusSummary">Checking…</strong></div>
+        <div><span>Visitor chat</span><strong id="chatStatusSummary">Checking…</strong></div>
+        <div><span>Next scheduled stream</span><strong id="nextStatusSummary">Not scheduled</strong></div>
+        <div><span>Chat announcement</span><strong id="pinStatusSummary">None pinned</strong></div>
+      </div>
       <div id="adminControlsSlot"></div>
+      <p id="streamControlFeedback" class="stream-feedback" role="status" aria-live="polite"></p>
     </section>
     <div class="adm-grid">
       <section class="adm-work adm-card" aria-label="Viewer management">
@@ -631,30 +693,44 @@
       <button id="adminBtn" hidden>Admin sign in</button>
     </div>
     <div id="adminBar">
-      <div class="arow">
-        <span class="atag">ADMIN</span>
-        <span class="spacer"></span>
-        <button id="signOutBtn">Sign out</button>
-      </div>
-      <div class="arow toggles">
-        <label class="toggle" id="chatToggleLabel"><input type="checkbox" id="chatToggle" checked> <span id="chatToggleText">Chat on</span></label>
-        <label class="toggle" id="liveToggleLabel"><input type="checkbox" id="liveToggle"> <span id="liveToggleText">Stream offline</span></label>
-      </div>
-      <div class="agrid">
-        <button id="viewersBtn">Viewers</button>
-        <button id="clearBtn">Clear chat</button>
-      </div>
-      <form class="arow" id="pinForm">
-        <input id="pinInput" maxlength="200" placeholder="Pinned message for everyone" autocomplete="off">
-        <button type="submit">Pin</button>
-        <button type="button" id="unpinBtn">Unpin</button>
-      </form>
-      <form class="arow" id="nextForm">
-        <span>Next stream</span>
-        <input type="datetime-local" id="nextInput">
-        <button type="submit">Set</button>
-        <button type="button" id="nextClear">Clear</button>
-      </form>
+      <section class="sc-panel sc-broadcast" aria-label="Broadcast status">
+        <div class="sc-panel-heading"><span class="sc-panel-icon">●</span><div><h3>Broadcast status</h3><p>Control whether visitors see your live stream.</p></div></div>
+        <label class="sc-toggle" id="liveToggleLabel">
+          <span class="sc-toggle-copy"><strong id="liveToggleText">Stream offline</strong><small id="liveToggleHint">Current status</small></span>
+          <input type="checkbox" id="liveToggle" role="switch" aria-label="Mark broadcast live">
+        </label>
+        <p class="sc-hint">This sets the website status. It does not start or stop your actual YouTube broadcast.</p>
+      </section>
+      <section class="sc-panel sc-schedule" aria-label="Next stream schedule">
+        <div class="sc-panel-heading"><span class="sc-panel-icon">◷</span><div><h3>Next stream</h3><p>Show a scheduled start time to your visitors.</p></div></div>
+        <form class="sc-form" id="nextForm">
+          <label for="nextInput">Scheduled date and time</label>
+          <input type="datetime-local" id="nextInput">
+          <div class="sc-buttons"><button type="submit" class="primary">Save schedule</button><button type="button" id="nextClear">Clear schedule</button></div>
+        </form>
+        <p class="sc-current">Published: <strong id="nextPublished">No upcoming stream</strong></p>
+      </section>
+      <section class="sc-panel sc-announcement" aria-label="Pinned chat announcement">
+        <div class="sc-panel-heading"><span class="sc-panel-icon">✦</span><div><h3>Pinned announcement</h3><p>Show an important message above visitor chat.</p></div></div>
+        <form class="sc-form" id="pinForm">
+          <label for="pinInput">Message for viewers</label>
+          <input id="pinInput" maxlength="200" placeholder="Write a short announcement…" autocomplete="off">
+          <div class="sc-buttons"><button type="submit" class="primary">Publish announcement</button><button type="button" id="unpinBtn">Remove pin</button></div>
+        </form>
+        <p class="sc-current">Currently pinned: <strong id="pinPublished">Nothing pinned</strong></p>
+      </section>
+      <section class="sc-panel sc-moderation" aria-label="Chat and moderation controls">
+        <div class="sc-panel-heading"><span class="sc-panel-icon">☰</span><div><h3>Chat &amp; moderation</h3><p>Manage conversation access and respond to messages.</p></div></div>
+        <label class="sc-toggle" id="chatToggleLabel">
+          <span class="sc-toggle-copy"><strong id="chatToggleText">Chat on</strong><small>Allow visitors to send messages</small></span>
+          <input type="checkbox" id="chatToggle" role="switch" aria-label="Enable visitor chat" checked>
+        </label>
+        <div class="sc-buttons sc-operations">
+          <button id="viewersBtn" type="button">Manage viewers</button>
+          <button id="clearBtn" type="button" class="danger">Clear all chat</button>
+        </div>
+      </section>
+      <div class="sc-footer"><span class="atag">VERIFIED ADMIN</span><span>Changes to stream settings are saved to Firebase.</span><button id="signOutBtn" type="button">Sign out</button></div>
     </div>
     <div id="pinned" hidden><span class="pin-tag">PINNED</span><span id="pinnedText"></span></div>
     <ul id="messages"><li class="empty">Loading chat...</li></ul>
@@ -1189,6 +1265,9 @@
     $("chatToggle").checked = chatOn;
     $("chatToggleText").textContent = chatOn ? "Chat on" : "Chat off for viewers";
     $("chatToggleLabel").classList.toggle("off", !chatOn);
+    $("chatStatusSummary").textContent = chatOn ? "Enabled" : "Disabled for viewers";
+    $("chatStatusSummary").classList.toggle("state-live", chatOn);
+    $("chatStatusSummary").classList.toggle("state-off", !chatOn);
     updateComposer();
   }, () => {});
   $("chatToggle").addEventListener("change", (e) => {
@@ -1237,6 +1316,10 @@
     $("liveToggle").checked = streamLive;
     $("liveToggleText").textContent = streamLive ? "Stream live" : "Stream offline";
     $("liveToggleLabel").classList.toggle("off", !streamLive);
+    $("streamStatusSummary").textContent = streamLive ? "Live" : "Offline";
+    $("streamStatusSummary").classList.toggle("state-live", streamLive);
+    $("streamStatusSummary").classList.toggle("state-off", !streamLive);
+    $("liveToggleHint").textContent = streamLive ? "Viewers see the YouTube stream" : "Viewers see offline activities";
     if (showVideo) stopOldVideo();
     else if (ofView === "game") sdEnsureGame();
   }
@@ -1326,9 +1409,16 @@
   function drawNext() {
     const left = nextStream - Date.now();
     // Hide once it's more than 3 hours past, in case the host forgets to clear it
-    if (!nextStream || left < -3 * 3600 * 1000) { $("nextUp").hidden = true; return; }
+    if (!nextStream || left < -3 * 3600 * 1000) {
+      $("nextUp").hidden = true;
+      $("nextStatusSummary").textContent = "Not scheduled";
+      $("nextPublished").textContent = "No upcoming stream";
+      return;
+    }
     $("nextUp").hidden = false;
     $("nextWhen").textContent = new Date(nextStream).toLocaleString("en-GB", { weekday: "long", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    $("nextStatusSummary").textContent = new Date(nextStream).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    $("nextPublished").textContent = $("nextWhen").textContent;
     if (left <= 0) { $("nextCd").textContent = "· starting soon"; return; }
     const s = Math.floor(left / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
     $("nextCd").textContent = d ? `· in ${d}d ${h}h ${pad2(m)}m` : `· in ${h}:${pad2(m)}:${pad2(s % 60)}`;
@@ -1357,6 +1447,8 @@
     const t = typeof snap.val() === "string" ? snap.val().trim() : "";
     $("pinned").hidden = !t;
     $("pinnedText").textContent = t;
+    $("pinStatusSummary").textContent = t ? "Published" : "None pinned";
+    $("pinPublished").textContent = t || "Nothing pinned";
     if (document.activeElement !== $("pinInput")) $("pinInput").value = t;
   }, () => {});
   $("pinForm").addEventListener("submit", (e) => {
