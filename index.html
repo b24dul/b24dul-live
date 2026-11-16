@@ -369,6 +369,14 @@
   #privacyHistoryList .privacy-item { border-top: 1px solid var(--line); padding-top: 8px; overflow-wrap: anywhere; }
   #privacyHistoryList .privacy-actions { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
   #privacyHistoryList button { font-size: 12px; }
+  .cm-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px 16px 0; }
+  .cm-toolbar select, .privacy-queue-head select { padding:7px 9px; border:1px solid var(--line); background:var(--panel-2); border-radius:8px; color:var(--text); }
+  .cm-pages { display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:12px; color:var(--muted); }
+  .cm-pages button { padding:6px 12px; }
+  .privacy-queue-head { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin:12px 0; }
+  #privacyHistoryList .privacy-item { padding:12px; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; }
+  #privacyHistoryList .privacy-actions button.primary { background:var(--plate); border-color:var(--plate); color:var(--plate-text); }
+  .privacy-state { font-size:11px; font-weight:800; color:var(--plate); margin-bottom:6px; }
 
 
   /* Management-first workspace, used only by the verified administrator. */
@@ -676,15 +684,26 @@
       <button id="statsViewersTab" class="active" type="button" aria-pressed="true">Viewers</button>
       <button id="statsPrivacyTab" type="button" aria-pressed="false">Privacy requests</button>
     </div>
-    <input id="statsSearch" placeholder="Search names" autocomplete="off">
+    <input id="statsSearch" placeholder="Search name, nickname or visitor ID" autocomplete="off">
+    <div id="viewersFilters" class="cm-toolbar">
+      <label class="small">Filter <select id="viewerFilter" aria-label="Filter visitors">
+        <option value="all">All visitors</option><option value="online">Online</option>
+        <option value="recent">Last 7 days</option><option value="banned">Banned</option>
+      </select></label><span id="viewerResultCount" class="small"></span>
+    </div>
     <section id="privacyHistory" aria-label="Privacy request history" hidden>
       <h4>Privacy request history</h4>
-      <p class="small">Log requests received by email, and track their progress. Nothing is deleted automatically.</p>
+      <p class="small">Log requests received by email. Complete a request when the private profile has been removed. Public chat, scores and sign-in accounts are separate.</p>
       <form id="privacyLogForm">
         <input id="privacyLogUid" placeholder="Visitor account ID" maxlength="128" autocomplete="off" aria-label="Visitor account ID" required>
         <button type="submit">Log request</button>
       </form>
       <p id="privacyLogFeedback" class="small" aria-live="polite"></p>
+      <div class="privacy-queue-head"><strong id="privacyQueueCount">Active requests</strong>
+        <label class="small">Show <select id="privacyQueueFilter" aria-label="Filter privacy requests">
+          <option value="active">Active requests</option><option value="completed">Completed history</option><option value="all">All requests</option>
+        </select></label>
+      </div>
       <div id="privacyHistoryList"><p class="small">Sign in as administrator to load requests.</p></div>
     </section>
     <div id="viewersBox"></div>
@@ -2021,6 +2040,7 @@
     const privacy = statsSection === "privacy";
     $("privacyHistory").hidden = !privacy;
     $("statsSearch").hidden = privacy;
+    $("viewersFilters").hidden = privacy;
     $("viewersBox").hidden = privacy;
     $("statsPrivacyTab").classList.toggle("active", privacy);
     $("statsViewersTab").classList.toggle("active", !privacy);
@@ -2089,7 +2109,11 @@
   });
   $("statsClose").addEventListener("click", closeStats);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && statsOpen()) closeStats(); });
-  $("statsSearch").addEventListener("input", () => renderViewers());
+  let viewerPage = 0;
+  const VIEWER_PAGE_SIZE = 10;
+  $("statsSearch").addEventListener("input", () => { viewerPage = 0; renderViewers(); });
+  $("viewerFilter").addEventListener("change", () => { viewerPage = 0; renderViewers(); });
+  $("privacyQueueFilter").addEventListener("change", renderPrivacyHistory);
   setInterval(() => { if (isAdmin && statsOpen()) renderViewers(); }, 30000);
 
   function renderViewers() {
@@ -2133,18 +2157,26 @@
 
     // Viewer table
     const q = $("statsSearch").value.trim().toLowerCase();
+    const filter = $("viewerFilter").value;
     const shown = ids.filter((id) => {
-      if (!q) return true;
       const v = viewers[id];
-      return [id, v.realName, v.anonName, names[id]].some((s) => (s || "").toLowerCase().includes(q));
+      if (filter === "online" && !online[id]) return false;
+      if (filter === "recent" && (!v.lastSeen || v.lastSeen < Date.now() - 7 * 86400000)) return false;
+      if (filter === "banned" && !bans[id]) return false;
+      return !q || [id, v.realName, v.anonName, names[id]].some((s) =>
+        (s || "").toLowerCase().includes(q));
     });
+    $("viewerResultCount").textContent = shown.length + " matching / " + ids.length + " total";
     if (!shown.length) {
       vbox.append(el("div", "empty", ids.length ? "No viewers match that search." : "No viewers yet."));
       return;
     }
     shown.sort((a, b) => (online[b] ? 1 : 0) - (online[a] ? 1 : 0) || (viewers[b].lastSeen || 0) - (viewers[a].lastSeen || 0));
 
-    for (const id of shown) {
+    const pageCount = Math.max(1, Math.ceil(shown.length / VIEWER_PAGE_SIZE));
+    viewerPage = Math.min(viewerPage, pageCount - 1);
+    const pageRows = shown.slice(viewerPage * VIEWER_PAGE_SIZE, (viewerPage + 1) * VIEWER_PAGE_SIZE);
+    for (const id of pageRows) {
       const v = viewers[id];
       const box = el("div", "vcard");
 
@@ -2199,6 +2231,15 @@
       box.append(top, kv, more);
       vbox.append(box);
     }
+    const pager = el("div", "cm-pages");
+    const back = el("button", "", "Previous");
+    back.disabled = viewerPage === 0;
+    back.onclick = () => { viewerPage--; renderViewers(); };
+    const next = el("button", "", "Next");
+    next.disabled = viewerPage >= pageCount - 1;
+    next.onclick = () => { viewerPage++; renderViewers(); };
+    pager.append(back, el("span", "", "Page " + (viewerPage + 1) + " of " + pageCount), next);
+    vbox.append(pager);
     vbox.scrollTop = keepScroll;
   }
 
