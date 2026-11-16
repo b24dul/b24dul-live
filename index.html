@@ -348,6 +348,15 @@
   #gate .track b { color: var(--text); font-size: 13px; }
   #gate .track p { margin: 6px 0; font-size: 12px; }
   #gate .track ul { margin: 6px 0; padding-left: 18px; line-height: 1.5; }
+  .privacy-request { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  .privacy-request button { font-size: 12px; }
+  #privacyDialog { max-width: min(440px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: 12px; padding: 20px; background: var(--panel); color: var(--text); }
+  #privacyDialog::backdrop { background: rgba(0, 0, 0, .75); }
+  #privacyDialog p { line-height: 1.5; }
+  #privacyDialog code { overflow-wrap: anywhere; }
+  #privacyDialog .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  #privacyDialog .actions a { color: var(--plate); }
+
 
   @media (max-width: 900px) {
     .sd-side { width: min(440px, 88vw); }
@@ -381,7 +390,7 @@
 
       </ul>
       <p>That's it. No adverts, no selling or sharing your info, and no tracking on other websites. This site saves your random chat name and your Sudoku and 2048 progress on your device so they're still there next time. If you make a game leaderboard, only your random chat name is shown. The YouTube video player is run by YouTube, which may use its own cookies.</p>
-      <p>By clicking Enter site you're OK with the above. Want your info removed? Ask B24DUL on stream.</p>
+      <p>By clicking Enter site you're OK with the above. You can <button type="button" class="privacyOpen">request deletion of your visitor information</button> at any time.</p>
     </div>
   </div>
 </div>
@@ -525,9 +534,23 @@
         <button class="primary" id="sendBtn" type="submit">Send</button>
       </form>
       <p id="note"></p>
+      <p class="privacy-request"><button type="button" class="privacyOpen">Request data deletion</button></p>
     </div>
   </aside>
 </main>
+
+<dialog id="privacyDialog" aria-labelledby="privacyTitle">
+  <h3 id="privacyTitle">Request deletion of your visitor information</h3>
+  <p>Send the site administrator a request to remove the private visitor data linked to your account. This is a manual request, not an automatic deletion.</p>
+  <p>Account ID: <code id="privacyUid">Connecting…</code></p>
+  <p id="privacyHelp" class="small">Your account ID helps the administrator find the correct record. Public chat messages are handled separately, so chat remains available to everyone.</p>
+  <div class="actions">
+    <a id="privacyEmail" href="#">Open email request</a>
+    <button id="privacyCopy" type="button">Copy request</button>
+    <button id="privacyClose" type="button">Close</button>
+  </div>
+  <p id="privacyFeedback" class="small" aria-live="polite"></p>
+</dialog>
 
 <div id="statsModal" hidden>
   <div class="sm-card">
@@ -588,6 +611,46 @@
   const panel = $("userPanel");
   const vbox = $("viewersBox");
   const note = (text) => { $("note").textContent = text || ""; };
+  // Deletion requests use the visitor's own email app, not the public chat or
+  // unapproved database writes. No deletion occurs unless the owner acts on it.
+  const privacyEmail = "b24dul@gmail.com";
+  let deletionRequest = "";
+  const privacyDialog = $("privacyDialog");
+  function showPrivacyRequest() {
+    const uid = me && !isAdmin ? me.uid : "";
+    $("privacyUid").textContent = uid || "Not connected as a visitor";
+    $("privacyFeedback").textContent = "";
+    const subject = "B24DUL Live - visitor data deletion request";
+    deletionRequest = [
+      "Please review and delete my private B24DUL Live visitor record,",
+      "including my real name, visitor analytics and activity history.",
+      "Please also review any leaderboard entries associated with this ID.",
+      "I understand public chat messages may need separate review.",
+      "",
+      "Visitor Firebase UID: " + (uid || "[insert your visitor ID]"),
+      "",
+      "Please confirm when the request has been handled."
+    ].join("\n");
+    $("privacyEmail").href = "mailto:" + privacyEmail
+      + "?subject=" + encodeURIComponent(subject)
+      + "&body=" + encodeURIComponent(deletionRequest);
+    $("privacyEmail").hidden = !uid;
+    $("privacyCopy").disabled = !uid;
+    $("privacyHelp").textContent = uid
+      ? "The email is not sent until you send it in your email app. The administrator will review your request. Public chat remains available."
+      : "Connect as a visitor first to include the account ID needed to locate your record. No request has been sent.";
+    privacyDialog.showModal();
+  }
+  document.querySelectorAll(".privacyOpen").forEach((button) => button.addEventListener("click", showPrivacyRequest));
+  $("privacyClose").addEventListener("click", () => privacyDialog.close());
+  $("privacyCopy").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(deletionRequest);
+      $("privacyFeedback").textContent = "Request copied. You can paste it into an email to " + privacyEmail + ".";
+    } catch {
+      $("privacyFeedback").textContent = "Copy unavailable. Use the email link instead.";
+    }
+  });
 
   let me = null;
   let isAdmin = false;
