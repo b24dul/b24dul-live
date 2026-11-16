@@ -852,7 +852,8 @@
       signInAnonymously(auth).catch(() => note("Chat could not connect. Refresh the page."));
       return;
     }
-    isAdmin = !user.isAnonymous;
+    // Match the verified administrator identity enforced by Firebase Database Rules.
+    isAdmin = user.email === 'b24dul@gmail.com' && user.emailVerified === true;
     document.body.classList.toggle("admin", isAdmin);
     $("adminBtn").hidden = isAdmin || !adminPage;
     if (!isAdmin) { closePanel(); closeStats(); }
