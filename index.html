@@ -270,6 +270,30 @@
   .sd-ov-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 10px; }
   .sd-ov-btns button { padding: 8px 14px; }
   .sd-spot { outline: 3px solid var(--plate); outline-offset: 3px; border-radius: 6px; position: relative; z-index: 6; }
+  .of-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 760px; margin: 10px auto 18px; }
+  .of-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 34px 18px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--line); text-align: center; transition: border-color .15s, transform .15s; }
+  .of-card:hover, .of-card:focus-visible { border-color: var(--plate); transform: translateY(-2px); outline: none; }
+  .of-icon { font-size: 40px; line-height: 1; color: var(--plate); }
+  .of-head { font-size: 19px; font-weight: 800; }
+  .of-sub { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .of-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .of-bar button { padding: 7px 12px; font-size: 13px; }
+  .of-title { font-weight: 800; font-size: 16px; }
+  .vid-player { aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+  .vid-player iframe { width: 100%; height: 100%; border: 0; }
+  .vid-now { font-weight: 700; margin: 10px 0 16px; font-size: 15px; }
+  .vid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+  .vid-card { display: flex; flex-direction: column; gap: 6px; padding: 0; background: none; border: 0; text-align: left; font-weight: 400; border-radius: 10px; }
+  .vid-card .thumb { position: relative; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #0b0c0f; border: 2px solid transparent; }
+  .vid-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s; }
+  .vid-card .thumb .play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 34px; color: #fff; background: rgba(0,0,0,0.35); opacity: 0; transition: opacity .15s; }
+  .vid-card:hover .thumb img { transform: scale(1.04); }
+  .vid-card:hover .thumb .play, .vid-card:focus-visible .thumb .play { opacity: 1; }
+  .vid-card.on .thumb { border-color: var(--plate); }
+  .vid-card.on .thumb .play { opacity: 1; font-size: 13px; font-weight: 800; letter-spacing: 1px; }
+  .vid-card .vt { font-size: 14px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .vid-card .vd { font-size: 12px; color: var(--muted); }
+  @media (max-width: 600px) { .of-choices { grid-template-columns: 1fr; } .of-card { padding: 22px 16px; } }
   #adminBar .toggles { gap: 14px; }
   #liveToggleLabel.off { color: #c9ccd3; }
   #gate .card { max-width: 440px; max-height: 92vh; overflow-y: auto; }
@@ -328,7 +352,32 @@
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         allowfullscreen></iframe>
       <div id="offline" hidden>
-        <div class="sd-msg">Charge your brain while you wait for the streamer to return <span class="heart">❤</span></div>
+        <div id="ofChoose">
+          <div class="sd-msg">The stream is offline right now. What do you fancy while you wait? <span class="heart">❤</span></div>
+          <div class="of-choices">
+            <button class="of-card" id="ofPickGame">
+              <span class="of-icon">🎮</span>
+              <span class="of-head">Play a game</span>
+              <span class="of-sub">Sudoku, with your progress saved</span>
+            </button>
+            <button class="of-card" id="ofPickVideo">
+              <span class="of-icon">▶</span>
+              <span class="of-head">Watch an old video</span>
+              <span class="of-sub">Past streams and uploads from B24DUL</span>
+            </button>
+          </div>
+          <div class="sd-watch">Stream started? <button class="of-live">Show live video</button></div>
+        </div>
+        <div id="ofVideos" hidden>
+          <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Old videos</span></div>
+          <div class="vid-player" id="vidPlayer" hidden>
+            <iframe id="vidFrame" title="B24DUL video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
+          </div>
+          <div class="vid-now" id="vidNow" hidden></div>
+          <div class="vid-grid" id="vidGrid"><p class="empty">Loading videos…</p></div>
+        </div>
+        <div id="ofGame" hidden>
+        <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Sudoku</span></div>
         <div class="sd-wrap">
           <div class="sd-board" id="sdBoard"></div>
           <div class="sd-side">
@@ -351,8 +400,9 @@
               <button id="sdTutBtn">Tutorial</button>
             </div>
             <button id="sdNew">New game</button>
-            <div class="sd-watch">Stream started? <button id="sdShowVideo">Show video</button></div>
+            <div class="sd-watch">Stream started? <button class="of-live">Show live video</button></div>
           </div>
+        </div>
         </div>
         <div class="sd-overlay" id="sdOverlay" hidden><div class="sd-ov-card" id="sdOvCard"></div></div>
       </div>
@@ -767,8 +817,83 @@
     $("liveToggle").checked = streamLive;
     $("liveToggleText").textContent = streamLive ? "Stream live" : "Stream offline";
     $("liveToggleLabel").classList.toggle("off", !streamLive);
-    if (!showVideo) sdEnsureGame();
+    if (showVideo) stopOldVideo();
+    else if (ofView === "game") sdEnsureGame();
   }
+
+  // ----- Offline chooser: game or old videos -----
+  const UPLOADS = "UUnXAfqk5I7QE3frLhHHyImQ";   // channel uploads playlist (UC -> UU)
+  let ofView = "choose";
+  let videos = null;
+  function showOffline(view) {
+    ofView = view;
+    $("ofChoose").hidden = view !== "choose";
+    $("ofGame").hidden = view !== "game";
+    $("ofVideos").hidden = view !== "videos";
+    sdCloseOverlay();
+    if (view !== "videos") stopOldVideo();
+    if (view === "game") sdEnsureGame();
+    if (view === "videos") loadVideos();
+    $("playerFrame").scrollIntoView({ block: "nearest" });
+  }
+  function stopOldVideo() {
+    const f = $("vidFrame");
+    if (f.getAttribute("src")) f.removeAttribute("src");
+    $("vidPlayer").hidden = true;
+    $("vidNow").hidden = true;
+    document.querySelectorAll(".vid-card.on").forEach((c) => c.classList.remove("on"));
+  }
+  function playOldVideo(v, card) {
+    const src = v
+      ? `https://www.youtube.com/embed/${encodeURIComponent(v.id)}?autoplay=1&rel=0`
+      : `https://www.youtube.com/embed/videoseries?list=${UPLOADS}&rel=0`;
+    $("vidFrame").setAttribute("src", src);
+    $("vidPlayer").hidden = false;
+    $("vidNow").hidden = !v;
+    if (v) $("vidNow").textContent = v.title;
+    document.querySelectorAll(".vid-card.on").forEach((c) => c.classList.remove("on"));
+    if (card) card.classList.add("on");
+    $("vidPlayer").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  async function loadVideos() {
+    if (videos) return;
+    const grid = $("vidGrid");
+    try {
+      const r = await fetch(`videos.json?t=${Date.now()}`, { cache: "no-store" });
+      const data = r.ok ? await r.json() : [];
+      videos = Array.isArray(data) ? data.filter((v) => v && /^[\w-]{11}$/.test(v.id)) : [];
+    } catch { videos = []; }
+    grid.replaceChildren();
+    if (!videos.length) {
+      // No list yet: fall back to YouTube's own playlist of every upload
+      grid.append(el("p", "empty", "Use the list button in the player to pick any video."));
+      playOldVideo(null);
+      return;
+    }
+    for (const v of videos) {
+      const card = el("button", "vid-card");
+      const thumb = el("div", "thumb");
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = "";
+      img.src = `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`;
+      thumb.append(img, el("span", "play", "▶"));
+      card.append(thumb, el("span", "vt", v.title || "Untitled video"));
+      if (v.published) {
+        const d = new Date(v.published);
+        if (!isNaN(d)) card.append(el("span", "vd", d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })));
+      }
+      card.addEventListener("click", () => {
+        playOldVideo(v, card);
+        card.querySelector(".play").textContent = "NOW PLAYING";
+        document.querySelectorAll(".vid-card:not(.on) .play").forEach((p) => { p.textContent = "▶"; });
+      });
+      grid.append(card);
+    }
+  }
+  $("ofPickGame").addEventListener("click", () => showOffline("game"));
+  $("ofPickVideo").addEventListener("click", () => showOffline("videos"));
+  document.querySelectorAll(".of-back").forEach((b) => b.addEventListener("click", () => showOffline("choose")));
   onValue(ref(db, "settings/live"), (snap) => {
     streamLive = snap.val() === true;
     if (streamLive) forceVideo = false;
@@ -781,7 +906,7 @@
       flash("Couldn't change the stream setting.");
     });
   });
-  $("sdShowVideo").addEventListener("click", () => { forceVideo = true; applyLive(); });
+  document.querySelectorAll(".of-live").forEach((b) => b.addEventListener("click", () => { forceVideo = true; applyLive(); }));
 
   // ----- Sudoku engine -----
   const SD_CLUES = { easy: 42, medium: 33, hard: 27 };
@@ -1009,7 +1134,7 @@
   // Timer and play time (only while the game is on screen)
   let playTick = 0;
   setInterval(() => {
-    if (!sd || sd.done || $("offline").hidden || document.hidden) return;
+    if (!sd || sd.done || $("offline").hidden || $("ofGame").hidden || document.hidden) return;
     sd.elapsed++;
     $("sdTimer").textContent = fmt(sd.elapsed * 1000);
     if (sd.elapsed % 5 === 0) sdSave();
@@ -1037,7 +1162,7 @@
   $("sdTutBtn").addEventListener("click", () => sdTutorial(0));
 
   document.addEventListener("keydown", (e) => {
-    if (!sd || $("offline").hidden || !$("sdOverlay").hidden || !$("gate").hidden) return;
+    if (!sd || $("offline").hidden || $("ofGame").hidden || !$("sdOverlay").hidden || !$("gate").hidden) return;
     const tag = (document.activeElement && document.activeElement.tagName) || "";
     if (tag === "INPUT" || tag === "TEXTAREA") return;
     const k = e.key;
