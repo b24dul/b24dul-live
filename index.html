@@ -371,6 +371,74 @@
   #privacyHistoryList button { font-size: 12px; }
 
 
+  /* Management-first workspace, used only by the verified administrator. */
+  #adminWorkspace { display: none; }
+  body.admin { min-height: 100vh; }
+  body.admin > header { flex: none; }
+  body.admin main { display: block; overflow: auto; min-height: 0; }
+  body.admin #adminWorkspace { display: block; max-width: 1600px; margin: 0 auto; padding: 22px; }
+  .adm-intro { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .adm-intro h1 { font-size: clamp(22px, 2.6vw, 32px); letter-spacing: -.7px; margin: 0 0 4px; }
+  .adm-intro p { color: var(--muted); font-size: 13px; margin: 0; }
+  .adm-overline { color: var(--plate); font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .adm-intro .adm-quick { display: flex; gap: 8px; flex-wrap: wrap; }
+  .adm-pill { border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 9px 13px; font-size: 12px; color: var(--muted); }
+  .adm-pill strong { color: var(--text); }
+  .adm-controls { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .adm-section-title { font-size: 14px; margin: 0 0 12px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+  .adm-section-title small { color: var(--muted); font-size: 11px; font-weight: 400; }
+  body.admin #adminBar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; padding: 0; background: none; border: 0; }
+  body.admin #adminBar > .arow:first-child { grid-column: 1/-1; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+  body.admin #adminBar .arow { min-width: 0; flex-wrap: wrap; }
+  body.admin #adminBar .arow input { min-width: 125px; }
+  body.admin #adminBar .agrid { grid-column: 1/-1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.admin #adminBar .toggles { justify-content: flex-start; gap: 20px; }
+  .adm-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(330px, 1fr); gap: 16px; align-items: start; }
+  .adm-work, .adm-rail { min-width: 0; }
+  .adm-rail { display: grid; gap: 16px; }
+  .adm-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; min-width: 0; }
+  .adm-card-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .adm-card-head h2 { margin: 0; font-size: 15px; }
+  .adm-card-head span { color: var(--muted); font-size: 11px; }
+  body.admin #statsModal { position: static; inset: auto; z-index: auto; width: 100%; max-width: none; max-height: none; display: flex; }
+  body.admin #statsModal .sm-card { border: 0; border-radius: 0; box-shadow: none; background: transparent; overflow: visible; }
+  body.admin #statsModal .sm-head { display: none; }
+  body.admin #statsModal #statsTabs { padding: 12px 16px 0; }
+  body.admin #statsModal #statsSearch { margin: 12px 16px 0; }
+  body.admin #statsModal #viewersBox { overflow-y: visible; flex: none; padding: 16px; }
+  body.admin #statsModal #viewersBox .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  body.admin #statsModal #viewersBox .vcard { padding: 12px; }
+  body.admin #statsModal #privacyHistory { overflow-y: visible; flex: none; margin: 12px 16px 16px; }
+  body.admin #statsModal #privacyHistoryList { max-height: 520px; }
+  body.admin #statsModal #statsTabs button { font-size: 13px; }
+  body.admin #userPanel.open { display: block; margin: 0 16px 16px; padding: 16px; border: 1px solid var(--plate); border-radius: 10px; background: #241d00; }
+  body.admin .adm-chat-wrap .chat { border: 0; min-height: 0; height: 460px; }
+  body.admin .adm-chat-wrap .chat-head { display: none; }
+  body.admin .adm-chat-wrap #messages { min-height: 0; }
+  body.admin .adm-chat-wrap #messages .tools { display: inline; }
+  body.admin .adm-chat-wrap .composer { padding: 10px 12px; }
+  body.admin .adm-chat-wrap .privacy-request { display: none; }
+  body.admin .adm-preview-wrap .player { padding: 12px; display: block; min-height: 0; }
+  body.admin .adm-preview-wrap .frame { aspect-ratio: 16/9; max-width: 100%; border: 1px solid var(--line); }
+  body.admin .adm-preview-wrap .frame.offline { aspect-ratio: 16/9; overflow: hidden; }
+  body.admin .adm-preview-wrap #offline { display: none !important; }
+  .adm-offline-label { display: none; font-size: 12px; color: var(--muted); padding: 0 12px 12px; }
+  body.admin .adm-preview-wrap .frame.offline + .adm-offline-label { display: block; }
+  @media (max-width: 1100px) {
+    .adm-grid { grid-template-columns: minmax(0, 1fr); }
+    .adm-rail { grid-template-columns: 1fr 1fr; }
+    body.admin .adm-chat-wrap .chat { height: 420px; }
+  }
+  @media (max-width: 700px) {
+    body.admin #adminWorkspace { padding: 12px; }
+    .adm-rail { grid-template-columns: 1fr; }
+    body.admin #adminBar { grid-template-columns: 1fr; }
+    body.admin #adminBar > .arow:first-child, body.admin #adminBar .agrid { grid-column: 1; }
+    body.admin #statsModal #viewersBox .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.admin .adm-chat-wrap .chat { height: 430px; }
+    .adm-card-head { padding: 12px; }
+  }
+
   @media (max-width: 900px) {
     .sd-side { width: min(440px, 88vw); }
     main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
@@ -415,6 +483,37 @@
 </header>
 
 <main>
+  <div id="adminWorkspace" aria-label="Administrator management dashboard">
+    <div class="adm-intro">
+      <div>
+        <div class="adm-overline">B24DUL Live / Administrator</div>
+        <h1>Management dashboard</h1>
+        <p>Manage your community, moderate chat and control your stream in one place.</p>
+      </div>
+      <div class="adm-quick"><span class="adm-pill"><strong>ADMIN</strong> · Verified access</span><span class="adm-pill">Live site controls</span></div>
+    </div>
+    <section class="adm-controls" aria-label="Stream and chat controls">
+      <h2 class="adm-section-title">Control centre <small>Stream settings and moderation shortcuts</small></h2>
+      <div id="adminControlsSlot"></div>
+    </section>
+    <div class="adm-grid">
+      <section class="adm-work adm-card" aria-label="Viewer management">
+        <div class="adm-card-head"><h2>Community management</h2><span>Analytics, accounts and privacy requests</span></div>
+        <div id="adminAnalyticsSlot"></div>
+        <div id="adminInspectorSlot"></div>
+      </section>
+      <div class="adm-rail">
+        <section class="adm-card adm-chat-wrap" aria-label="Live chat moderation">
+          <div class="adm-card-head"><h2>Live chat moderation</h2><span>Messages and user actions</span></div>
+          <div id="adminChatSlot"></div>
+        </section>
+        <section class="adm-card adm-preview-wrap" aria-label="Compact stream preview">
+          <div class="adm-card-head"><h2>Stream preview</h2><span>Compact monitoring view</span></div>
+          <div id="adminPreviewSlot"></div>
+        </section>
+      </div>
+    </div>
+  </div>
   <section class="player">
     <div class="frame" id="playerFrame">
       <!-- Shows whatever B24DUL is streaming when the host marks the stream as live -->
@@ -637,6 +736,38 @@
   const list = $("messages");
   const panel = $("userPanel");
   const vbox = $("viewersBox");
+  // Move the existing interactive panels rather than cloning them. The visitor
+  // page uses its original DOM; administrator login gets a separate workspace.
+  const pageMain = document.querySelector("main");
+  const originalPlayer = pageMain.querySelector(":scope > .player");
+  const originalChat = pageMain.querySelector(":scope > .chat");
+  const adminControls = $("adminBar");
+  const adminStats = $("statsModal");
+  const adminInspector = $("userPanel");
+  const adminPinned = $("pinned");
+  const adminComposer = originalChat.querySelector(".composer");
+  let adminWorkspaceActive = false;
+  function setAdminWorkspace(active) {
+    if (adminWorkspaceActive === active) return;
+    adminWorkspaceActive = active;
+    if (active) {
+      $("adminControlsSlot").append(adminControls);
+      $("adminAnalyticsSlot").append(adminStats);
+      $("adminInspectorSlot").append(adminInspector);
+      $("adminChatSlot").append(originalChat);
+      $("adminPreviewSlot").append(originalPlayer);
+      const offlineLabel = el("p", "adm-offline-label", "Stream is currently offline. Use the controls above to set its status.");
+      originalPlayer.querySelector(".frame").after(offlineLabel);
+    } else {
+      pageMain.append(originalPlayer, originalChat);
+      originalChat.querySelector(".chat-head").after(adminControls);
+      adminPinned.after(adminInspector);
+      originalChat.append(adminComposer);
+      document.body.append(adminStats);
+      const offlineLabel = originalPlayer.querySelector(".adm-offline-label");
+      if (offlineLabel) offlineLabel.remove();
+    }
+  }
   const note = (text) => { $("note").textContent = text || ""; };
   // Deletion requests use the visitor's own email app, not the public chat or
   // unapproved database writes. No deletion occurs unless the owner acts on it.
@@ -976,6 +1107,7 @@
     renderPrivacyHistory();
     isAdmin = false;
     document.body.classList.remove("admin");
+    setAdminWorkspace(false);
     closePanel();
     closeStats();
     if (!user) {
@@ -987,12 +1119,14 @@
     // Match the verified administrator identity enforced by Firebase Database Rules.
     isAdmin = user.email === 'b24dul@gmail.com' && user.emailVerified === true;
     document.body.classList.toggle("admin", isAdmin);
+    setAdminWorkspace(isAdmin);
     $("adminBtn").hidden = isAdmin || !adminPage;
     if (!isAdmin) { closePanel(); closeStats(); }
 
     if (isAdmin) {
       hideGate();
       startAdminFeeds();
+      openStats();
     } else if (!adminPage) {
       // Skip the name screen if this viewer has already entered their name before
       try {
@@ -1842,8 +1976,9 @@
       }
       const manage = el("button", "", "Manage visitor");
       manage.onclick = () => {
-        closeStats();
+        if (!adminWorkspaceActive) closeStats();
         openPanel(record.uid);
+        if (adminWorkspaceActive) $("adminInspectorSlot").scrollIntoView({ behavior: "smooth", block: "nearest" });
       };
       actions.append(manage);
       item.append(actions);
@@ -1909,8 +2044,10 @@
     $("statsModal").hidden = false;
     let pos = null;
     try { pos = JSON.parse(localStorage.getItem("b24dul_stats_pos") || "null"); } catch { pos = null; }
-    if (pos) placeStats(pos.left, pos.top);
-    else placeStats(window.innerWidth - $("statsModal").offsetWidth - 400, 70);
+    if (!adminWorkspaceActive) {
+      if (pos) placeStats(pos.left, pos.top);
+      else placeStats(window.innerWidth - $("statsModal").offsetWidth - 400, 70);
+    }
     showStatsSection(statsSection);
   }
   // Drag the box around by its header
@@ -1919,7 +2056,7 @@
     const handle = $("statsHandle");
     let dx = 0, dy = 0, dragging = false;
     handle.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button")) return;
+      if (adminWorkspaceActive || e.target.closest("button")) return;
       dragging = true;
       dx = e.clientX - m.offsetLeft;
       dy = e.clientY - m.offsetTop;
@@ -1941,7 +2078,15 @@
     window.addEventListener("resize", () => { if (!m.hidden) placeStats(m.offsetLeft, m.offsetTop); });
   })();
   function closeStats() { $("statsModal").hidden = true; }
-  $("viewersBtn").addEventListener("click", () => (statsOpen() ? closeStats() : openStats()));
+  $("viewersBtn").addEventListener("click", () => {
+    if (adminWorkspaceActive) {
+      openStats();
+      showStatsSection("viewers");
+      $("adminAnalyticsSlot").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      statsOpen() ? closeStats() : openStats();
+    }
+  });
   $("statsClose").addEventListener("click", closeStats);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && statsOpen()) closeStats(); });
   $("statsSearch").addEventListener("input", () => renderViewers());
@@ -2307,6 +2452,7 @@
     privacyRow.append(logHistory);
     panel.append(h, status, uidInfo, renameRow, toRow, banRow, privacyRow);
     panel.classList.add("open");
+    if (adminWorkspaceActive) $("adminInspectorSlot").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   // ----- Send a message (the rules also check entry, slow mode, timeouts, bans, length and links) -----
