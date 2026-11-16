@@ -1946,6 +1946,22 @@
   }
 
   // ----- Administrator-only privacy request history -----
+  // One atomic database update removes the private visitor profile and marks
+  // any matching open requests complete. A denied update leaves both intact.
+  async function deletePrivateProfile(uid) {
+    if (!isAdmin || !me || me.uid === uid || !validPrivacyUid(uid)) {
+      throw new Error("Invalid admin session or visitor ID");
+    }
+    const changes = { [`viewers/${uid}`]: null };
+    for (const [id, request] of Object.entries(privacyRequests)) {
+      if (request && request.uid === uid && request.status !== "completed") {
+        changes[`privacyRequests/${id}/status`] = "completed";
+        changes[`privacyRequests/${id}/updatedAt`] = serverTimestamp();
+      }
+    }
+    await update(ref(db), changes);
+  }
+
   // Email requests are logged manually after receipt; nothing is submitted by
   // visitors directly into this restricted database collection.
   const validPrivacyUid = (uid) => /^[A-Za-z0-9:_-]{6,128}$/.test(uid);
@@ -1961,22 +1977,33 @@
       box.append(el("p", "small", privacyHistoryError));
       return;
     }
-    const rows = Object.entries(privacyRequests)
+    const allRows = Object.entries(privacyRequests)
       .filter(([, record]) => record && typeof record.uid === "string")
       .sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+    const activeCount = allRows.filter(([, record]) => record.status !== "completed").length;
+    $("privacyQueueCount").textContent = activeCount + " active · " +
+      (allRows.length - activeCount) + " completed";
+    const filter = $("privacyQueueFilter").value;
+    const rows = allRows.filter(([, record]) =>
+      filter === "all" || (filter === "completed"
+        ? record.status === "completed" : record.status !== "completed"));
     if (!rows.length) {
       box.append(el("p", "small", "No requests logged yet."));
       return;
     }
     rows.forEach(([id, record]) => {
       const item = el("div", "privacy-item");
-      item.append(el("strong", "", record.status === "completed" ? "Completed" :
+      item.append(el("div", "privacy-state", record.status === "completed" ? "Completed · history" :
         record.status === "processing" ? "Processing" : "Pending"));
+      const profileExists = Object.prototype.hasOwnProperty.call(viewers, record.uid);
+      item.append(el("div", "small", profileExists ?
+        "Private profile present in current visitor records" :
+        "Private profile not found in loaded visitor records"));
       item.append(el("div", "small", "Account ID: " + record.uid));
       item.append(el("div", "small", "Received: " +
         (record.createdAt ? new Date(record.createdAt).toLocaleString() : "Unknown")));
       const actions = el("div", "privacy-actions");
-      for (const [state, title] of [["pending", "Reopen"], ["processing", "Processing"], ["completed", "Complete"]]) {
+      for (const [state, title] of [["pending", "Reopen"], ["processing", "Processing"]]) {
         if (record.status === state) continue;
         const btn = el("button", "", title);
         btn.onclick = async () => {
@@ -1992,6 +2019,36 @@
           }
         };
         actions.append(btn);
+      }
+      if (record.status !== "completed") {
+        const finish = el("button", profileExists ? "primary" : "",
+          profileExists ? "Delete private profile & complete" : "Mark reviewed & complete");
+        finish.onclick = async () => {
+          if (!isAdmin || !me || !validPrivacyUid(record.uid)) return;
+          const question = profileExists
+            ? "Remove this visitor's private profile and complete their open requests?\n\n" +
+              "Account: " + record.uid + "\n\nPublic chat, scores, moderation records and Firebase login will NOT be deleted."
+            : "No private profile is currently visible for " + record.uid +
+              ". Mark this request reviewed? This does not verify or remove other stored data.";
+          if (!window.confirm(question)) return;
+          finish.disabled = true;
+          $("privacyLogFeedback").textContent = "Processing request…";
+          try {
+            if (profileExists) {
+              await deletePrivateProfile(record.uid);
+            } else {
+              await update(ref(db, `privacyRequests/${id}`),
+                { status: "completed", updatedAt: serverTimestamp() });
+            }
+            $("privacyLogFeedback").textContent = profileExists
+              ? "Private profile removed and all matching open requests completed."
+              : "Request marked reviewed; no private profile was removed.";
+          } catch {
+            finish.disabled = false;
+            $("privacyLogFeedback").textContent = "Action failed. The request was not marked completed.";
+          }
+        };
+        actions.append(finish);
       }
       const manage = el("button", "", "Manage visitor");
       manage.onclick = () => {
@@ -2443,29 +2500,20 @@
     const privacyRow = el("div", "row");
     privacyRow.append(el("span", "label", "Visitor data deletion request"));
     const privacyHelp = el("p", "small",
-      "Deletes the private name, visit and activity records for this account. " +
-      "Public chat, leaderboard scores and moderation data remain. " +
-      "An active visitor may recreate a profile after deletion.");
-    const confirmInput = el("input");
-    confirmInput.type = "text";
-    confirmInput.placeholder = "Paste the full visitor account ID";
-    confirmInput.autocomplete = "off";
-    confirmInput.setAttribute("aria-label", "Confirm visitor account ID for deletion");
-    const deleteProfile = el("button", "danger", "Delete private visitor record");
-    deleteProfile.disabled = true;
-    confirmInput.addEventListener("input", () => {
-      deleteProfile.disabled = confirmInput.value.trim() !== uid;
-    });
+      "One action removes this account's private name and analytics and completes matching open requests. " +
+      "Chat, leaderboards, moderation and Firebase sign-in are separate. Active visitors may return.");
+    const deleteProfile = el("button", "danger", "Delete private profile");
     deleteProfile.onclick = async () => {
-      if (!isAdmin || !me || panelUid !== uid || me.uid === uid ||
-          confirmInput.value.trim() !== uid) return;
+      if (!isAdmin || !me || panelUid !== uid || me.uid === uid) return;
+      if (!window.confirm("Delete the private profile for " + uid +
+        "? Any matching open requests will be completed automatically. " +
+        "Public chat, scores, moderation and Firebase login are unaffected.")) return;
       deleteProfile.disabled = true;
-      confirmInput.disabled = true;
       status.textContent = "Deleting private visitor record…";
       try {
         // The database rules must authorize this administrator write.
         // Only one UID subtree is touched; no bulk or cross-path deletion.
-        await remove(ref(db, `viewers/${uid}`));
+        await deletePrivateProfile(uid);
         if (panelUid === uid) {
           closePanel();
           flash("Private visitor record deleted. Public chat and leaderboard entries are unchanged.");
@@ -2473,12 +2521,11 @@
       } catch {
         if (panelUid === uid) {
           status.textContent = "Deletion failed. Check your Firebase administrator permissions.";
-          confirmInput.disabled = false;
-          deleteProfile.disabled = confirmInput.value.trim() !== uid;
+          deleteProfile.disabled = false;
         }
       }
     };
-    privacyRow.append(privacyHelp, confirmInput, deleteProfile);
+    privacyRow.append(privacyHelp, deleteProfile);
 
     const logHistory = el("button", "", "Log privacy request for this visitor");
     logHistory.onclick = () => {
