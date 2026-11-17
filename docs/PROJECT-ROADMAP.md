@@ -182,6 +182,20 @@ When a new chat begins, the assistant should:
 
 **Next:** Perform manual browser QA at 320/375/768/1280px and fix any overflow or readability issues. Exercise Home, Games, Sudoku, 2048, Videos, Chat, Watch stream (including offline/stale detection), login/gate, admin workspace and privacy request. Then refine CSS/animation/accessibility and evaluate whether navigation/header needs a larger composition change.
 
+## 10.4 Phase 4A — Coastal After Dark palette refactor (2026-11-17)
+
+**Approved direction:** User selected an original GTA VI + GTA: Vice City-inspired coastal-sunset/nightlife mood, replacing the previous multi-accent tactical HUD colour scheme. No proprietary assets, branding, or copied game visuals.
+
+**Canonical design specification:** [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md). Dominant midnight plum `#17131E`, layered purple-black surfaces `#211B2A`/`#282032`, warm ivory `#FFF4EA`, coral `#F28B74` as the *one* general-purpose brand accent, rose `#FF78A8` mainly for scripted branding/scenery, teal `#64BBC0` for focus/technical detail, and red/mint solely for genuine live/danger and success/connected states. Earlier competing yellow, green, fluorescent cyan and magenta treatments have been consolidated across existing CSS. Hero art remains original CSS.
+
+**Done:** [`959e6ae9`](https://github.com/b24dul/b24dul-live/commit/959e6ae9d19c59e8c36bb9a7c7125d13bad8f34b) updates the canonical CSS tokens, compatibility aliases and old hard-coded visitor/admin colour declarations; [`164ce439`](https://github.com/b24dul/b24dul-live/commit/164ce439fa9fd197e108de9ad686bc25be23d03d) refines the CTA border and live-alert fill. Both applied to `main` under the established direct-live workflow. Design spec committed at [`d13ebe11`](https://github.com/b24dul/b24dul-live/commit/d13ebe113010983388717b45780b52fd4250b86d).
+
+**Preservation checks:** `index.html` layout markup/112 original IDs and inline JavaScript module were unchanged during the palette refactor. No changes to Firebase paths, Cloudflare Worker, workflows, games logic, or other repositories. This is not a passed browser/functional regression test.
+
+**In progress:** Verify deployment and actual on-device visual behaviour. Admin styling uses the shared root colours and must also be checked for contrast, readability and controls.
+
+**Next:** Test at 320/375/768/1280px, check live, stale and offline modes, validate all game/chat/admin paths, then fix unexpected style regressions and reduce legacy CSS override duplication. Do not call the redesign fully verified until those checks succeed.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare livestream start/end detection verified. Old scheduled GitHub detector disabled; manual fallback retained. Major UI overhaul agreed conceptually. **Next step: inspect frontend and begin Phase 0 inventory.**
+**2026-11-17:** Cloudflare stream detector verified. Phases 1–3 visual passes and Phase 4A cohesive coastal colour refactor committed to `main`; browser/deployment acceptance tests remain outstanding.
