@@ -48,11 +48,11 @@
       "passed": false,
       "evidence": []
     },
-    "deployedSmokeTests": {
+    "rollbackReady": {
       "passed": false,
       "evidence": []
     },
-    "rollbackReady": {
+    "stagingSmokeTests": {
       "passed": false,
       "evidence": []
     }
