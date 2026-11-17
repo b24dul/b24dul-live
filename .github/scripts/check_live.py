@@ -25,6 +25,7 @@ def detect_live():
         "quiet": True,
         "no_warnings": True,
         "skip_download": True,
+        "extract_flat": True,  # Resolve /live without opening the video watch page
         "noplaylist": True,
         "socket_timeout": 20,
         "extractor_retries": 2,
@@ -43,6 +44,13 @@ def detect_live():
         raise RuntimeError("Could not reliably check YouTube: " + str(error)) from error
     if not isinstance(info, dict) or info.get("_type") == "playlist":
         raise RuntimeError("YouTube returned an unexpected channel response; existing status retained.")
+    # /live only returns a video reference while the channel is broadcasting.
+    # The flat result avoids the YouTube watch-page bot challenge that blocks
+    # GitHub-hosted runners from obtaining video details.
+    if info.get("_type") == "url" and info.get("ie_key") in ("Youtube", "youtube"):
+        video_id = info.get("id")
+        if isinstance(video_id, str) and len(video_id) == 11:
+            return True, video_id
     status = info.get("live_status")
     video_id = info.get("id")
     if status == "is_live" and isinstance(video_id, str) and len(video_id) == 11:
