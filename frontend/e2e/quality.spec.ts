@@ -71,7 +71,7 @@ test('page shell and settings support keyboard and reduced motion', async ({ pag
 test('read-only disconnected states work with external network blocked', async ({ page }) => {
   await page.route('https://**/*', (route) => route.abort());
   await page.goto('./#/watch');
-  await expect(page.getByText('Player integration pending')).toBeVisible();
+  await expect(page.getByText('Verified playback available when live')).toBeVisible();
   await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
   await page.goto('./#/community');
   await expect(page.getByText('Chat is not connected in this preview')).toBeVisible();
