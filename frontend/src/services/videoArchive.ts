@@ -22,7 +22,8 @@ export function parseVideoArchive(source: unknown): ArchivedVideo[] {
       typeof item.published !== 'string' ||
       !Number.isFinite(Date.parse(item.published)) ||
       seen.has(item.id)
-    ) continue;
+    )
+      continue;
     seen.add(item.id);
     results.push({
       id: item.id,

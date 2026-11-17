@@ -1,6 +1,24 @@
-import { ArrowRight, ArrowUpRight, Compass, Gamepad2, LockKeyhole, MessageCircle, Settings2, Shield, Trophy, UserRound, Wrench } from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Compass,
+  Gamepad2,
+  LockKeyhole,
+  MessageCircle,
+  Settings2,
+  Shield,
+  Trophy,
+  UserRound,
+  Wrench,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ArchiveTile, EditorialSection, FeatureTile, PlannedPanel, StreamPresentation } from '../components/SectionBlocks';
+import {
+  ArchiveTile,
+  EditorialSection,
+  FeatureTile,
+  PlannedPanel,
+  StreamPresentation,
+} from '../components/SectionBlocks';
 import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { games, utilities } from '../data/directory';
 import { archivedVideos } from '../services/videoArchive';
@@ -42,26 +60,46 @@ function PageFrame({
 
 export function ExplorePage() {
   return (
-    <PageFrame title="Explore" description="Discover the destinations, entertainment and community spaces B24DUL is building.">
+    <PageFrame
+      title="Explore"
+      description="Discover the destinations, entertainment and community spaces B24DUL is building."
+    >
       <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Platform directory — not a live content search</StatusIndicator>
+        <StatusIndicator status="neutral">
+          Platform directory — not a live content search
+        </StatusIndicator>
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {routes.filter((route) => route.path !== '/explore').map(({ path, label, description, icon: Icon }) => (
-            <Link to={path} key={path} className="explore-destination">
-              <Icon size={22} aria-hidden="true" />
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{label}</span>
-                <span className="block text-sm text-slate-300">{description}</span>
-              </span>
-              <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
-            </Link>
-          ))}
+          {routes
+            .filter((route) => route.path !== '/explore')
+            .map(({ path, label, description, icon: Icon }) => (
+              <Link to={path} key={path} className="explore-destination">
+                <Icon size={22} aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{label}</span>
+                  <span className="block text-sm text-slate-300">{description}</span>
+                </span>
+                <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
+              </Link>
+            ))}
         </div>
       </GlassPanel>
-      <EditorialSection title="Find your next experience" description="Follow the routes to preview what each part of B24DUL will become.">
+      <EditorialSection
+        title="Find your next experience"
+        description="Follow the routes to preview what each part of B24DUL will become."
+      >
         <div className="grid gap-4 sm:grid-cols-2">
-          <FeatureTile title="Watch and discover" description="Streams, archive and entertainment." icon={<Compass size={23} />} to="/watch" />
-          <FeatureTile title="Play and compete" description="Existing games and future community challenges." icon={<Trophy size={23} />} to="/games" />
+          <FeatureTile
+            title="Watch and discover"
+            description="Streams, archive and entertainment."
+            icon={<Compass size={23} />}
+            to="/watch"
+          />
+          <FeatureTile
+            title="Play and compete"
+            description="Existing games and future community challenges."
+            icon={<Trophy size={23} />}
+            to="/games"
+          />
         </div>
       </EditorialSection>
     </PageFrame>
@@ -70,11 +108,20 @@ export function ExplorePage() {
 
 function WatchPage() {
   return (
-    <PageFrame title="Watch" description="The home for broadcasts, highlights and the B24DUL channel.">
+    <PageFrame
+      title="Watch"
+      description="The home for broadcasts, highlights and the B24DUL channel."
+    >
       <StreamPresentation />
       <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel title="Stream schedule" description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided." />
-        <PlannedPanel title="Polls and community" description="Live audience interaction will be connected in a later milestone. Chat and current stream features remain on the published website." />
+        <PlannedPanel
+          title="Stream schedule"
+          description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided."
+        />
+        <PlannedPanel
+          title="Polls and community"
+          description="Live audience interaction will be connected in a later milestone. Chat and current stream features remain on the published website."
+        />
       </div>
       <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
@@ -83,20 +130,32 @@ function WatchPage() {
 
 function VideosPage() {
   return (
-    <PageFrame title="Videos" description="Browse actual upload metadata from the repository's existing YouTube archive.">
+    <PageFrame
+      title="Videos"
+      description="Browse actual upload metadata from the repository's existing YouTube archive."
+    >
       <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Read-only archive snapshot — build time, not a live feed</StatusIndicator>
+        <StatusIndicator status="neutral">
+          Read-only archive snapshot — build time, not a live feed
+        </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Titles, IDs and published dates come from the existing videos.json file. Videos open on YouTube;
-          no embedded player or account connection is active here.
+          Titles, IDs and published dates come from the existing videos.json file. Videos open on
+          YouTube; no embedded player or account connection is active here.
         </p>
       </GlassPanel>
       <EditorialSection title="Archive" description="Open an item to watch it on YouTube.">
         {archivedVideos.length ? (
           <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {archivedVideos.map((video) => <ArchiveTile key={video.id} video={video} />)}
+            {archivedVideos.map((video) => (
+              <ArchiveTile key={video.id} video={video} />
+            ))}
           </div>
-        ) : <PlannedPanel title="No videos in the snapshot" description="The source file is empty or invalid; check the current production archive for updated information." />}
+        ) : (
+          <PlannedPanel
+            title="No videos in the snapshot"
+            description="The source file is empty or invalid; check the current production archive for updated information."
+          />
+        )}
       </EditorialSection>
       <RelatedLinks paths={['/watch', '/explore']} />
     </PageFrame>
@@ -105,14 +164,21 @@ function VideosPage() {
 
 function GamesPage() {
   return (
-    <PageFrame title="Game Centre" description="Play favourites on the current site and see what is planned for B24DUL.">
+    <PageFrame
+      title="Game Centre"
+      description="Play favourites on the current site and see what is planned for B24DUL."
+    >
       <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Existing games preserved — not migrated into this preview</StatusIndicator>
+        <StatusIndicator status="neutral">
+          Existing games preserved — not migrated into this preview
+        </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Sudoku and 2048 still run on the published site. The React preview does not modify their scores,
-          saves, leaderboard records or game logic.
+          Sudoku and 2048 still run on the published site. The React preview does not modify their
+          scores, saves, leaderboard records or game logic.
         </p>
-        <a className="ui-button ui-button--primary mt-4" href={website}>Play on the current website <ArrowUpRight size={16} aria-hidden="true" /></a>
+        <a className="ui-button ui-button--primary mt-4" href={website}>
+          Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
+        </a>
       </GlassPanel>
       <EditorialSection title="Browse games" description="Availability is labelled for every game.">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -131,7 +197,9 @@ function GamesPage() {
                   <a className="ui-button ui-button--secondary" href={website}>
                     Open current site <ArrowUpRight size={16} aria-hidden="true" />
                   </a>
-                ) : <StatusIndicator status="neutral">Coming soon</StatusIndicator>}
+                ) : (
+                  <StatusIndicator status="neutral">Coming soon</StatusIndicator>
+                )}
               </div>
             </GlassPanel>
           ))}
@@ -144,20 +212,34 @@ function GamesPage() {
 
 function CommunityPage() {
   return (
-    <PageFrame title="Community" description="A home for conversations, announcements and shared experiences.">
+    <PageFrame
+      title="Community"
+      description="A home for conversations, announcements and shared experiences."
+    >
       <div className="grid gap-5 lg:grid-cols-3">
         <GlassPanel className="p-6 lg:col-span-2">
           <StatusIndicator status="neutral">Chat is not connected in this preview</StatusIndicator>
           <div className="community-placeholder">
             <MessageCircle size={38} className="text-brand-cyan" aria-hidden="true" />
             <h2 className="text-xl font-semibold">Your conversations belong here</h2>
-            <p className="max-w-md text-sm text-slate-300">Existing messages, channels and presence remain on the published site. No sample messages or online-user totals are invented.</p>
-            <a className="ui-button ui-button--secondary" href={website}>Visit the current community <ArrowUpRight size={16} aria-hidden="true" /></a>
+            <p className="max-w-md text-sm text-slate-300">
+              Existing messages, channels and presence remain on the published site. No sample
+              messages or online-user totals are invented.
+            </p>
+            <a className="ui-button ui-button--secondary" href={website}>
+              Visit the current community <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
           </div>
         </GlassPanel>
         <div className="flex flex-col gap-5">
-          <PlannedPanel title="Announcements" description="Verified platform updates will appear when the content service is connected." />
-          <PlannedPanel title="Community activity" description="Recent activity is hidden until it can be shown from real, permitted data." />
+          <PlannedPanel
+            title="Announcements"
+            description="Verified platform updates will appear when the content service is connected."
+          />
+          <PlannedPanel
+            title="Community activity"
+            description="Recent activity is hidden until it can be shown from real, permitted data."
+          />
         </div>
       </div>
       <RelatedLinks paths={['/profile', '/watch']} />
@@ -167,10 +249,16 @@ function CommunityPage() {
 
 function ToolsPage() {
   return (
-    <PageFrame title="Tools" description="Useful everyday, productivity, creative and developer utilities.">
+    <PageFrame
+      title="Tools"
+      description="Useful everyday, productivity, creative and developer utilities."
+    >
       <GlassPanel className="p-5 sm:p-7">
         <StatusIndicator status="neutral">Directory preview — no tools are enabled</StatusIndicator>
-        <p className="mt-3 text-sm text-slate-300">These ideas are planned, not clickable apps. Working utilities will be added and tested in future milestones.</p>
+        <p className="mt-3 text-sm text-slate-300">
+          These ideas are planned, not clickable apps. Working utilities will be added and tested in
+          future milestones.
+        </p>
       </GlassPanel>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {utilities.map((item) => (
@@ -181,7 +269,9 @@ function ToolsPage() {
             </div>
             <h2 className="mt-4 text-lg font-semibold">{item.name}</h2>
             <p className="mt-2 text-sm text-slate-300">{item.description}</p>
-            <div className="mt-5"><StatusIndicator status="neutral">Planned</StatusIndicator></div>
+            <div className="mt-5">
+              <StatusIndicator status="neutral">Planned</StatusIndicator>
+            </div>
           </GlassPanel>
         ))}
       </div>
@@ -192,12 +282,27 @@ function ToolsPage() {
 
 function CompetitionsPage() {
   return (
-    <PageFrame title="Competitions" description="Challenges, community rankings and tournaments — without invented results.">
+    <PageFrame
+      title="Competitions"
+      description="Challenges, community rankings and tournaments — without invented results."
+    >
       <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel title="Daily challenges" description="Challenge modes will be introduced after scoring and validation rules are ready. No daily winner or active timer is being claimed." />
-        <PlannedPanel title="Leaderboards" description="Scoreboards and rankings will connect to verified backend records in a later milestone, not this preview." />
-        <PlannedPanel title="Tournaments" description="There are no confirmed tournament dates or open sign-ups connected to this frontend." />
-        <PlannedPanel title="Achievements and XP" description="Personal progression is planned; visitor stats and achievements are not simulated." />
+        <PlannedPanel
+          title="Daily challenges"
+          description="Challenge modes will be introduced after scoring and validation rules are ready. No daily winner or active timer is being claimed."
+        />
+        <PlannedPanel
+          title="Leaderboards"
+          description="Scoreboards and rankings will connect to verified backend records in a later milestone, not this preview."
+        />
+        <PlannedPanel
+          title="Tournaments"
+          description="There are no confirmed tournament dates or open sign-ups connected to this frontend."
+        />
+        <PlannedPanel
+          title="Achievements and XP"
+          description="Personal progression is planned; visitor stats and achievements are not simulated."
+        />
       </div>
       <RelatedLinks paths={['/games', '/community']} />
     </PageFrame>
@@ -206,21 +311,29 @@ function CompetitionsPage() {
 
 function ProfilePage() {
   return (
-    <PageFrame title="Guest profile" description="Browse B24DUL without signing into the new frontend.">
+    <PageFrame
+      title="Guest profile"
+      description="Browse B24DUL without signing into the new frontend."
+    >
       <GlassPanel className="p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-5">
-          <span className="guest-avatar"><UserRound size={32} aria-hidden="true" /></span>
+          <span className="guest-avatar">
+            <UserRound size={32} aria-hidden="true" />
+          </span>
           <div>
             <p className="text-xl font-semibold">Browsing as guest</p>
             <StatusIndicator status="neutral">Not authenticated</StatusIndicator>
           </div>
         </div>
         <p className="mt-5 max-w-2xl text-slate-300">
-          No account has been created or authenticated. The production Firebase identities and
-          any existing profile data are not accessed by this design preview.
+          No account has been created or authenticated. The production Firebase identities and any
+          existing profile data are not accessed by this design preview.
         </p>
       </GlassPanel>
-      <PlannedPanel title="Registered profile preview" description="Profiles, saved favourites and personal achievements are future capabilities. This is not a functioning sign-in screen." />
+      <PlannedPanel
+        title="Registered profile preview"
+        description="Profiles, saved favourites and personal achievements are future capabilities. This is not a functioning sign-in screen."
+      />
       <RelatedLinks paths={['/settings', '/community']} />
     </PageFrame>
   );
@@ -228,19 +341,28 @@ function ProfilePage() {
 
 function SettingsPage() {
   return (
-    <PageFrame title="Settings" description="Your appearance and accessibility controls will live here.">
+    <PageFrame
+      title="Settings"
+      description="Your appearance and accessibility controls will live here."
+    >
       <GlassPanel className="p-6 sm:p-8">
         <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
         <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          The working desktop sidebar collapse control is in the navigation rail. Your choice is saved
-          only in this browser; no Firebase record or account setting is changed.
+          The working desktop sidebar collapse control is in the navigation rail. Your choice is
+          saved only in this browser; no Firebase record or account setting is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
       <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel title="Appearance" description="Theme, accent and layout preferences belong to Phase 5; no nonworking toggles are shown." />
-        <PlannedPanel title="Accessibility" description="Keyboard focus, reduced motion and responsive navigation already work in the shell. Additional preferences come in Phase 5." />
+        <PlannedPanel
+          title="Appearance"
+          description="Theme, accent and layout preferences belong to Phase 5; no nonworking toggles are shown."
+        />
+        <PlannedPanel
+          title="Accessibility"
+          description="Keyboard focus, reduced motion and responsive navigation already work in the shell. Additional preferences come in Phase 5."
+        />
       </div>
       <RelatedLinks paths={['/profile', '/explore']} />
     </PageFrame>
@@ -249,14 +371,20 @@ function SettingsPage() {
 
 function AdminPage() {
   return (
-    <PageFrame title="Admin" description="Administrative tools are restricted and not available in this development preview.">
+    <PageFrame
+      title="Admin"
+      description="Administrative tools are restricted and not available in this development preview."
+    >
       <GlassPanel className="p-7 sm:p-10">
         <Shield size={36} className="text-brand-violet" aria-hidden="true" />
-        <div className="mt-4"><StatusIndicator status="warning">Restricted — no backend connection</StatusIndicator></div>
+        <div className="mt-4">
+          <StatusIndicator status="warning">Restricted — no backend connection</StatusIndicator>
+        </div>
         <h2 className="mt-4 text-xl font-semibold">Admin dashboard unavailable</h2>
         <p className="mt-3 max-w-2xl text-slate-300">
-          This UI is not an access-control check. Existing live administrator permissions, moderation,
-          chat records and privacy requests remain protected by the production implementation.
+          This UI is not an access-control check. Existing live administrator permissions,
+          moderation, chat records and privacy requests remain protected by the production
+          implementation.
         </p>
         <div className="mt-5 flex items-center gap-2 text-sm text-slate-300">
           <LockKeyhole size={17} aria-hidden="true" /> No privileged actions are available here
@@ -269,16 +397,26 @@ function AdminPage() {
 
 export function DestinationPage({ path }: { path: string }) {
   switch (path) {
-    case '/watch': return <WatchPage />;
-    case '/videos': return <VideosPage />;
-    case '/games': return <GamesPage />;
-    case '/community': return <CommunityPage />;
-    case '/tools': return <ToolsPage />;
-    case '/competitions': return <CompetitionsPage />;
-    case '/profile': return <ProfilePage />;
-    case '/settings': return <SettingsPage />;
-    case '/admin': return <AdminPage />;
-    default: return <NotFoundPage />;
+    case '/watch':
+      return <WatchPage />;
+    case '/videos':
+      return <VideosPage />;
+    case '/games':
+      return <GamesPage />;
+    case '/community':
+      return <CommunityPage />;
+    case '/tools':
+      return <ToolsPage />;
+    case '/competitions':
+      return <CompetitionsPage />;
+    case '/profile':
+      return <ProfilePage />;
+    case '/settings':
+      return <SettingsPage />;
+    case '/admin':
+      return <AdminPage />;
+    default:
+      return <NotFoundPage />;
   }
 }
 
@@ -288,7 +426,11 @@ export function NotFoundPage() {
       <EmptyState
         title="Nothing at this address"
         description="The URL may be mistyped. Return home or explore all available destinations."
-        action={<Link className="ui-button ui-button--primary" to="/">Return home</Link>}
+        action={
+          <Link className="ui-button ui-button--primary" to="/">
+            Return home
+          </Link>
+        }
       />
       <RelatedLinks paths={['/explore']} />
     </PageFrame>

@@ -14,7 +14,9 @@ const pages = [
   ['/admin', 'Admin'],
 ] as const;
 
-test('Phase 4 content renders on every route without broken images or layout overflow', async ({ page }) => {
+test('Phase 4 content renders on every route without broken images or layout overflow', async ({
+  page,
+}) => {
   for (const size of [
     { width: 375, height: 812 },
     { width: 430, height: 932 },
@@ -27,9 +29,11 @@ test('Phase 4 content renders on every route without broken images or layout ove
       await page.goto('./#' + route);
       await expect(page.locator('#route-content h1')).toHaveText(heading);
       await expect(page.locator('#route-content')).not.toBeEmpty();
-      const badAssets = await page.locator('img').evaluateAll((images) =>
-        images.filter((image) => image.complete && image.naturalWidth === 0).length,
-      );
+      const badAssets = await page
+        .locator('img')
+        .evaluateAll(
+          (images) => images.filter((image) => image.complete && image.naturalWidth === 0).length,
+        );
       expect(badAssets, 'broken images on ' + route).toBe(0);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
       expect(overflow, 'horizontal overflow on ' + route + ' at ' + size.width).toBe(false);
@@ -52,10 +56,15 @@ test('homepage contains all nine required areas and honest stream state', async 
   }
   await expect(page.getByText(/Live status unavailable in this preview/)).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Footer links' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /explore games/i })).toHaveAttribute('href', '#/games');
+  await expect(page.getByRole('link', { name: /explore games/i })).toHaveAttribute(
+    'href',
+    '#/games',
+  );
 });
 
-test('video archive presents real source metadata and safe outbound YouTube links', async ({ page }) => {
+test('video archive presents real source metadata and safe outbound YouTube links', async ({
+  page,
+}) => {
   await page.goto('./#/videos');
   await expect(page.getByText(/read-only archive snapshot/i)).toBeVisible();
   const videos = page.getByRole('link', { name: /Watch .* on YouTube/ });
@@ -63,7 +72,10 @@ test('video archive presents real source metadata and safe outbound YouTube link
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {
     const link = videos.nth(i);
-    await expect(link).toHaveAttribute('href', /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/);
+    await expect(link).toHaveAttribute(
+      'href',
+      /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/,
+    );
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   }
 });

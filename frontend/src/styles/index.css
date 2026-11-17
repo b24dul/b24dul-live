@@ -628,9 +628,7 @@ input {
   isolation: isolate;
   overflow: hidden;
   min-height: 320px;
-  background:
-    linear-gradient(115deg, rgb(27 35 73 / 92%), rgb(13 20 44 / 96%)),
-    var(--glass-solid);
+  background: linear-gradient(115deg, rgb(27 35 73 / 92%), rgb(13 20 44 / 96%)), var(--glass-solid);
 }
 
 .home-hero::after {
@@ -669,7 +667,9 @@ input {
   border-radius: 1.1rem;
   padding: 1.1rem;
   background: #16213e;
-  transition: background 160ms ease, border-color 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
 }
 
 .feature-tile:hover {

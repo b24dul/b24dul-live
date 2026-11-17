@@ -20,7 +20,9 @@ export function FeatureTile({
 }) {
   return (
     <Link className="feature-tile" to={to}>
-      <span className="feature-tile-icon" aria-hidden="true">{icon}</span>
+      <span className="feature-tile-icon" aria-hidden="true">
+        {icon}
+      </span>
       <span className="min-w-0 flex-1">
         <span className="block text-lg font-semibold">{title}</span>
         <span className="mt-1 block text-sm leading-relaxed text-slate-300">{description}</span>
@@ -47,7 +49,10 @@ export function EditorialSection({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <SectionHeader title={title} description={description} />
         {action && (
-          <Link className="text-sm font-semibold text-brand-cyan underline underline-offset-4" to={action.to}>
+          <Link
+            className="text-sm font-semibold text-brand-cyan underline underline-offset-4"
+            to={action.to}
+          >
             {action.label}
           </Link>
         )}
@@ -68,10 +73,13 @@ export function StreamPresentation({ compact = false }: { compact?: boolean }) {
       </div>
       <div className={compact ? 'stream-display stream-display--compact' : 'stream-display'}>
         <div className="mx-auto flex max-w-lg flex-col items-center gap-3 text-center">
-          <span className="stream-display-orbit" aria-hidden="true">B</span>
+          <span className="stream-display-orbit" aria-hidden="true">
+            B
+          </span>
           <h3 className="text-xl font-bold sm:text-2xl">Your next broadcast starts here</h3>
           <p className="text-sm text-slate-300">
-            A preview of the future player. No video is playing and no live/offline result has been fetched.
+            A preview of the future player. No video is playing and no live/offline result has been
+            fetched.
           </p>
         </div>
       </div>
