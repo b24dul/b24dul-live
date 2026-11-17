@@ -151,3 +151,11 @@ Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS�
 **Measured after fix:** for Home, Games, Videos, Watch and Chat at all six widths, `main` bottom equals the lowest content bottom (within 1px) and no page has horizontal scroll. Watch player keeps 16:9 (it was previously squashed on short windows). Mobile Chat tab still fills the screen. Admin rules untouched.
 
 **Still needs owner check on iPhone Safari.** Headless Chrome used fallback fonts because Google Fonts was blocked in the test machine; with Anton loaded the large headings should be narrower than in the test screenshots.
+
+## Phase 6C — browser-measured Videos layout (2026-11-17)
+
+**Branch:** `phase-6c-videos-browser-qa` (base `ebb3298c` Claude fix). **Code change:** Video archive title/toolbar in `#ofVideos`, video-specific cards/grids/mobile single-column presentation, and a versioned CSS URL. Unchanged app JS and 112 original IDs, existing video load/play handlers preserved, measured body/main flex fix preserved.
+
+**Browser PASS (source/layout, not backend):** [GitHub Actions run 44057705008](https://github.com/b24dul/b24dul-live/actions/runs/44057705008), Ubuntu 24.04 / Playwright 1.57 Chromium. 30 combinations: Home/Games/Videos/Watch/Chat at 320,390,768,1024,1280,1600px. Tested expected offline `main`/frame containment, no page horizontal overflow, video cards within viewport, Watch 16:9 frame and mobile Chat section. All 30 passed; see action logs and `responsive-layout-results` artifact. External Firebase module was deliberately removed in the test fixture, so this does not prove real sign-in, chat, detector or YouTube playback.
+
+**Browser UNVERIFIED:** Actual iPhone Safari typography and embedded YouTube playback, Firebase-dependent actions, real thumbnails/playlist response, live Pages delivery, and all admin paths. User acceptance still needed. Future changes must first reproduce failures in browser and preserve the geometry checks.
