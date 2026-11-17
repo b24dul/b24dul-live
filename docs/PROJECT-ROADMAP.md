@@ -196,6 +196,22 @@ When a new chat begins, the assistant should:
 
 **Next:** Test at 320/375/768/1280px, check live, stale and offline modes, validate all game/chat/admin paths, then fix unexpected style regressions and reduce legacy CSS override duplication. Do not call the redesign fully verified until those checks succeed.
 
+## 10.5 Reference-sheet Tactical HUD implementation (2026-11-17)
+
+**User approval / references:** The owner explicitly requested direct implementation on the live site using the two uploaded B24DUL Live component sheets (black background, white condensed logo/menu text, cyan script Live, glowing red ON AIR, white-outlined / green active buttons, a chat toggle, notification banner, and dark HUD panels). These **two reference sheets are now the primary visual specification**. This supersedes the Coastal After Dark coral/plum direction; original assets only, and no copyrighted game content.
+
+**Done:** [`b3a77263`](https://github.com/b24dul/b24dul-live/commit/b3a772638b03841a3b3989d74c7c5439227d1cf2) created the dedicated `styles.css` stylesheet with extracted legacy baseline CSS plus the unified tactical HUD styling, removing the previous Phase 1–3 override blocks instead of adding more competing overlays. [`a51e8856`](https://github.com/b24dul/b24dul-live/commit/a51e8856c017453b8feca32bbd9e0bc8a1294bb5) activated external `styles.css` in `index.html`, loaded Bebas Neue / Cutive Mono / Inter / Yellowtail, updated the favicon, and replaced coastal offline-hero copy with tactical community text. [`8c10960f`](https://github.com/b24dul/b24dul-live/commit/8c10960fe52e78ef7e282f168e65a43e194b11bf) fixed hero positioning. New [`docs/DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) v3 written in [`561eaf4a`](https://github.com/b24dul/b24dul-live/commit/561eaf4a47ed0b6d6450935f01a201b6a8ebe89e).
+
+**Features visually updated:** Brand header, live/offline badge, subscribe CTA, current Home/Watch/Games/Videos/Chat nav, stream frame, offline hero, video and arcade cards, chat panel, live-notification banner, some game/admin typography. No fictional pages, achievements, data or counts. Prior sunset art markup is preserved but hidden by CSS, allowing a reversible design iteration.
+
+**Functionality protected:** Inline Firebase/YouTube/game/administration JavaScript module unchanged; 112 unique HTML IDs preserved in original order. No changes to Cloudflare Worker, Firebase schema, admin control logic, third-party projects or routing.
+
+**Verified:** Static invariants (all IDs present and unique; original JS unchanged), stylesheet reference and font URL present, `styles.css` CSS braces balanced with no unclosed block comment; new stylesheet committed before HTML reference. No runtime/browser acceptance tests performed. Public GitHub Pages deployment not independently confirmed.
+
+**Known risks:** GitHub Pages publishing/caching must load new external stylesheet. Some selectors from historical baseline still share elements with new rules, so actual visual regression testing is needed. The admin dashboard changes token colours and heading typography but not control logic. Decorative reference-sheet counters and map/donation/shop features are intentionally omitted.
+
+**Next:** Verify site appearance on desktop and mobile (320/375/768/1280px), test gate/chat/video/live transition/Sudoku/2048/privacy/admin paths, fix any regressions, and continue exact reference-sheet component fidelity in small committed stages.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Phases 1–3 visual passes and Phase 4A cohesive coastal colour refactor committed to `main`; browser/deployment acceptance tests remain outstanding.
+**2026-11-17:** Cloudflare stream detector verified. Phases 1–3 and coastal colour pass were superseded by the owner's uploaded reference-sheet Tactical HUD implementation on `main`. External CSS, fonts and core visual layout committed; browser/deployment acceptance tests still outstanding.
