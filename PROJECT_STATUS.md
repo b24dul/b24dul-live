@@ -261,3 +261,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Previous audit documentation commit: `98c67bda8753bb33fd07d9320a592f8ed50daef4`.
 
 - **Correction confirmed:** Only Anonymous and Google providers enabled. Email/Password must NOT be represented as enabled or implemented as a current provider. Audit correction commit: `2e93c6effc860f2a50bde511f5bd985e74620058`.
+
+## 2026-11-17 — M2 Step 3: isolated React identity policy started
+- Provider scope remains **Anonymous + Google only**. Added `frontend/src/services/authSession.ts` (pure non-networked identity policy) and `authSession.test.ts` (six tests) on `main`. Source commit `aa6359050276b393f609b972666321a30f9bdfab`; tests commit `7bae01afa962fbce84f3ba7d27c712e5a56bc2df`; audit doc commit `5799cf1ce4015351dfdfefec0996e0c3c07e824c`.
+- Policy waits for Firebase observer before sign-in, reuses restored UID, blocks silent Google replacement of anonymous UID, and never initiates database writes. **Not a connected Firebase Auth implementation**: SDK, Auth context, emulator rules tests, provider-linking, and deployed-rules verification still outstanding.
+- Existing root website, Firebase production state/rules and Worker untouched. GitHub CI verification pending until corresponding Actions run completes; do not claim tests passed before examining results.
+- Next: validate offline security rules in emulator, then introduce modular Firebase Auth to isolated React with persistence/collision tests. No live cutover.
