@@ -1,0 +1,164 @@
+// B24DUL Live: separate Cloudflare Worker, deployed alongside (not inside) Fluke-CableTest.
+// The scheduled handler is the ONLY writer. The public API is read-only.
+export const CHANNEL_ID = "UCnXAfqk5I7QE3frLhHHyImQ";
+export const DATABASE_URL = "https://b24duls-anonymous-chat-default-rtdb.europe-west1.firebasedatabase.app";
+const CHANNEL_LIVE_URL = "https://www.youtube.com/channel/" + CHANNEL_ID + "/live";
+const ALLOWED_ORIGIN = "https://b24dul.github.io";
+const VIDEO_ID = /^[\w-]{11}$/;
+
+const json = (body, status = 200, origin = null) => new Response(JSON.stringify(body), {
+  status,
+  headers: {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "access-control-allow-origin": origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "*",
+    "x-content-type-options": "nosniff"
+  }
+});
+
+// Keep parsing isolated and testable. Never decide "offline" on network errors.
+export function parseYouTubePage(url, status, html = "", location = "") {
+  if (status === 429 || status >= 500 || status === 401 || status === 403) return { state: "unknown", reason: "youtube-unavailable" };
+  if (status >= 300 && status < 400 && location) {
+    const next = new URL(location, url);
+    if (!/(^|\.)youtube\.com$/.test(next.hostname)) return { state: "unknown", reason: "foreign-redirect" };
+    const id = next.searchParams.get("v") || next.pathname.match(/^\/live\/([\w-]{11})$/)?.[1];
+    if (id && VIDEO_ID.test(id)) return { state: "live", videoId: id, method: "channel-live-redirect" };
+    if (next.pathname === "/channel/" + CHANNEL_ID || next.pathname === "/@B24DUL") {
+      return { state: "offline", method: "channel-redirect" };
+    }
+    return { state: "unknown", reason: "unrecognised-redirect" };
+  }
+  if (status !== 200) return { state: "unknown", reason: "youtube-http-" + status };
+  // Positive signals must reference an actual live video, not an upcoming event.
+  const id = html.match(/"videoId":"([\w-]{11})"/)?.[1] ||
+             html.match(/youtube\.com\/watch\?v=([\w-]{11})/)?.[1];
+  const liveNow = /"isLiveNow":true|"isLiveContent":true|"isLive":true/.test(html);
+  const upcoming = /"isUpcoming":true|"isLiveNow":false/.test(html);
+  if (id && liveNow && !upcoming) return { state: "live", videoId: id, method: "live-page-metadata" };
+  if (/the channel is not currently live/i.test(html) ||
+      /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ||
+      /"channelMetadataRenderer":/.test(html)) {
+    return { state: "offline", method: "channel-page" };
+  }
+  return { state: "unknown", reason: "unrecognised-youtube-response" };
+}
+
+async function detectYouTube() {
+  const response = await fetch(CHANNEL_LIVE_URL, {
+    redirect: "manual",
+    headers: {
+      "accept": "text/html,application/xhtml+xml",
+      "accept-language": "en-GB,en;q=0.9",
+      "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    },
+    signal: AbortSignal.timeout(12000)
+  });
+  const location = response.headers.get("location") || "";
+  const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
+  return parseYouTubePage(CHANNEL_LIVE_URL, response.status, html, location);
+}
+
+const base64url = (bytes) => {
+  let raw = "";
+  for (const b of bytes) raw += String.fromCharCode(b);
+  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+const jsonB64 = (value) => base64url(new TextEncoder().encode(JSON.stringify(value)));
+
+let cachedToken = null;
+async function googleToken(env) {
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 60000) return cachedToken.value;
+  if (!env.FIREBASE_SERVICE_ACCOUNT_JSON) throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON Worker secret");
+  const account = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  if (account.project_id !== "b24duls-anonymous-chat") throw new Error("Wrong Firebase project in service-account secret");
+  const pem = account.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
+  const der = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const now = Math.floor(Date.now() / 1000);
+  const claim = {
+    iss: account.client_email,
+    sub: account.client_email,
+    aud: "https://oauth2.googleapis.com/token",
+    scope: "https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email",
+    iat: now,
+    exp: now + 3600
+  };
+  const payload = jsonB64({ alg: "RS256", typ: "JWT" }) + "." + jsonB64(claim);
+  const signature = base64url(new Uint8Array(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(payload))));
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: payload + "." + signature
+    })
+  });
+  if (!tokenResponse.ok) throw new Error("Google token exchange failed: HTTP " + tokenResponse.status);
+  const data = await tokenResponse.json();
+  if (typeof data.access_token !== "string") throw new Error("Google did not issue an access token");
+  cachedToken = { value: data.access_token, expiresAt: Date.now() + (data.expires_in || 3500) * 1000 };
+  return cachedToken.value;
+}
+
+async function databaseRequest(token, path, method = "GET", data) {
+  const response = await fetch(DATABASE_URL + "/" + path + ".json", {
+    method,
+    headers: {
+      authorization: "Bearer " + token,
+      ...(method === "GET" ? {} : { "content-type": "application/json" })
+    },
+    ...(method === "GET" ? {} : { body: JSON.stringify(data) })
+  });
+  if (!response.ok) throw new Error("Firebase " + method + " " + path + ": HTTP " + response.status);
+  return response.json();
+}
+
+export async function checkAndPublish(env, detector = detectYouTube) {
+  const result = await detector();
+  if (result.state === "unknown") {
+    console.warn("YouTube status inconclusive:", result.reason);
+    // No write: never label an inaccessible or throttled YouTube page as offline.
+    return { checked: false, reason: result.reason };
+  }
+  const live = result.state === "live";
+  const videoId = live ? result.videoId : "";
+  if (live && !VIDEO_ID.test(videoId)) throw new Error("Invalid detected video ID");
+  const token = await googleToken(env);
+  const now = Date.now();
+  // The existing frontend receives this update immediately through Firebase.
+  const detection = { live, videoId, checkedAt: now };
+  await databaseRequest(token, "settings/liveDetection", "PUT", detection);
+  const previous = await databaseRequest(token, "settings/live");
+  if (previous !== live) await databaseRequest(token, "settings/live", "PUT", live);
+  console.log("YouTube detection:", live ? "LIVE" : "offline", videoId, result.method);
+  return { checked: true, ...detection };
+}
+
+export default {
+  async scheduled(_event, env, ctx) {
+    ctx.waitUntil(checkAndPublish(env));
+  },
+  async fetch(request) {
+    const url = new URL(request.url);
+    if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
+    if (url.pathname === "/api/health") return json({ ok: true, service: "b24dul-live-monitor", source: "youtube-channel-live" }, 200, request.headers.get("origin"));
+    if (url.pathname === "/api/status") {
+      // Read-only public status. Data is already public at Firebase settings/liveDetection.
+      try {
+        const response = await fetch(DATABASE_URL + "/settings/liveDetection.json", { headers: { accept: "application/json" }, cf: { cacheTtl: 0 } });
+        if (!response.ok) return json({ error: "Status unavailable" }, 503, request.headers.get("origin"));
+        const status = await response.json();
+        return json({
+          live: status?.live === true,
+          videoId: typeof status?.videoId === "string" ? status.videoId : "",
+          checkedAt: Number(status?.checkedAt) || 0,
+          stale: !(Number(status?.checkedAt) > Date.now() - 180000)
+        }, 200, request.headers.get("origin"));
+      } catch {
+        return json({ error: "Status unavailable" }, 503, request.headers.get("origin"));
+      }
+    }
+    return json({ error: "Not found" }, 404);
+  }
+};
