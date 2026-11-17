@@ -250,6 +250,18 @@ When a new chat begins, the assistant should:
 
 **Next:** Get an actual browser-accessible application run (published or local), check 320/375/768/1280px and all real visitor/admin paths, compare to the two user-provided sheets, log PASS/FAIL and fix regressions in small commits. Defer invented cash/wanted/hype stats and unrelated features.
 
+## 10.9 Phase 5B — Broadcast command deck and layout transformation (2026-11-17)
+
+**User request:** The reference-inspired CSS/asset passes were visible but not obviously transformative; user approved a full visual composition pass for the homepage, stream focus and community chat. The two owner-uploaded component sheets continue to be the visual specification.
+
+**Implementation:** [`61a7b81a`](https://github.com/b24dul/b24dul-live/commit/61a7b81a5a878161df20860289909268c7ee5bd2) modifies `index.html` by adding a dedicated operations/feed heading, two **working** primary actions (`WATCH STREAM` and `OPEN COMMUNITY CHAT`) to the hero, and a small purely decorative chat-channel indicator. Both buttons delegate to existing `navigateVisitor()`; all other application behaviour is left unchanged. [`84d3f166`](https://github.com/b24dul/b24dul-live/commit/84d3f1662747373872ee5b400f64a9eb0a1201c4) makes the larger CSS composition change: unified bordered operations frame, main content plus taller right broadcast-chat rail, prominent 350–490px community hero, **original CSS radar/target graphic** instead of the old hidden sunset artwork, mission-style CTAs, full-width three-destination strip, rebuilt chat header and messages panel, and breakpoint-specific mobile/tablet arrangement.
+
+**Preservation/invariants:** Original 112 IDs unchanged/unique, real YouTube `ytFrame` still in place, real `settings/liveDetection` and existing `navigateVisitor` preserved, assets referenced, no fabricated stats/counters, and no changes to Worker, database, privacy or other projects. The only JavaScript addition is two hero button click bindings to the existing navigation function. CSS brace/comment balance and new class/selector presence checked.
+
+**Limitations:** GitHub code commits are verified; **not** proof of successful GitHub Pages publishing or live visual interaction. Responsive layouts, live player, anonymous chat/gate, admin DOM relocation, games, video and privacy need device/browser acceptance checks. `docs/QA-STATUS.md` retains UNVERIFIED test cases.
+
+**Next:** Compare rendered homepage at 320/375/768/1280px and correct readability/overflow. Test navigation via new hero buttons (Watch and Chat), actual YouTube playback, chat focus and admin relocation, Sudoku/2048 and privacy. Record real failures with reproduction steps rather than assuming the static checks prove full functionality.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD implementation and original SVG artwork committed to `main`. Phase 5 QA register opened; source-level checks completed, but live deployment/browser/function acceptance remains UNVERIFIED.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B broadcast command-deck layout and chat-rail composition committed. Source-level checks passed; runtime/browser/deployment acceptance remains UNVERIFIED.
