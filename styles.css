@@ -1871,3 +1871,237 @@ body:not(.admin) #ofGame .sd-levels button {
     padding-inline:1px;
   }
 }
+
+
+/* ==========================================================
+   PHASE 6B.2 — MOBILE CONTENT-SHELL REPAIR
+   Evidence: owner-provided iPhone screenshots (2026-11-17).
+   Scope: Home / Games / Sudoku / 2048 / Videos only.
+   Watch player and administrator layouts remain unchanged.
+   ========================================================== */
+@media (max-width: 760px) {
+  /* Sticky tab navigation must not obscure section titles after navigation. */
+  html { scroll-padding-top: 104px; }
+  body:not(.admin) #visitorContent { scroll-margin-top: 104px; }
+
+  /* The previous desktop command-frame became a frame INSIDE a frame
+     on phones; give every offline screen one coherent content width. */
+  body:not(.admin) main:not([data-visitor-section="watch"]) {
+    width:100%;
+    max-width:100%;
+    margin:0 auto;
+    border:0;
+    border-radius:0;
+    padding:0;
+    min-width:0;
+    overflow:visible;
+    box-sizing:border-box;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) > .player {
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    padding:14px 12px 24px;
+    box-sizing:border-box;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-content-head {
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    padding:14px 0 18px;
+    box-sizing:border-box;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-content-head h1 {
+    font-size:clamp(33px,8.7vw,49px);
+    line-height:1.02;
+    overflow-wrap:normal;
+    word-break:normal;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-feed-heading,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #playerFrame.offline,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #offline,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofChoose,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofVideos,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofGame,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #of2048,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-offline-intro,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .arcade-hud-heading,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-choices,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-card,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .vid-grid,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .vid-card {
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* IMPORTANT: the old 16:9 player frame must grow to the true
+     height of offline activity content, not cut a border across it. */
+  body:not(.admin) main:not([data-visitor-section="watch"]) #playerFrame.offline {
+    display:block;
+    height:auto;
+    min-height:0;
+    max-height:none;
+    aspect-ratio:auto;
+    overflow:visible;
+    flex:0 0 auto;
+    align-self:stretch;
+    border:1px solid #77818B;
+    border-radius:0;
+    background:#10151C;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) #offline {
+    display:block;
+    height:auto;
+    max-height:none;
+    overflow:visible;
+    padding:0;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) #offline[hidden] {
+    display:none!important;
+  }
+  /* One aligned edge for the label strip, game cards and video list. */
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-feed-heading {
+    padding:11px 12px;
+    flex-wrap:wrap;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-feed-heading-main {
+    width:100%;
+    max-width:100%;
+    gap:9px;
+    flex-wrap:wrap;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-feed-title {
+    font-size:clamp(20px,6vw,25px);
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-feed-index {
+    max-width:100%;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-offline-intro {
+    min-height:0;
+    height:auto;
+    display:block;
+    padding:32px 20px 24px;
+    overflow:hidden;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-hero-copy {
+    position:relative;z-index:1;
+    width:100%;max-width:100%;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-offline-intro h2 {
+    font-size:clamp(40px,11vw,62px);
+    line-height:.99;
+    letter-spacing:-.025em;
+    overflow-wrap:normal;
+    word-break:normal;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-hero-actions {
+    width:100%;
+    align-items:stretch;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-hero-actions button {
+    max-width:100%;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:break-word;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-choices,
+  body:not(.admin) main[data-visitor-section="games"] .of-choices {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:0;
+    margin:0;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-card,
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-card:last-child {
+    grid-column:1/-1;
+    min-height:0;
+    padding:20px;
+    border-right:0;
+    border-bottom:1px solid #596571;
+  }
+  body:not(.admin) main[data-visitor-section="games"] .arcade-hud-heading {
+    display:block;
+    min-height:0;
+    padding:25px 20px;
+  }
+  body:not(.admin) main[data-visitor-section="games"] .arcade-hud-heading h2 {
+    font-size:clamp(39px,10vw,54px);
+    line-height:1.04;
+  }
+  body:not(.admin) main[data-visitor-section="games"] .of-card {min-height:190px;}
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofVideos,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofGame,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #of2048 {
+    height:auto;
+    min-height:0;
+    padding:16px;
+    overflow:visible;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .vid-grid {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:14px;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .vid-card {
+    min-height:0;
+    overflow:hidden;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .vid-card img {
+    max-width:100%;
+    height:auto;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-stream-fallback {
+    max-width:100%;
+    padding:14px;
+    margin-bottom:20px;
+    box-sizing:border-box;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-stream-fallback button {
+    width:100%;
+    max-width:100%;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .of-bar {
+    display:flex;
+    flex-wrap:wrap;
+    min-width:0;
+    max-width:100%;
+    gap:12px;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) #of2048 .g2-board-shell,
+  body:not(.admin) main:not([data-visitor-section="watch"]) #ofGame .sd-board {
+    max-width:100%;
+    width:min(100%,440px);
+    box-sizing:border-box;
+  }
+
+  /* The nav remains intentionally swipeable; don't enlarge the page canvas. */
+  body:not(.admin) #visitorNav {
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    box-sizing:border-box;
+  }
+  body:not(.admin) #visitorNav::-webkit-scrollbar { display:none; }
+  body:not(.admin) #visitorNav button {flex:0 0 auto;}
+}
+@media (max-width:390px) {
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-offline-intro {
+    padding:30px 16px 22px;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-offline-intro h2 {
+    font-size:clamp(38px,10vw,44px);
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-hero-actions {
+    flex-direction:column;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) .hud-hero-actions button {
+    width:100%;
+  }
+}
