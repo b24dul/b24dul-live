@@ -117,3 +117,13 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Applied code:** `f084c125` removes mobile sticky nav via final `position:static!important` selectors and resets scroll offsets. `07dca232` versions the stylesheet link to avoid cached CSS. All 112 IDs intact, original JS unchanged, CSS syntax checked.
 
 **Browser UNVERIFIED:** After Pages publishes latest commit, verify the nav starts in normal flow under header and disappears naturally when scrolling into the Videos list; verify Home/Games and Chat navigation and Watch iframe continue to work. If still floating, capture exact URL served, loaded stylesheet URL, and viewport mechanics rather than layering further guesses.
+
+## Emergency rollback after repeated mobile breakage — 2026-11-17
+
+**OWNER FAIL:** After 6B.4 the owner reports "It's broken again now." The 6B arcade styling and all successive mobile patches (6B.1–6B.4) have not achieved stable user acceptance.
+
+**Rollback source PASS:** `index.html` restored exactly to Phase 5B blob `35e4cae027b06e9939903ff9993562655823144a` via commit `48151782`; `styles.css` restored exactly to Phase 5B blob `d1da438471b90ef7a55336028e25ec7ccecd3268` via commit `26b56830`. Exact content comparison passed; 112 original IDs preserved. No functional script/backend edits.
+
+**Browser UNVERIFIED:** GitHub Pages must publish the rollback. Have owner confirm site returned to previously working Phase 5B, especially mobile navigation and Watch. Do not call mobile defects solved; this is a rollback to a known owner-tested state.
+
+**Process control:** No more blind CSS overrides on `main`; first set up browser viewport checks and make future changes on a reviewable branch/preview with screenshot comparison, then apply only tested fixes.
