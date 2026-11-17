@@ -360,6 +360,16 @@ When a new chat begins, the assistant should:
 
 **Development decision:** Phase 6A rejected; Phase 6B and its successive mobile patches rolled back. Freeze redesign until stable browser QA. Do not claim completed Phase 6B or mobile bugfix.
 
+## 10.18 Owner identified outer heading-area border on mobile (2026-11-17)
+
+**New diagnosis from owner:** The offending element is **the border surrounding the CATCH UP / PAST VIDEOS & STREAMS heading area**, not the text or the 2048 board. Previous attempts changed the wrong parts of the UI, introduced regressions, and were rolled back to Phase 5B. Inspection of actual current markup establishes that the title is in `.visitor-content-head` inside the visitor `main`, and `main` has a `border:1px solid #48535F` declaration under the mobile <=760px media rule.
+
+**Surgical change:** [`d7c501b0`](https://github.com/b24dul/b24dul-live/commit/d7c501b0ecc6e885f5a857f6d17f38131f41e5ef) changes **only** that mobile outer main border declaration to `border:0`. A source round-trip comparison confirmed no other CSS change. [`1aeceab0`](https://github.com/b24dul/b24dul-live/commit/1aeceab0eed349effca92cb87fbf8cff23b45811) changes the stylesheet request to `styles.css?v=mobile-frame-border-20261117` for reliable delivery after publishing. No HTML IDs or JavaScript handlers changed.
+
+**Scope/intent:** Remove redundant outer frame around Home, Games and Videos headings on phones, while preserving HUD inner panels, their titles, video playback, nav behavior, games and all functional code. **This is a cosmetic border removal, not a proven fix to any underlying height or overflow problem.** Phase 6A and Phase 6B remain rolled back and frozen.
+
+**Verification:** GitHub source change committed; CSS string equivalence verified apart from the exact replacement. Owner/browser visual acceptance still open. If problems persist, measure actual browser element boundaries before further edits, not another blanket CSS override.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 5B owner-tested files restored after further breakage; Phase 6B and mobile overrides undone. Published-site recheck pending.
