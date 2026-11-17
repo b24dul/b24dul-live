@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { GlassPanel, PrimaryButton } from '../components/ui';
 
 type Props = { children: ReactNode };
@@ -10,11 +10,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(): State {
     return { failed: true };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    // Never log private user data or error details into public UI.
-    if (import.meta.env.DEV) console.error('Preview render error', error, info);
   }
 
   render() {

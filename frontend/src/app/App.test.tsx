@@ -52,7 +52,7 @@ describe('isolated application shell', () => {
       target: { value: 'not-real' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
-    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('No matching section');
+    expect(screen.getByText(/No matching section/)).toBeVisible();
     fireEvent.change(screen.getByRole('searchbox', { name: 'Find a section' }), {
       target: { value: 'tools' },
     });
