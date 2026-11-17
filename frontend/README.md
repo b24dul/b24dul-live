@@ -1,6 +1,6 @@
-# B24DUL Phase 1 frontend foundation
+# B24DUL — isolated React release candidate
 
-This directory is an **isolated, unpublished** React/TypeScript/Vite proof of foundation.
+This directory contains the **isolated, unpublished** React/TypeScript/Vite Milestone 1 release candidate.
 The existing repository-root `index.html`, `styles.css`, assets, Firebase integrations,
 games, video sync and stream worker remain the production site. Nothing here changes the
 GitHub Pages entrypoint.
@@ -14,7 +14,7 @@ Requires Node.js 22+ and access to npm. The dependency lockfile is already commi
 3. `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` and `npm run format:check` are checked in GitHub Actions.
 4. `npx playwright install chromium` then `npm run test:e2e` exercises the browser checks.
 
-Phases 1–4 have passed GitHub Actions. Phase 5 introduces local, versioned preferences;
+Phases 1–7 have automated verification evidence; Phase 7 produces a downloadable **unpublished** release candidate. Phase 5 introduced versioned preferences;
 refer to `../docs/local-preferences.md` and `PROJECT_STATUS.md` for current gate status.
 No Firebase SDK is installed here, and no production cutover has been authorised.
 
@@ -67,3 +67,7 @@ a GitHub Pages-formatted artifact **without calling deploy-pages**. Review
 The React prototype does **not** yet provide production Firebase Auth, community/chat,
 stream embeds, real games, live moderation or admin workflows. It must not replace the
 legacy production site merely because the isolated pages pass automated tests.
+
+## Phase 7 verification evidence
+
+[Release run 44085481343](https://github.com/b24dul/b24dul-live/actions/runs/44085481343) passed 22 unit and 4 compiled-site browser tests, static asset verification and packaging. [Foundation 44085481249](https://github.com/b24dul/b24dul-live/actions/runs/44085481249) passed the existing 19 Chromium regression tests. The React preview artifact is **not** a production feature-parity replacement: authentication, streaming, chat, games, privacy and admin functionality still run on the legacy live site.

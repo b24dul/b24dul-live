@@ -39,6 +39,14 @@ A GitHub Actions artifact is not a public browser preview URL. For local review,
 
 ## Evidence
 
-Phase 6 gate before release work: 22 Vitest + 19 Chromium, 38 Firefox/WebKit across both engines, mobile Lighthouse 91/100/100/100, desktop 100/100/100/100, JS gzip 136057 bytes. Phase 7 artifact and compiled-build tests require their own green run; source commit, run ID and artifact checks must be written to `PROJECT_STATUS.md` after observed success.
+Phase 6 gate before release work: 22 Vitest + 19 Chromium, 38 Firefox/WebKit across both engines, mobile Lighthouse 91/100/100/100, desktop 100/100/100/100, JS gzip 136057 bytes. Phase 7 artifact and compiled-build tests passed on source commit `8890f72152e1920190a5533dc2819a2b75d5c268`: [release CI run 44085481343](https://github.com/b24dul/b24dul-live/actions/runs/44085481343) SUCCESS (22 unit, 4 compiled-site Chromium tests, install/lint/strict TS/format/build/static integrity/JS budget). The separate existing [foundation run 44085481249](https://github.com/b24dul/b24dul-live/actions/runs/44085481249) also SUCCESS (22 unit, 19 Chromium).
 
 Known limits: no externally hosted React preview URL yet, no production data integration, no actual Firebase/Cloudflare interaction testing, no manual WCAG certification or physical iOS Safari check. No secrets, subscriptions, or production config changes made by this phase.
+
+## Verified Phase 7 artifacts and disposition
+
+- **Source revision:** `8890f72152e1920190a5533dc2819a2b75d5c268`.
+- **[Release workflow 44085481343](https://github.com/b24dul/b24dul-live/actions/runs/44085481343)** passed every step and produced **`b24dul-react-release-candidate`** (artifact ID `14329895585`, approx 143553 compressed bytes) and **`github-pages`** Pages-format artifact (ID `14328867487`, approx 143306 compressed bytes). Both are uploaded for review; **neither has been deployed**.
+- **[Foundation 44085481249](https://github.com/b24dul/b24dul-live/actions/runs/44085481249)** passed all legacy M1 frontend gates including 19 Chromium regressions. The Phase 6 Firefox/WebKit and Lighthouse measurements remain documented in `docs/testing.md`.
+- **GitHub Pages public site:** unchanged legacy root; no new public preview URL created. Artifact review is an offline/local preview option, not a staged public deployment.
+- **Production CUTOVER BLOCKER:** Existing auth, game, stream, chat, admin and privacy capabilities are not connected in M1 React. Require separately authorised M2 feature integration and parity verification before any production replacement. Release candidate is **technically valid static output**, not a feature-complete replacement.
