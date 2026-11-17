@@ -54,6 +54,10 @@ for(const width of widths){
     return {width,docScrollWidth:doc.scrollWidth,bounds,errors};
   },width);
   results.push(r);if(r.errors.length)failed=true;
+  if(width===390 || width===1280){
+    fs.mkdirSync("qa-artifacts",{recursive:true});
+    await page.screenshot({path:`qa-artifacts/admin-${width}px.png`,fullPage:true});
+  }
   console.log(JSON.stringify({width,scrollWidth:r.docScrollWidth,errors:r.errors}));
   await page.close();
 }
