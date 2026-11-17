@@ -1,7 +1,4 @@
-import {
-  normaliseAuthIdentity,
-  type AuthSession,
-} from './authSession';
+import { normaliseAuthIdentity, type AuthSession } from './authSession';
 
 export type ObservedUser = { uid: string; isAnonymous: boolean } | null;
 export type ObserverUnsubscribe = () => void;
@@ -34,7 +31,7 @@ export function subscribeToAuthSession(
     }
   };
 
-  const onError = (_error: unknown) => {
+  const onError = () => {
     if (!active) return;
     onSession({ status: 'error', reason: 'Authentication state unavailable' });
   };
