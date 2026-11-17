@@ -7,6 +7,7 @@ const REFRESH_MS = 60_000;
 const DIRECT_CHANNEL_URL = 'https://www.youtube.com/channel/UCnXAfqk5I7QE3frLhHHyImQ/live';
 
 export function PublishedStreamStatus() {
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [status, setStatus] = useState<PublishedLiveStatus>({
     state: 'unavailable',
     reason: 'network',
@@ -20,7 +21,10 @@ export function PublishedStreamStatus() {
       const controller = new AbortController();
       pending = controller;
       const result = await fetchPublishedLiveStatus(controller.signal);
-      if (active && !controller.signal.aborted) setStatus(result);
+      if (active && !controller.signal.aborted) {
+        if (result.state !== 'live') setSelectedVideoId(null);
+        setStatus(result);
+      }
     }
     void refresh();
     const interval = window.setInterval(() => void refresh(), REFRESH_MS);
@@ -48,7 +52,7 @@ export function PublishedStreamStatus() {
       </div>
       <p className="mt-3 text-sm leading-relaxed text-slate-300">
         {live
-          ? 'The existing monitor recently confirmed a YouTube broadcast. The new player is not yet connected.'
+          ? 'The existing monitor recently confirmed a YouTube broadcast. You can choose to load the embedded player below.'
           : offline
             ? 'The existing monitor recently confirmed the channel was offline. Playback remains accessible.'
             : 'The current broadcast state could not be verified. This does not mean the channel is offline.'}
@@ -74,6 +78,34 @@ export function PublishedStreamStatus() {
         >
           Open confirmed broadcast <ArrowUpRight size={16} aria-hidden="true" />
         </a>
+      )}
+      {live && (
+        <div className="mt-5">
+          {selectedVideoId === status.videoId ? (
+            <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10">
+              <iframe
+                className="h-full w-full"
+                title="B24DUL verified live broadcast"
+                src={'https://www.youtube-nocookie.com/embed/' + status.videoId}
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="ui-button ui-button--primary"
+              onClick={() => setSelectedVideoId(status.videoId)}
+            >
+              Load verified live player
+            </button>
+          )}
+          <p className="mt-2 text-xs text-slate-400">
+            The YouTube player loads only when you choose to open it. If playback is blocked,
+            use the direct YouTube broadcast link above.
+          </p>
+        </div>
       )}
     </GlassPanel>
   );
