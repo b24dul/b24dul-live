@@ -397,3 +397,9 @@ When a new chat begins, the assistant should:
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 5B owner-tested files restored after further breakage; Phase 6B and mobile overrides undone. Published-site recheck pending.
+
+## 10.21 Phase 7 merge verification (2026-11-17)
+
+**Done in GitHub:** [PR #6](https://github.com/b24dul/b24dul-live/pull/6) merged at [`d39a3601`](https://github.com/b24dul/b24dul-live/commit/d39a3601423dd5ac48d1ee3c17d553e5b9713cb3) after both branch and PR Chromium workflows passed. 36/36 measured viewport checks passed, including admin slot relocation and the previously failing narrow header; snapshots for 390/1280px are recorded as CI artifacts. `main` source verified to retain 112 original unique IDs and Claude's crucial flex/height fix. No admin JS or Firebase permission changes.
+
+**Owner sign-off pending:** This is tested **CSS/DOM geometry**, not proof of real admin sign-in or moderation writes, stream detection, user data, YouTube player or iOS Safari. Separate production acceptance remains necessary. The legacy Phase 7 visual deliverable is merged; larger M1 React rebuild remains at Phase 0 and is not implicitly started.
