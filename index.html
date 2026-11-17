@@ -595,6 +595,11 @@
     header a.sub { padding: 6px 10px; font-size: 12px; }
   }
 
+  .visitor-stream-fallback { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:13px 15px; margin-bottom:14px; border:1px solid #574a1d; background:#26220e; border-radius:10px; }
+  .visitor-stream-fallback strong { font-size:13px; }
+  .visitor-stream-fallback p { color:var(--muted); font-size:12px; line-height:1.4; margin:4px 0 0; max-width:440px; }
+  .visitor-stream-fallback button { flex:none; font-size:12px; }
+  @media (max-width:760px) { .visitor-stream-fallback { padding:12px; } .visitor-stream-fallback button { width:100%; } }
   /* Predictable 2048 tile geometry, including narrow phones and 4-digit tiles. */
   body:not(.admin) .g2-wrap { width:100%; max-width:100%; gap:15px; align-items:flex-start; }
   .g2-board-shell { position:relative; flex:0 1 520px; width:min(520px,100%); min-width:0; }
@@ -644,7 +649,7 @@
 </header>
 <nav id="visitorNav" aria-label="Explore B24DUL Live">
   <button type="button" data-visitor-view="home" class="active" aria-current="page">Home</button>
-  <button type="button" data-visitor-view="watch" title="Open the YouTube player">Check stream</button>
+  <button type="button" data-visitor-view="watch" title="Open the YouTube livestream player">Watch stream</button>
   <button type="button" data-visitor-view="games">Games</button>
   <button type="button" data-visitor-view="videos">Videos</button>
   <button type="button" data-visitor-view="chat">Chat</button>
@@ -744,6 +749,10 @@
           </div>
         </div>
         <div id="ofVideos" hidden>
+          <div class="visitor-stream-fallback">
+            <div><strong>Want to check the livestream?</strong><p>Automatic status detection can be delayed. You can open the player anytime, even if the website still says offline.</p></div>
+            <button type="button" id="tryLivePlayer" class="primary">Try live player ↗</button>
+          </div>
           <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Old videos</span></div>
           <div class="vid-player" id="vidPlayer" hidden>
             <iframe id="vidFrame" title="B24DUL video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
@@ -1413,7 +1422,7 @@
   let currentLiveNoticeId = 0;
   const visitorViews = {
     home: ["B24DUL COMMUNITY", "Welcome to B24DUL Live", "Games, videos and anonymous community chat — all in one place."],
-    watch: ["YOUTUBE PLAYER", "Watch B24DUL", "The player is available even while live-status detection is catching up. If the stream just started, open it here."],
+    watch: ["YOUTUBE PLAYER", "Watch B24DUL", "The player is always available. The LIVE label may update later than the broadcast itself."],
     games: ["COMMUNITY ARCADE", "Choose your next challenge", "Play Sudoku or 2048 and compete for the top spot."],
     game: ["SUDOKU", "Sudoku challenge", "Pick your difficulty and see how fast you can solve the puzzle."],
     g2048: ["2048", "Join the 2048 challenge", "Merge tiles, beat your best and climb the leaderboard."],
@@ -1427,8 +1436,8 @@
     $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : (liveDetectionReady ? "Broadcast offline" : "Checking broadcast…");
     const liveButton = $('visitorNav').querySelector('[data-visitor-view="watch"]');
     liveButton.setAttribute("aria-disabled", "false");
-    liveButton.title = streamLive ? "Watch the livestream" : "Browse past videos while B24DUL is offline";
-    liveButton.textContent = streamLive ? "● Live now" : "Past videos";
+    liveButton.title = streamLive ? "Watch the confirmed livestream" : "Open the YouTube player even if detection is delayed";
+    liveButton.textContent = streamLive ? "● Live now" : "Watch stream";
     liveButton.classList.toggle("is-live", streamLive);
     document.querySelector("main").dataset.mobileSection = activeVisitorTab === "chat" ? "chat" : "content";
     document.querySelector("main").dataset.visitorSection = visitorView;
@@ -1441,9 +1450,9 @@
     }
   }
   function applyLive() {
-    // Video is shown only after a recent positive YouTube detection.
-    // Offline and stale results reveal past uploads instead of an empty embed.
-    const showVideo = streamLive && (isAdmin || visitorView === "watch");
+    // Never gate a visitor-initiated video player behind GitHub scheduling.
+    // Broadcast labels/notifications still require fresh verified detection.
+    const showVideo = (isAdmin && streamLive) || (!isAdmin && visitorView === "watch");
     const yt = $("ytFrame");
     $("playerFrame").classList.toggle("offline", !showVideo);
     yt.hidden = !showVideo;
@@ -1474,13 +1483,9 @@
       return;
     }
     if (view === "watch") {
-      if (!streamLive) {
-        showOffline("videos");
-      } else {
-        visitorView = "watch";
-        activeVisitorTab = "watch";
-        applyLive();
-      }
+      visitorView = "watch";
+      activeVisitorTab = "watch";
+      applyLive();
     } else if (view === "videos") {
       showOffline("videos");
     } else if (view === "games") {
@@ -1493,6 +1498,7 @@
   $("visitorNav").querySelectorAll("button[data-visitor-view]").forEach((button) => {
     button.addEventListener("click", () => navigateVisitor(button.dataset.visitorView));
   });
+  $("tryLivePlayer").addEventListener("click", () => navigateVisitor("watch"));
   const streamNotice = $("streamStartedNotice");
   function dismissStreamNotice() {
     streamNotice.hidden = true;
@@ -1689,12 +1695,9 @@
       streamNotice.hidden = true;
       pendingStreamNoticeId = "";
     }
-    if (!isAdmin && wasLive && !streamLive && visitorView === "watch") {
-      // Only redirect stream watchers. Keep Sudoku/2048 and chat intact.
-      showOffline("videos");
-    } else {
-      applyLive();
-    }
+    // Never evict someone from a player they opened. An ended YouTube
+    // broadcast remains visible as an ended video until they navigate away.
+    applyLive();
   }
   onValue(ref(db, "settings/liveDetection"), (snap) => {
     const value = snap.val() || {};
