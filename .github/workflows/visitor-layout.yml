@@ -1,7 +1,7 @@
 name: Visitor viewport layout verification
 on:
   push:
-    branches: [phase-7-admin-browser-qa]
+    branches: [main, phase-7-admin-browser-qa]
   pull_request:
     branches: [main]
   workflow_dispatch:
