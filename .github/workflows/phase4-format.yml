@@ -1,0 +1,34 @@
+name: Phase 4 one-time formatting
+
+on:
+  push:
+    paths:
+      - '.github/workflows/phase4-format.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install locked dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Format isolated frontend
+        working-directory: frontend
+        run: npm run format
+      - name: Commit formatted frontend files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- frontend/
+          if ! git diff --cached --quiet; then
+            git commit -m "style(pages): format Phase 4 page layouts and tests"
+            git push origin HEAD:main
+          fi
