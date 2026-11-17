@@ -344,14 +344,14 @@ function SettingsPage() {
   return (
     <PageFrame
       title="Settings"
-      description="Your appearance and accessibility controls will live here."
+      description="Change your local appearance and accessibility preferences."
     >
       <GlassPanel className="p-6 sm:p-8">
         <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
         <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          The working desktop sidebar collapse control is in the navigation rail. Your choice is
-          saved only in this browser; no Firebase record or account setting is changed.
+          Use the navigation rail or the controls below. Your choices are saved only in this browser;
+          no Firebase account or cloud record is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>

@@ -43,7 +43,7 @@ describe('isolated application shell', () => {
     expect(screen.getByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
-    expect(window.localStorage.getItem('b24dul.sidebar.collapsed.v1')).toBe('true');
+    expect(JSON.parse(window.localStorage.getItem('b24dul.preferences.v1') || '{}').sidebarCollapsed).toBe(true);
   });
 
   it('navigates only to named sections using the header search', () => {
