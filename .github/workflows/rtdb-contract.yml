@@ -1,0 +1,27 @@
+name: M2 RTDB security contract audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'security/**'
+      - '.github/workflows/rtdb-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Run deterministic synthetic rule regression tests
+        run: node --test security/rtdb-security-audit.test.mjs
+      - name: Explain scope
+        run: |
+          echo "Static contract regression tests passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "These tests are NOT Firebase emulator permission tests and do NOT prove that production rules match the owner-provided export." >> "$GITHUB_STEP_SUMMARY"
