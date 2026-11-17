@@ -13,8 +13,8 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 2 complete — Phase 3 responsive application shell is next**
-- Overall status: **Phase 1 and Phase 2 complete, with full automated Phase 2 gate passed in GitHub Actions run 44069800672. Production site still unchanged.**
+- Current phase: **Phase 3 complete — Phase 4 homepage and page-specific layouts are next**
+- Overall status: **Phases 1–3 complete. Phase 3 GitHub Actions run 44071740422 passed 13 unit tests, 6 Playwright browser tests, install, lint, typecheck, build and formatting. Production remains unchanged.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
@@ -41,7 +41,7 @@
 | 0 Repository audit | Documentation complete; live QA pending | `c8cee97dc283ad7bd1e5cb270fe22d3cd5efc168`, `000a10950a98eaa9b4921272cc764a0aee4c2446`, `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`; final status-file commit: inspect HEAD | GitHub source/tree/workflow inspections completed; runtime, build, browser and Firebase/Worker checks **not run** | Documentation-only; exact source baseline recorded; no new branch per owner |
 | 1 Frontend foundation | **Complete — CI gate passed** | `f991293a1907c731a0eec336ef5d21cd7e1889bb` (lockfile + formatted files); `1ec13733060724858f27b9510fcef796247618cd` (read-only verification workflow) | [GitHub Actions run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885): npm ci, lint, typecheck, Vitest (1 test), Vite build, formatting, Chromium Playwright **passed** | Isolated `frontend/`; `package-lock.json` committed; no Firebase or production cutover |
 | 2 Design system | **Complete — CI gate passed** | `78db0f2356ebd02e956d4325bb3bfc8cb577b357` (formatted components); `6c150bc852a6e92830165bf327273698c788cd23` (passing CI source revision) | [Run 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672): npm ci, ESLint, strict TypeScript, Vitest (5 tests), Vite build, Prettier and Chromium Playwright **passed** | Fifteen components, semantic glass tokens, responsive showcase, documentation; root production UI preserved |
-| 3 App shell and routes | Not started | | Not run | Eleven HashRouter routes |
+| 3 App shell and routes | **Complete — CI gate passed** | `8b8ec3ced72b9c5c4ecee1aeee2090e11024f845` (initial shell), `04826923232a9e1ec5cf3c5b5cef10d5c19976bb` (wired routes), `945f8ef48f81a826c621fb927370c98cc9c0f615` (formatted), `9083420b52a6d6d4948ca89924d00d7fd3be3c13` (temporary formatter removed) | [Run 44071740422](https://github.com/b24dul/b24dul-live/actions/runs/44071740422): 13 unit + 6 browser tests, all seven CI steps passed | Desktop/collapsed sidebar, mobile navigation, eleven HashRouter destinations, search, guest/notifications shell, 404 and error boundary |
 | 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
 | 5 Local settings | Not started | | Not run | Versioned local preferences |
 | 6 QA/accessibility/performance | Not started | | Not run | Validate all responsive/browser gates |
@@ -57,8 +57,8 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 2 completion/handoff after successful required CI. Next phase is Phase 3 responsive app shell with eleven HashRouter routes; no cutover approval granted.
-- Exact next task: implement Phase 3 responsive application shell and eleven HashRouter routes in isolated `frontend/`, preserving existing tests, accessibility and root production code. Do not connect Firebase or deploy new UI to Pages without explicit cutover approval.
+- In progress: Phase 3 completion/handoff after successful automated gate. Next stage is Phase 4 homepage and page-specific shells; no production cutover authorisation.
+- Exact next task: Phase 4 homepage and page layouts, typed read-only existing videos.json adapter, honest disconnected/demo states; retain all checks. Do not connect Firebase or replace production Pages entrypoint without explicit approval.
 - Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
@@ -171,3 +171,16 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - **Gate PASSED:** [GitHub Actions 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672), `foundation` job success on source commit `6c150bc852a6e92830165bf327273698c788cd23`. Confirmed all seven checks: `npm ci`, ESLint, strict TypeScript, Vitest (5 passing tests), Vite production build, Prettier and Chromium Playwright browser smoke. Browser tests include 320/390/768/1280 responsive overflow and accessible modal focus/keyboard behavior. This is Phase 2 automated coverage, **not** a full WCAG or Firebase production E2E audit.
 - **Scope verification:** GitHub compare `7a4fa98980f4495b87404eff98e1631b20aa0c7e...537bb85ae8b02ef3301fb6a8c00ac048ba6bb552` shows only `frontend/**`, `docs/design-system.md`, and `PROJECT_STATUS.md`. Temporary formatter workflow was removed and does not exist in final tree. Existing published HTML/CSS/Firebase/game/chat/video/Worker assets unchanged.
 - **Status:** Phase 2 **COMPLETE**, no owner visual sign-off implied; user may request refinement. Next: Phase 3 desktop sidebar/header, mobile bottom navigation, eleven accessible HashRouter routes. Do not start backend migration or change public GitHub Pages entrypoint. Exact status-file commit SHA is in GitHub HEAD, not self-embedded.
+
+## 2026-11-17 — M1 Phase 3 complete: responsive application shell
+- Owner authorised Phase 3 with 'ok do it'; no authorisation to modify the live Pages entrypoint.
+- Pre-Phase-3 checkpoint: `2c8275a06f5b94773a5df19fbc08310979810b72`. Rollback uses Git commits, not this status document.
+- Implemented eleven HashRouter routes: `/`, `/explore`, `/watch`, `/videos`, `/games`, `/community`, `/tools`, `/competitions`, `/profile`, `/settings`, `/admin`; unknown routes get a useful 404 with navigation.
+- Desktop sidebar targets 248px expanded and 76px collapsed with keyboard-accessible toggle, tooltips/labels and locally saved `b24dul.sidebar.collapsed.v1` preference with storage fallback. Below 1024px, mobile nav prioritises Home, Watch, Games, Community and Explore. Header has known-route search, non-authenticated guest presentation, informational notifications dialog, skip link, active states and route-focus management. Motion respects reduced-motion preference. Error boundary offers reload.
+- All route shells are clearly labelled disconnected previews; no fake live stream state, viewer counts, accounts, competitions, scores, chat or admin privileges. Phase 4 will build full content. Phase 5 owns comprehensive versioned settings; sidebar preference is only a Phase 3 local setting.
+- New tests include route registry, deep hash routes, refresh, unknown route, mobile tabs, sidebar persistence and keyboard access, responsive overflow at 320/375/430/768px and 812px landscape, 1366/1920px desktop, notifications and known-section search.
+- CI PASSED: [run 44071740422](https://github.com/b24dul/b24dul-live/actions/runs/44071740422), foundation job `133999404051`: `npm ci`, ESLint, strict TypeScript, 13 Vitest tests, Vite production build, Prettier and 6 Chromium Playwright browser tests all successful.
+- Temporary formatter generated commit `945f8ef48f81a826c621fb927370c98cc9c0f615`; write-enabled workflow deleted in commit `9083420b52a6d6d4948ca89924d00d7fd3be3c13`. Normal test workflow is still read-only.
+- GitHub compare from Phase 2 handoff to temporary formatter removal showed changes only in `frontend/**`; root production HTML/CSS, stream worker, Firebase, games, video data, credentials and legacy workflows unchanged.
+- NEXT: Phase 4 homepage and comprehensive page layouts; use a read-only typed adapter for existing videos.json and label demo data; do not start Firebase M2 or production cutover.
+- Status-file commit SHA is the new GitHub HEAD and cannot self-reference.
