@@ -77,6 +77,15 @@ def main():
     live, video_id = detect_live()
     print("YouTube detection: " + ("LIVE " + video_id if live else "offline"))
     firebase_admin.initialize_app(credentials.Certificate(account), {"databaseURL": DATABASE_URL})
+    # Every successful check publishes a fresh timestamp and the stream ID.
+    # Visitors can now tell the difference between LIVE and stale detection.
+    checked_at_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+    db.reference("settings/liveDetection").set({
+        "live": live,
+        "videoId": video_id or "",
+        "checkedAt": checked_at_ms,
+    })
+    print("Published live detection heartbeat at " + str(checked_at_ms))
     live_setting = db.reference("settings/live")
     current = live_setting.get()
     # Read the actual published state, not only the workflow's saved history.
