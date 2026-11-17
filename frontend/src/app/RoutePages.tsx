@@ -11,6 +11,7 @@ import {
   UserRound,
   Wrench,
 } from 'lucide-react';
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArchiveTile,
@@ -24,8 +25,14 @@ import { games, utilities } from '../data/directory';
 import { archivedVideos } from '../services/videoArchive';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
-import { Practice2048 } from '../features/games/Practice2048';
 import { routes } from './navigation';
+
+const Practice2048 = lazy(() =>
+  import('../features/games/Practice2048').then((module) => ({ default: module.Practice2048 })),
+);
+const PracticeSudoku = lazy(() =>
+  import('../features/games/PracticeSudoku').then((module) => ({ default: module.PracticeSudoku })),
+);
 
 const website = 'https://b24dul.github.io/b24dul-live/';
 
@@ -170,21 +177,24 @@ function GamesPage() {
   return (
     <PageFrame
       title="Game Centre"
-      description="Play favourites on the current site and see what is planned for B24DUL."
+      description="Play practice games and find favourites on the current site."
     >
       <GlassPanel className="p-5 sm:p-7">
         <StatusIndicator status="neutral">
           Existing games remain on the published site
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Sudoku and 2048 remain available on the published site. The 2048 practice below does not
-          change existing saves or leaderboard records.
+          Sudoku and 2048 remain available on the published site. Practice games below do not change
+          existing saves or leaderboard records.
         </p>
         <a className="ui-button ui-button--primary mt-4" href={website}>
           Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </GlassPanel>
-      <Practice2048 />
+      <Suspense fallback={<p role="status">Loading practice games…</p>}>
+        <Practice2048 />
+        <PracticeSudoku />
+      </Suspense>
       <EditorialSection title="Browse games" description="Availability is labelled for every game.">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {games.map((game) => (

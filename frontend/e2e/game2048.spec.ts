@@ -14,7 +14,7 @@ test('loads and plays a copy of a legacy save without modifying it', async ({ pa
     legacySave,
   );
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load saved game copy' }).click();
+  await page.getByRole('button', { name: 'Load 2048 save copy' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Loaded a copy' })).toBeVisible();
   const board = page.getByRole('grid', { name: '2048 board' });
   await expect(board.getByRole('gridcell')).toHaveCount(16);
@@ -30,7 +30,7 @@ test('starts a playable practice game and leaves an unreadable save untouched', 
 }) => {
   await page.addInitScript(() => window.localStorage.setItem('b24dul_2048', 'bad save'));
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load saved game copy' }).click();
+  await page.getByRole('button', { name: 'Load 2048 save copy' }).click();
   await expect(
     page.getByText('This saved game could not be read. It has been left unchanged.'),
   ).toBeVisible();
@@ -48,7 +48,7 @@ test('moves a loaded practice board with a swipe', async ({ page }) => {
     legacySave,
   );
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load saved game copy' }).click();
+  await page.getByRole('button', { name: 'Load 2048 save copy' }).click();
   const board = page.getByRole('grid', { name: '2048 board' });
   await board.evaluate((element) => {
     const start = new Event('touchstart', { bubbles: true });

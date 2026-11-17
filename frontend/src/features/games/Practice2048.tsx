@@ -95,7 +95,7 @@ export function Practice2048() {
           {game ? 'New practice game' : 'Start 2048 practice'}
         </button>
         <button className="ui-button ui-button--secondary" type="button" onClick={loadLegacy}>
-          Load saved game copy
+          Load 2048 save copy
         </button>
       </div>
       <p className="mt-3 text-sm text-slate-300" role="status">
