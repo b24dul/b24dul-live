@@ -1,0 +1,80 @@
+name: M1 React release candidate - no deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-release-candidate.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-release-candidate.yml'
+  workflow_dispatch:
+
+# No deployment permission, Pages environment or deploy-pages step.
+# Live GitHub Pages continues to publish the legacy repository root.
+permissions:
+  contents: read
+
+concurrency:
+  group: b24dul-react-release-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Strict TypeScript
+        run: npm run typecheck
+      - name: Unit and component tests
+        run: npm test
+      - name: Formatting
+        run: npm run format:check
+      - name: Create production release candidate
+        run: npm run build
+      - name: Validate static assets and Pages base path
+        run: node scripts/verify-release.mjs
+      - name: Check gzip JavaScript budget
+        run: node scripts/js-budget.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Exercise BUILT site using hash navigation
+        run: npx playwright test --config=playwright.release.config.ts
+      - name: Package downloadable release files
+        if: success()
+        uses: actions/upload-artifact@v5
+        with:
+          name: b24dul-react-release-candidate
+          path: frontend/dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Package official Pages-format artifact (NOT deployed)
+        if: success()
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: frontend/dist/
+      - name: Upload browser failures
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-candidate-browser-failures
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 14
