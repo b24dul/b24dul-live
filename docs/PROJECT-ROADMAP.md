@@ -298,6 +298,18 @@ When a new chat begins, the assistant should:
 
 **Acceptance:** Rollback and Phase 6B committed, but **user/browser verification of the rollback and arcade mobile interface remains outstanding**. Next: owner checks Watch on phone for the regression and tests Games→Sudoku/2048 on mobile and desktop; handle any actual remaining failures. After Phase 6B, continue to Phase 6C Videos or Phase 7 based on owner direction, **not** 6A.
 
+## 10.13 Phase 6B.1 — Game panel and text-container width repair (2026-11-17)
+
+**Owner-reported visual defect:** On 2048, the title section **"JOIN THE 2048 CHALLENGE / Merge tiles, beat your best and climb the leaderboard."** appeared **narrower than the 2048 tile/board**; owner reports mismatched text-box dimensions and messy alignment across the website. Prior owner rejection of Phase 6A Watch redesign still stands.
+
+**Cause identified in source:** The visitor main layout has a persistent desktop chat rail while Sudoku/2048 use viewport-based fixed board widths of 440–520px and separate flex children for controls. At narrower content widths, text headings, content panel and tile grid can size by different constraints. Legacy media-query overrides compounded this. This is a source-level likely cause; exact browser box measurements not available.
+
+**Fix committed:** [`3035d919`](https://github.com/b24dul/b24dul-live/commit/3035d9190dc66b50ba9672123c70e86a01ceee73) adds a scoped sizing consistency layer for visitor content, title panels, Sudoku and 2048: `min-width:0`, `max-width:100%`, constrained 2048 board shell and square board, responsive stacked board/control columns at <=1350px, wrapped title text and buttons, narrower safe mobile padding and tools. [`fbaa3e5b`](https://github.com/b24dul/b24dul-live/commit/fbaa3e5b1081488b268c961572d14dce04e45954) explicitly excludes Watch Stream from mobile heading/padding overrides. No markup or application JS changed.
+
+**Preservation checks:** Original 112 HTML IDs unchanged and unique, CSS balanced, `ytFrame` intact, Phase 6A stays removed, game data/logic, chat and admin unchanged. Watch's player layout and behaviour are not directly restyled by the repair.
+
+**Acceptance pending:** Owner should compare the 2048 headline/outer text container width against the 2048 board on a narrow phone, check Sudoku at same size, and inspect Home, Games, Videos for horizontal clipping or uneven panels. These fixes are not yet device/browser verified. If still mismatched, collect the page and device width / screenshot for measured correction.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B arcade styling committed. Source checks passed; live/mobile re-test pending.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B arcade styling and 6B.1 width consistency repair committed. Source checks passed; live/mobile re-test pending.
