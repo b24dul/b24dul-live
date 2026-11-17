@@ -52,6 +52,48 @@ export function parseYouTubePage(url, status, html = "", location = "") {
   return { state: "unknown", reason: "unrecognised-youtube-response" };
 }
 
+// Read only bounded, structured video renderers from YouTube page JSON.
+// A generic LIVE badge somewhere on the page is NOT evidence for this channel.
+export function inspectVideoRenderers(html) {
+  const candidates = [];
+  const token = '"videoRenderer":{';
+  let cursor = 0;
+  for (let count = 0; count < 100; count++) {
+    const at = html.indexOf(token, cursor);
+    if (at < 0) break;
+    const start = at + token.length - 1;
+    let depth = 0, quoted = false, escaped = false, end = -1;
+    for (let i = start; i < Math.min(html.length, start + 120000); i++) {
+      const ch = html[i];
+      if (quoted) {
+        if (escaped) escaped = false;
+        else if (ch === "\\\\") escaped = true;
+        else if (ch === '"') quoted = false;
+      } else if (ch === '"') quoted = true;
+      else if (ch === "{") depth++;
+      else if (ch === "}" && --depth === 0) { end = i + 1; break; }
+    }
+    cursor = end > 0 ? end : start + 1;
+    if (end < 0) continue;
+    try {
+      const entry = JSON.parse(html.slice(start, end));
+      const id = entry.videoId;
+      if (!VIDEO_ID.test(id || "")) continue;
+      const badgeData = JSON.stringify({ badges: entry.badges,
+        overlays: entry.thumbnailOverlays, upcoming: entry.upcomingEventData,
+        views: entry.viewCountText });
+      const liveBadge = /BADGE_STYLE_TYPE_LIVE_NOW|LIVE NOW|THUMBNAIL_OVERLAY_TIME_STATUS_STYLE_LIVE|\\"label\\":\\"LIVE\\"/.test(badgeData);
+      const upcoming = Boolean(entry.upcomingEventData) || /UPCOMING|PREMIERE/.test(badgeData);
+      const ownerId = entry.ownerText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId
+        || entry.longBylineText?.runs?.[0]?.navigationEndpoint?.browseEndpoint?.browseId || "";
+      candidates.push({ videoId: id, ownerMatchesChannel: ownerId === CHANNEL_ID,
+        ownerIdentified: Boolean(ownerId), liveBadge, upcoming });
+    } catch { /* Non-JSON fragments are never affirmative detection. */ }
+  }
+  return { rendererCount: candidates.length,
+    liveCandidates: candidates.filter(x => x.liveBadge).slice(0, 8) };
+}
+
 // Cloudflare often reaches YouTube without a browser's consent-cookie state.
 // Request the public channel with privacy-choice cookie and only retry once
 // on a consent redirect. Never POST a consent form or follow an untrusted URL.
@@ -92,6 +134,7 @@ export async function detectYouTube(fetchImpl = fetch) {
       firstLiveNowOffset: html.indexOf('"isLiveNow"'),
       hasConsentPage: /consent\.youtube\.com|before you continue to youtube|consent-bump/i.test(html),
       hasBotChallenge: /unusual traffic|verify you are human|automated queries/i.test(html),
+      videoRenderers: inspectVideoRenderers(html),
     };
     return { parsed: parseYouTubePage(url, response.status, html, location),
       upstreamStatus: response.status, location, pageSignals,
