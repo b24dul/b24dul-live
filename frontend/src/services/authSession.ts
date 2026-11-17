@@ -27,7 +27,8 @@ export function normaliseAuthIdentity(
 ): AuthIdentity {
   if (user === null) return { kind: 'signed-out' };
   if (!user.uid.trim()) throw new Error('Firebase user UID must not be empty');
-  return user.isAnonymous ? { kind: 'anonymous', uid: user.uid } : { kind: 'google', uid: user.uid };
+  if (user.isAnonymous) return { kind: 'anonymous', uid: user.uid };
+  return { kind: 'google', uid: user.uid };
 }
 
 /** Never start a second anonymous session until Firebase resolves persistence. */
