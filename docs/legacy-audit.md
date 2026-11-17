@@ -21,8 +21,8 @@ Audit date: 2026-11-17 UTC. Repository: `b24dul/b24dul-live`. Read-only source i
 | 2048 | `index.html` `g2*` controls, swipe/keyboard, local saved state, `viewers/{uid}/g2048` | Preserve score and best state, gameplay and leaderboard. |
 | Leaderboards | `index.html` `leaderboard/{board}/{uid}`; board examples Sudoku levels and `g2048` | Current client submits values; actual published anti-cheat rules and write validation unknown. Future competitions require trusted validation; do not silently re-use untrusted scores for XP. |
 | Admin dashboard | `index.html` `#adminWorkspace`, viewer/stats/moderation/privacy panels, CSS `body.admin` | Preserve all admin flows and ensure no merely client-side security claims. |
-| Current visual assets | `styles.css` (~69 KB), `index.html` (~110 KB), `assets/*.svg`, `og.png`; `docs/DESIGN-SYSTEM.md` | Existing tactical HUD / neon design from recent commits is a **legacy state**, not the binding new glassmorphism direction. Keep accessible until approved cutover. |
-| Existing internal docs | `docs/PROJECT-ROADMAP.md`, `docs/DESIGN-SYSTEM.md`, `docs/AUTO-LIVE-DETECTION.md`, `docs/PRIVACY-REQUEST-HISTORY.md` | Retain as historical implementation records. New master prompt controls future milestones; record and resolve deviations, do not erase history. |
+| Current visual assets | `styles.css` (~69 KB), `index.html` (~110 KB), `assets/*.svg`, `og.png`; `docs/legacy-tactical-design-system.md` | Existing tactical HUD / neon design from recent commits is a **legacy state**, not the binding new glassmorphism direction. Keep accessible until approved cutover. |
+| Existing internal docs | `docs/PROJECT-ROADMAP.md`, `docs/legacy-tactical-design-system.md`, `docs/AUTO-LIVE-DETECTION.md`, `docs/PRIVACY-REQUEST-HISTORY.md` | Retain as historical implementation records. New master prompt controls future milestones; record and resolve deviations, do not erase history. |
 
 ## Deployment and repository evidence
 

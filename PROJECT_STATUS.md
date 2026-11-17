@@ -329,3 +329,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Added emulator cases for **atomic chat `messages` + `lastPost` writes and cooldown**, and for the risk that a syntactically valid client-provided 2048 leaderboard score lacks trusted gameplay attestation. They are intended to exercise the actual supplied rules in a local demo Firebase emulator, not production.
 - [RTDB static-contract CI run 44141496837](https://github.com/b24dul/b24dul-live/actions/runs/44141496837) completed SUCCESS, including Node syntax-check of the private emulator test suite and 4/4 synthetic static regression tests. **Real emulator permissions remain unverified** because no private snapshot secret `B24DUL_RTDB_RULES_B64` is configured/confirmed and the manually triggered emulator workflow has not run.
 - Source snapshot SHA-256 `7a41637df7aa59d16de568da0b7b8614f5cbcb30f0726473f1de28a633a88fef` was checked locally and kept out of the repository. `security/README.md` gives exact owner-controlled secret setup and run steps. Do not mark `firebaseRules` passed.
+
+## 2026-11-17 — Windows checkout compatibility
+
+- Preserve the legacy tactical and React glassmorphism design documents under distinct names: the legacy document is renamed to `docs/legacy-tactical-design-system.md`, byte-for-byte, and references are updated. `docs/design-system.md` retains its original blob. This avoids their case-only filename collision on Windows; no existing local file was overwritten.
+- Git attributes select LF for text in future checkouts; Prettier accepts the existing checkout's line endings without rewriting files. A Windows checkout passed `npm run format:check` after this change. Existing working trees are not automatically rewritten.
+- This change does not constitute production release approval or modify Firebase rules, data or credentials.
