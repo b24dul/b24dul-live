@@ -19,6 +19,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+      - name: Syntax-check private emulator suite without exposing rules
+        run: |
+          node --check security/rtdb-emulator.test.mjs
+          node --check security/rtdb-security-audit.mjs
       - name: Run deterministic synthetic rule regression tests
         run: node --test security/rtdb-security-audit.test.mjs
       - name: Explain scope
