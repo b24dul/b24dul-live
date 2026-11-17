@@ -67,7 +67,7 @@ test('video archive presents real source metadata and safe outbound YouTube link
 }) => {
   await page.goto('./#/videos');
   await expect(page.getByText(/read-only archive snapshot/i)).toBeVisible();
-  const videos = page.getByRole('link', { name: /Watch .* on YouTube/ });
+  const videos = page.getByRole('link', { name: /Watch on YouTube:/ });
   const count = await videos.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {
