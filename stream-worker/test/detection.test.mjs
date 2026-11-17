@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseYouTubePage, checkAndPublish } from "../src/index.js";
+import { parseYouTubePage, detectYouTube, checkAndPublish } from "../src/index.js";
 
 const url = "https://www.youtube.com/channel/UCnXAfqk5I7QE3frLhHHyImQ/live";
 test("channel/live redirect detects broadcast", () => {
@@ -28,4 +28,31 @@ test("unknown and blocked pages never report offline", () => {
 test("inconclusive checks do not require Firebase or change a setting", async () => {
   const result = await checkAndPublish({}, async () => ({ state: "unknown", reason: "blocked" }));
   assert.deepEqual(result, { checked: false, reason: "blocked" });
+});
+
+test("consent redirect retries public YouTube channel once with privacy cookie", async () => {
+  const calls = [];
+  const fakeFetch = async (url, opts) => {
+    calls.push({ url, cookie: opts.headers.cookie });
+    if (calls.length === 1) return { status: 302, headers: new Headers({ location: "https://consent.youtube.com/m?continue=example" }) };
+    return { status: 302, headers: new Headers({ location: "https://www.youtube.com/watch?v=oYJneqAyj04" }) };
+  };
+  const result = await detectYouTube(fakeFetch);
+  assert.equal(result.state, "live");
+  assert.equal(result.videoId, "oYJneqAyj04");
+  assert.equal(result.consentRetry, true);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].url, url + "?ucbcb=1");
+  assert.equal(calls[0].cookie, "SOCS=CAI");
+});
+test("repeated consent redirects do not claim live or offline", async () => {
+  let calls = 0;
+  const result = await detectYouTube(async () => {
+    calls++;
+    return { status: 302, headers: new Headers({ location: "https://consent.youtube.com/m?continue=x" }) };
+  });
+  assert.equal(calls, 2);
+  assert.equal(result.state, "unknown");
+  assert.equal(result.redirectHost, "consent.youtube.com");
+  assert.equal(result.consentRetry, true);
 });
