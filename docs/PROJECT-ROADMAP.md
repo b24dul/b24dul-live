@@ -95,10 +95,10 @@ B24DUL Live is an independent gaming/creator livestream website. It provides an 
 - [x] Restyle chat shell, message list, composer, host labels, pinned message and broadcast notifications without modifying Firebase listeners; browser QA pending.
 - [ ] Confirm Cloudflare live/offline updates still reflect correctly in the redesigned interface.
 
-### Phase 3 — Content and interactive sections
-- [ ] Restyle existing VODs/past videos, social/community links and any other actual sections.
-- [ ] Apply coherent styling to existing game(s), including 2048.
-- [ ] Implement card/empty-state/offline layouts; do not create blank placeholder pages or fake stats.
+### Phase 3 — Content and interactive sections (major visual transformation committed to main)
+- [x] Restyle existing VOD/video cards and home content cards with a distinct neo-noir composition. Existing external links and video loaders preserved; browser QA outstanding.
+- [x] Apply cohesive visual styling to Sudoku and 2048 boards, scores, buttons and leaderboards; gameplay JavaScript unchanged and browser QA outstanding.
+- [x] Rework offline home hero with original CSS sunset/sun/grid illustration and clear activity tiles, without fabricated stats or placeholder pages; verify layout on devices.
 
 ### Phase 4 — Micro-interactions, QA and launch
 - [ ] Refine hover, status, alert banners, subtle effects and reduced-motion behavior.
@@ -167,6 +167,20 @@ When a new chat begins, the assistant should:
 **New decision:** Limit this update to scoped CSS. Overlay corners have `pointer-events: none` to avoid blocking YouTube playback; do not draw overlay over offline games. Do not fabricate stats or alter monitor/Worker code.
 
 **Known issues:** No regression verified; runtime browser testing remains outstanding. The site itself could not be fetched through available web preview tooling, so deployment cannot yet be certified.
+
+## 10.3 Phase 3 — Major offline home and arcade redesign (2026-11-17)
+
+**Reason for change:** The owner reported that Phase 1/2 looked too similar to the original site. The next update intentionally changed visual composition and section hierarchy, rather than only accent colours and thin borders.
+
+**Done:** Committed [`1011db3b`](https://github.com/b24dul/b24dul-live/commit/1011db3bd4db89aa2d26d85f39ad91f892517b85) directly to `main`, as requested. Rebuilt the *presentation* of the existing offline home hero using an original CSS sunset, sun, horizon and perspective grid. Added a bigger typographic lead and meaningful community call to action (no fabricated metrics). Restyled the existing Sudoku/2048/video navigation cards, video thumbnails and watching panel, Sudoku and 2048 panels, game controls, scoreboard and leaderboard. Adjusted responsive layouts at 1060px, 760px and 390px.
+
+**Scope of modifications:** Only `index.html`: one existing offline-hero markup block and appended visitor-focused CSS. Game, video, chat, auth, Firebase, Cloudflare and live-detection JavaScript are unchanged. All 112 preexisting HTML IDs retained in their original order. Live playback iframe and its fallback remain independent of the cosmetic home hero. Admin interface selectors remain excluded by `body:not(.admin)` for most design changes.
+
+**Design decision:** Original CSS illustration instead of unlicensed external game artwork, and substantial home/card hierarchy over incremental cosmetic touches. Retain all five real tabs and the current static stack.
+
+**Verification:** Source comparison of original JS and list/order of HTML IDs passed. Browser rendering, responsive overflow, colour contrast, game interaction, gate, administrator and live detection were **not** automatically tested; the live GitHub Pages content cannot be independently fetched via current web tooling. GitHub commit to `main` does not itself prove Pages publishing.
+
+**Next:** Perform manual browser QA at 320/375/768/1280px and fix any overflow or readability issues. Exercise Home, Games, Sudoku, 2048, Videos, Chat, Watch stream (including offline/stale detection), login/gate, admin workspace and privacy request. Then refine CSS/animation/accessibility and evaluate whether navigation/header needs a larger composition change.
 
 ## 10. Progress snapshots
 
