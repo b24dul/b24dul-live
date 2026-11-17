@@ -70,3 +70,14 @@ test("unrelated live badge does not contaminate renderer candidate", () => {
   const html = '"LIVE NOW" {"videoRenderer":{"videoId":"oYJneqAyj04","badges":[]}}';
   assert.deepEqual(inspectVideoRenderers(html).liveCandidates, []);
 });
+
+test("verified channel homepage without live player is only an offline candidate", () => {
+  const html = '<title>B24DUL - YouTube</title>{"channelMetadataRenderer":{"externalId":"UCnXAfqk5I7QE3frLhHHyImQ"}}';
+  assert.deepEqual(parseYouTubePage(url, 200, html), { state: "offline-candidate", method: "channel-homepage" });
+});
+test("unrelated channel, live badge or a video player cannot imply offline", () => {
+  const base = '<title>B24DUL - YouTube</title>{"channelMetadataRenderer":{"externalId":"UCnXAfqk5I7QE3frLhHHyImQ"}}';
+  assert.equal(parseYouTubePage(url, 200, base.replace("UCnXAfqk5I7QE3frLhHHyImQ", "UCanother")).state, "unknown");
+  assert.equal(parseYouTubePage(url, 200, base + "BADGE_STYLE_TYPE_LIVE_NOW").state, "unknown");
+  assert.equal(parseYouTubePage(url, 200, base + '"videoDetails":{}').state, "unknown");
+});
