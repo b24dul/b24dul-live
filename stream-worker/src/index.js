@@ -69,8 +69,23 @@ export async function detectYouTube(fetchImpl = fetch) {
     });
     const location = response.headers.get("location") || "";
     const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
+    // Diagnostic signatures, not page contents. These reveal what sort of
+    // page YouTube returned without leaking consent/session query parameters.
+    const pageSignals = {
+      htmlBytes: html.length,
+      contentType: (response.headers.get("content-type") || "").split(";")[0],
+      title: (html.match(/<title[^>]*>([^<]{0,100})<\/title>/i)?.[1] || "").slice(0, 100),
+      hasPlayerResponse: /ytInitialPlayerResponse|playerResponse/.test(html),
+      hasInitialData: /ytInitialData/.test(html),
+      hasVideoId: /"videoId":"[\\w-]{11}"/.test(html),
+      hasLiveNow: /"isLiveNow":true/.test(html),
+      hasIsLiveContent: /"isLiveContent":true/.test(html),
+      hasLiveBroadcastDetails: /"liveBroadcastDetails"/.test(html),
+      hasConsentPage: /consent\.youtube\.com|before you continue to youtube|consent-bump/i.test(html),
+      hasBotChallenge: /unusual traffic|verify you are human|automated queries/i.test(html),
+    };
     return { parsed: parseYouTubePage(url, response.status, html, location),
-      upstreamStatus: response.status, location,
+      upstreamStatus: response.status, location, pageSignals,
       pageType: /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ? "channel" : "other" };
   }
 
@@ -83,7 +98,8 @@ export async function detectYouTube(fetchImpl = fetch) {
     result = await requestChannel(CHANNEL_LIVE_URL + "?ucbcb=1");
   }
   return { ...result.parsed, upstreamStatus: result.upstreamStatus,
-    redirected: Boolean(result.location), pageType: result.pageType, consentRetry };
+    redirected: Boolean(result.location), pageType: result.pageType, consentRetry,
+    ...(result.parsed.state === "unknown" ? { pageSignals: result.pageSignals } : {}) };
 }
 
 const base64url = (bytes) => {
