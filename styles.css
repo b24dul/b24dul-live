@@ -2105,3 +2105,60 @@ body:not(.admin) #ofGame .sd-levels button {
     width:100%;
   }
 }
+
+
+/* PHASE 6B.3 — MOBILE FLAT CONTENT / user-confirmed prior patches invisible.
+   Deliberate obvious change: no nested MAIN DISPLAY border above offline content.
+   Watch/video playback and admin contexts are explicitly excluded. */
+@media (max-width:760px) {
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) .hud-feed-heading {
+    display:none!important;
+  }
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #playerFrame.offline {
+    display:block;
+    aspect-ratio:auto!important;
+    width:100%;
+    height:auto!important;
+    max-height:none!important;
+    min-height:0;
+    border:0!important;
+    box-shadow:none!important;
+    background:transparent!important;
+    overflow:visible!important;
+  }
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #offline {
+    width:100%;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    border:0;
+  }
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #ofChoose,
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #ofVideos,
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #ofGame,
+  body:not(.admin) main:is([data-visitor-section="home"],[data-visitor-section="games"],[data-visitor-section="game"],[data-visitor-section="g2048"],[data-visitor-section="videos"]) #of2048 {
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    height:auto;
+    overflow:visible;
+    box-sizing:border-box;
+  }
+  body:not(.admin) main[data-visitor-section="home"] .visitor-offline-intro {
+    padding:24px 18px;
+    border:1px solid #647481;
+    background:linear-gradient(115deg,#1A2430,#0D131B);
+  }
+  body:not(.admin) main[data-visitor-section="home"] .visitor-offline-intro h2 {
+    font-size:clamp(38px,9.5vw,58px);
+    line-height:1.04;
+    margin-block:15px;
+  }
+  body:not(.admin) main[data-visitor-section="games"] .arcade-hud-heading {
+    border:0;
+    border-bottom:1px solid #5E6B77;
+  }
+  body:not(.admin) main[data-visitor-section="videos"] .visitor-stream-fallback {
+    border:1px solid #5E6B77;
+  }
+}
