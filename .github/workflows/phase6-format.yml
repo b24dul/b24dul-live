@@ -1,4 +1,5 @@
 name: Phase 6 one-time formatting
+# Re-run after Lighthouse accessibility fixes; delete once successful.
 
 on:
   push:
