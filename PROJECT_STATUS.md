@@ -340,3 +340,8 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 
 - Upgraded the isolated frontend's Vitest development dependency from 3.2 to 4.1.12. A fresh Node 22 lockfile install, all 40 unit tests on this branch, lint (five existing warnings), typecheck, build, formatting and 24 Chromium tests passed locally. The identity-branch tests are separate and must also pass when the branches are combined.
 - npm audit after installation reported 11 high findings and no critical findings, compared with the earlier 13 findings including two critical; remaining findings require separate remediation. Node 26 still fails 12 existing jsdom/localStorage tests without a workaround; Node 22 remains the tested CI baseline. No production cutover or Firebase integration is implied.
+
+## 2026-11-17 — Node 26 test compatibility
+
+- The Node 26 test failures were caused by its global `localStorage` masking Vitest's jsdom storage. The test setup now explicitly uses the backing jsdom window's real storage. No application code or production storage was changed.
+- With the Vitest upgrade on the parent branch, the unmodified `npm test` command passed all 40 tests on both Node 22.23.5 and Node 26.13.1. Typecheck, lint (five pre-existing warnings) and formatting passed. The additional identity-branch tests still require a combined-branch run.
