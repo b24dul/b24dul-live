@@ -23,16 +23,31 @@ jobs:
     timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
+      - name: Check Firebase credential is configured
+        id: config
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::Automatic live detection is not activated. Add the FIREBASE_SERVICE_ACCOUNT_JSON Actions secret; see docs/AUTO-LIVE-DETECTION.md."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-python@v5
+        if: steps.config.outputs.configured == 'true'
         with:
           python-version: "3.12"
       - name: Install detection and Firebase libraries
+        if: steps.config.outputs.configured == 'true'
         run: python -m pip install "yt-dlp>=2026.1" "firebase-admin>=6.5,<8"
       - name: Detect current broadcast and update Firebase on changes
+        if: steps.config.outputs.configured == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: python .github/scripts/check_live.py
       - name: Record state for the next check
+        if: steps.config.outputs.configured == 'true'
         run: |
           if git status --porcelain -- live-monitor-state.json | grep -q .; then
             git config user.name "github-actions[bot]"
