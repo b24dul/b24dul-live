@@ -233,22 +233,6 @@
         <div class="sd-overlay" id="sdOverlay" hidden><div class="sd-ov-card" id="sdOvCard"></div></div>
       </div>
     </div>
-    <section class="watch-hud-details" aria-label="Broadcast controls and information">
-      <div class="watch-hud-primary">
-        <span class="watch-hud-tag">B24DUL LIVE / BROADCAST CONTROL</span>
-        <h2>LIVE FEED<span aria-hidden="true">.</span></h2>
-        <p>Watch directly here, even when live detection hasn't updated. Broadcast status is verified separately from the player.</p>
-        <div class="watch-hud-status" role="status" aria-live="polite">
-          <span class="watch-hud-lamp" aria-hidden="true"></span>
-          <strong data-watch-status>CHECKING SIGNAL</strong>
-        </div>
-      </div>
-      <div class="watch-hud-actions">
-        <a href="https://www.youtube.com/@B24DUL" target="_blank" rel="noopener noreferrer" class="watch-hud-channel">OPEN YOUTUBE <span aria-hidden="true">↗</span></a>
-        <button type="button" class="watch-hud-chat" data-hud-jump="chat">OPEN CHAT <span aria-hidden="true">↗</span></button>
-        <p class="watch-hud-hint">PLAYER 01 / YOUTUBE <span aria-hidden="true">·</span> Controls stay inside the video</p>
-      </div>
-    </section>
   </section>
 
   <aside class="chat">
@@ -875,12 +859,6 @@
     $("visitorHeading").textContent = heading[1];
     $("visitorSubtitle").textContent = heading[2];
     $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : (liveDetectionReady ? "Broadcast offline" : "Checking broadcast…");
-    // Broadcast presentation mirrors verified detector state; never equate an open player with LIVE.
-    const watchStatus = document.querySelector("[data-watch-status]");
-    if (watchStatus) {
-      watchStatus.textContent = streamLive ? "ON AIR / SIGNAL CONFIRMED" : (liveDetectionReady ? "OFFLINE / PLAYER AVAILABLE" : "CHECKING SIGNAL / PLAYER AVAILABLE");
-    }
-    document.querySelector("main").dataset.broadcastState = streamLive ? "live" : (liveDetectionReady ? "offline" : "checking");
     const liveButton = $('visitorNav').querySelector('[data-visitor-view="watch"]');
     liveButton.setAttribute("aria-disabled", "false");
     liveButton.title = streamLive ? "Watch the confirmed livestream" : "Open the YouTube player even if detection is delayed";
