@@ -310,6 +310,18 @@ When a new chat begins, the assistant should:
 
 **Acceptance pending:** Owner should compare the 2048 headline/outer text container width against the 2048 board on a narrow phone, check Sudoku at same size, and inspect Home, Games, Videos for horizontal clipping or uneven panels. These fixes are not yet device/browser verified. If still mismatched, collect the page and device width / screenshot for measured correction.
 
+## 10.14 Phase 6B.2 — Screenshot-driven mobile shell containment correction (2026-11-17)
+
+**Owner report:** The previous Phase 6B.1 sizing repair did not fix the site. Three actual iPhone Safari screenshots supplied: Home, Games and Videos. Observed failures: sticky horizontal navigation obscures the heading near the top after navigation; the nested `MAIN DISPLAY` border encloses less than the height of its content, allowing Home hero and Games cards to extend visibly past the outer frame; stacked child boxes have inconsistent inset/width; Videos has another nested card/fallback frame and inconsistent borders. Owner explicitly requested implementation and commit. These visual defects supersede prior assumptions that the 2048 board alone caused the problem.
+
+**Implemented in [`3edecd67`](https://github.com/b24dul/b24dul-live/commit/3edecd67b8de564b1ca9eadf7d1ca8e94a8fe644):** New bottom-of-file CSS `PHASE 6B.2 — MOBILE CONTENT-SHELL REPAIR` applies at <=760px and only to non-Watch visitor layout. It removes mobile desktop-style outer margins/borders, uses unified 100%-width box sizing for Home, Games, video panel, headers, cards and game surfaces, sets the **offline** player frame to `height:auto; aspect-ratio:auto; overflow:visible` to follow content height, enforces hidden `#offline[hidden]` handling, resets video library to a single-column minmax(0,1fr) grid and media/card sizing, aligns controls and cards, improves word wrapping, establishes 104px navigation scroll clearance, and leaves horizontal tabs swipeable. Games and Sudoku/2048 receive matching bounded widths. At <=390px hero actions stack. Styling and DOM of active Watch Stream playback and administration are not changed.
+
+**Preservation:** Only `styles.css` changed. No `index.html`, JavaScript, Firebase, Worker, YouTube iframe, game logic or data edits. Static checks: CSS braces/comments balanced, 112 unique original IDs, `ytFrame` present, Phase 6A absent, and no new `#playerFrame:not(.offline)` or `#ytFrame` selectors. The owner's three screenshots are the acceptance baseline.
+
+**Acceptance still needed:** Browser render on the same iPhone: scroll to Home/Games/Videos and ensure headings are no longer hidden under sticky tabs, outer `MAIN DISPLAY` frame encloses the full hero, game cards and video library content, no horizontal clipping at 320/375/390px, game boards stay square and full-width, Chat tab works, and Watch playback still behaves as in the approved version. A source-level test is not browser proof.
+
+**Next:** Receive owner visual check; fix any remaining screenshot-matched bug before Phase 6C/7. Do not reintroduce Phase 6A Watch redesign.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B arcade styling and 6B.1 width consistency repair committed. Source checks passed; live/mobile re-test pending.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B.2 screenshot-driven mobile shell repair committed after owner reported 6B.1 did not fix the layout. Source checks passed; iPhone visual confirmation pending.
