@@ -127,3 +127,7 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Browser UNVERIFIED:** GitHub Pages must publish the rollback. Have owner confirm site returned to previously working Phase 5B, especially mobile navigation and Watch. Do not call mobile defects solved; this is a rollback to a known owner-tested state.
 
 **Process control:** No more blind CSS overrides on `main`; first set up browser viewport checks and make future changes on a reviewable branch/preview with screenshot comparison, then apply only tested fixes.
+
+## Outer section-frame border — owner diagnosis (2026-11-17)
+
+Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS” title/description as the apparent source of the layout issue (not the text itself). Current code shows title within `.visitor-content-head` and a mobile `main` border declaration. Commit `d7c501b0` removes that border only, with exact source round-trip equality for all other CSS; commit `1aeceab0` versions the stylesheet request for cache busting. **Device PASS is not claimed**; watch for border removal and any remaining height/overflow issue on owner iPhone. Do not resume broad CSS redesign without measured evidence.
