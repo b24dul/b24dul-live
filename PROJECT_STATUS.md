@@ -13,8 +13,8 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 1 — foundation verified; Phase 2 design system is next**
-- Overall status: **Phase 1 complete: committed npm lockfile and full automated installation, lint, typecheck, Vitest, Vite build, formatting and Chromium Playwright checks passed on GitHub Actions run 44068641885. Existing production site unchanged.**
+- Current phase: **Phase 2 — glassmorphism design system and reusable components**
+- Overall status: **Phase 1 complete. Phase 2 implementation committed in isolated `frontend/`; automated Phase 2 gate run 44069800672 in progress at time of this update. No production UI cutover.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
@@ -40,7 +40,7 @@
 |---|---|---|---|---|
 | 0 Repository audit | Documentation complete; live QA pending | `c8cee97dc283ad7bd1e5cb270fe22d3cd5efc168`, `000a10950a98eaa9b4921272cc764a0aee4c2446`, `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`; final status-file commit: inspect HEAD | GitHub source/tree/workflow inspections completed; runtime, build, browser and Firebase/Worker checks **not run** | Documentation-only; exact source baseline recorded; no new branch per owner |
 | 1 Frontend foundation | **Complete — CI gate passed** | `f991293a1907c731a0eec336ef5d21cd7e1889bb` (lockfile + formatted files); `1ec13733060724858f27b9510fcef796247618cd` (read-only verification workflow) | [GitHub Actions run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885): npm ci, lint, typecheck, Vitest (1 test), Vite build, formatting, Chromium Playwright **passed** | Isolated `frontend/`; `package-lock.json` committed; no Firebase or production cutover |
-| 2 Design system | Not started | | Not run | Glass tokens/components |
+| 2 Design system | In verification | `78db0f2356ebd02e956d4325bb3bfc8cb577b357` (formatted components); `6c150bc852a6e92830165bf327273698c788cd23` (validation trigger) | [GitHub run 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672), pending final conclusion when status file first updated | Tokens, fifteen named components, responsive demo, docs and new component/browser tests in isolated frontend |
 | 3 App shell and routes | Not started | | Not run | Eleven HashRouter routes |
 | 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
 | 5 Local settings | Not started | | Not run | Versioned local preferences |
@@ -57,8 +57,8 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 1 closeout and handoff, following successful GitHub Actions gate. Phase 2 may begin when requested; Phase 0 audit/preservation plan retained.
-- Exact next task: start Phase 2 glassmorphism design tokens and reusable components per master specification, in isolated `frontend/`; maintain unit/Playwright verification and production preservation. Phase 3 full routes and release cutover remain separate.
+- In progress: Phase 2 component and visual accessibility verification; Phase 1 gate remains complete. Phase 0 preservation plan retained.
+- Exact next task: inspect GitHub Actions run 44069800672, fix any failing Phase 2 checks, then record the passing run and Phase 2 completion. Phase 3 responsive app shell and eleven routes follows only after the Phase 2 gate passes; production cutover stays separate.
 - Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
@@ -156,3 +156,13 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - **Preservation:** all Phase 1 changes under `frontend/**`, its GitHub Actions validation workflow and `PROJECT_STATUS.md`; no root `index.html`/legacy `styles.css` changes, no Firebase connections/rules/data changes, no worker edits or production deployment.
 - **Scope complete:** Phase 1 foundation accepted on passing automated gate and owner-observed check. **Phase 2 not started**; next action is semantic glassmorphism tokens and reusable accessible visual components inside the isolated frontend. Phase 7 cutover still requires explicit approval.
 - **Rollback:** `9b56eef8240f1b04449b4cf45ff5428fb32ace06` is pre-Phase-1 main HEAD. Git commits, not this Markdown file, are actual rollback points. This status commit's SHA is discoverable from GitHub HEAD.
+
+## 2026-11-17 — M1 Phase 2 implementation and verification checkpoint
+- **Authorised by owner:** "begin" after Phase 1 completed; interpreted as beginning Phase 2 glassmorphism design system, not Phase 3 or production cutover.
+- **Starting main SHA:** `7a4fa98980f4495b87404eff98e1631b20aa0c7e`. All Phase 2 application changes scoped to `frontend/`, plus documentation `docs/design-system.md` and this status file. Existing root `index.html`, `styles.css`, Firebase, Cloudflare Worker, game code, video data and legacy QA remain untouched.
+- **Implemented:** semantic background/surface/glass/border/text/accent/status/radius/shadow/spacing tokens; opacity fallback when backdrop blur unsupported; reduced-motion override; keyboard focus and minimum 44px buttons. Reusable `GlassPanel`, `GlassCard`, `PrimaryButton`, `SecondaryButton`, `IconButton`, `PageHeader`, `SectionHeader`, `StatusIndicator`, `LoadingSkeleton`, `EmptyState`, `Modal`, `Toast`, `GameCard`, `VideoCard`, `FeatureCard`. Accessibility: labelled modal, Escape/Tab focus trap/restore, labelled icon-only controls, textual status. Cards and preview deliberately contain sample-only copy; no Firebase or stream calls.
+- **Preview:** replaced only isolated `frontend/src/app/App.tsx` foundation landing with a responsive component showcase. Kept original production-site link and "Isolated development preview" marker. Full eleven HashRouter routes are **Phase 3, not built**.
+- **Tests added:** four React component tests in `frontend/src/components/ui.test.tsx` and Chromium test `frontend/e2e/design-system.spec.ts` for 320/390/768/1280px overflow, dialog open/close, keyboard Escape and focus restoration. Existing Phase 1 unit and browser tests retained.
+- **Build evidence:** intermediate GitHub run [44069510346](https://github.com/b24dul/b24dul-live/actions/runs/44069510346) passed ESLint, TypeScript, Vitest (5 tests), Vite build; failed Prettier on five new files. Formatted all Phase 2 frontend files using a one-time GitHub Actions formatter, successful run `44069681530`; bot commit `78db0f2356ebd02e956d4325bb3bfc8cb577b357`. Deleted temporary write-permission workflow in commit `410875892dd9080b53a6a2490e13bac3a87630b3`. Normal verification retains `contents: read`.
+- **Final gate:** [44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672) triggered by `6c150bc852a6e92830165bf327273698c788cd23`. At recording time installation, lint, typecheck, tests, build and formatting steps were passing; Chromium installation / browser smoke awaited final outcome. **Do NOT mark Phase 2 complete until the full run concludes successfully.**
+- **Next session:** recheck `main` HEAD and CI latest conclusion, update this section and phase tracker with real successful run or fix, then Phase 3 shell + eleven routes if passed. Preserve Git rollback commit `7a4fa98980f4495b87404eff98e1631b20aa0c7e` as pre-Phase-2 checkpoint.
