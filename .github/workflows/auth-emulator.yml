@@ -26,8 +26,10 @@ jobs:
           node-version: '22'
       - name: Install committed dependencies
         run: npm ci --no-audit --no-fund
+      - name: Install Chromium for browser continuity tests
+        run: npx playwright install --with-deps chromium
       - name: Test disposable identities in local Auth emulator
         run: >-
           npx --yes firebase-tools@15.36.0 emulators:exec
           --project demo-b24dul-auth --config scripts/auth-emulator/firebase.json --only auth
-          'node --experimental-strip-types --test scripts/auth-emulator/identity.emulator.test.ts'
+          'node --experimental-strip-types --test scripts/auth-emulator/identity.emulator.test.ts && node node_modules/@playwright/test/cli.js test --config scripts/auth-emulator/playwright.config.ts'

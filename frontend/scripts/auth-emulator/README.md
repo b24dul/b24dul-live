@@ -9,3 +9,7 @@ npx --yes firebase-tools@15.36.0 emulators:exec --project demo-b24dul-auth --con
 ```
 
 The helper is for emulator tests only; it is not a production adapter. Browser persistence, multi-tab races, the recovery experience and matching deployed database rules remain unverified. A linked credential collision is surfaced to the caller, and this fixture never switches identities or migrates data to resolve it.
+
+Browser continuity tests run a loopback-only Vite fixture with the exact legacy Firebase SDK 10.12.2 and the newer SDK. They use the same synthetic demo API key and app name, never production configuration. Install Playwright Chromium, then run the emulator command above with the command in quotes replaced by `node node_modules/@playwright/test/cli.js test --config scripts/auth-emulator/playwright.config.ts`. The pinned legacy SDK is a test-only dependency and must not be shipped to the production application.
+
+These tests verify a synthetic emulator session in Chromium. They do not prove that existing production browser sessions or real Google accounts will migrate, and do not authorize a release.
