@@ -2,7 +2,7 @@ name: Auto-detect YouTube live stream
 
 on:
   schedule:
-    - cron: "2-59/5 * * * *"
+    - cron: "* * * * *"
   workflow_dispatch:
   push:
     branches: [main]
