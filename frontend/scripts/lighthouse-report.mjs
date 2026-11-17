@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
+import process from 'node:process';
 
 const [mobileFile, desktopFile] = process.argv.slice(2);
 if (!mobileFile || !desktopFile) throw new Error('Both mobile and desktop JSON reports are required.');
@@ -20,4 +21,4 @@ for (const [name, file] of [['mobile', mobileFile], ['desktop', desktopFile]]) {
   };
 }
 writeFileSync('lighthouse-summary.json', JSON.stringify(report, null, 2) + '\n');
-console.log(JSON.stringify(report, null, 2));
+process.stdout.write(JSON.stringify(report, null, 2) + '\n');
