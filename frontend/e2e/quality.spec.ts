@@ -1,23 +1,48 @@
 import { expect, test } from '@playwright/test';
 
-const paths = ['/', '/explore', '/watch', '/videos', '/games', '/community', '/tools', '/competitions', '/profile', '/settings', '/admin'];
+const paths = [
+  '/',
+  '/explore',
+  '/watch',
+  '/videos',
+  '/games',
+  '/community',
+  '/tools',
+  '/competitions',
+  '/profile',
+  '/settings',
+  '/admin',
+];
 
-test('all route shells avoid uncaught JS errors, broken internal routes and images', async ({ page }) => {
+test('all route shells avoid uncaught JS errors, broken internal routes and images', async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   for (const path of paths) {
     await page.goto('./#' + path);
     await expect(page.locator('#route-content h1')).toBeVisible();
-    expect(await page.locator('img').evaluateAll((images) => images.filter((img) => img.complete && img.naturalWidth === 0).length)).toBe(0);
-    const broken = await page.locator('a[href^="#/"]').evaluateAll((links) =>
-      links.filter((item) => !(item as HTMLAnchorElement).hash.startsWith('#/')).length,
-    );
+    expect(
+      await page
+        .locator('img')
+        .evaluateAll(
+          (images) => images.filter((img) => img.complete && img.naturalWidth === 0).length,
+        ),
+    ).toBe(0);
+    const broken = await page
+      .locator('a[href^="#/"]')
+      .evaluateAll(
+        (links) =>
+          links.filter((item) => !(item as HTMLAnchorElement).hash.startsWith('#/')).length,
+      );
     expect(broken).toBe(0);
   }
   expect(errors).toEqual([]);
 });
 
-test('skip to content leaves HashRouter destination unchanged and focuses main content', async ({ page }) => {
+test('skip to content leaves HashRouter destination unchanged and focuses main content', async ({
+  page,
+}) => {
   await page.goto('./#/games');
   await page.keyboard.press('Tab');
   const skip = page.getByRole('link', { name: 'Skip to content' });
@@ -55,7 +80,9 @@ test('read-only disconnected states work with external network blocked', async (
   await expect(page.getByText('No privileged actions are available here')).toBeVisible();
 });
 
-test('route controls avoid page-wide horizontal clipping in mobile landscape and zoom', async ({ page }) => {
+test('route controls avoid page-wide horizontal clipping in mobile landscape and zoom', async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 320, height: 568 },
     { width: 375, height: 667 },

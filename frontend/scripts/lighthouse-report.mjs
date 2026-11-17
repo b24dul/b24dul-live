@@ -2,9 +2,13 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import process from 'node:process';
 
 const [mobileFile, desktopFile] = process.argv.slice(2);
-if (!mobileFile || !desktopFile) throw new Error('Both mobile and desktop JSON reports are required.');
+if (!mobileFile || !desktopFile)
+  throw new Error('Both mobile and desktop JSON reports are required.');
 const report = {};
-for (const [name, file] of [['mobile', mobileFile], ['desktop', desktopFile]]) {
+for (const [name, file] of [
+  ['mobile', mobileFile],
+  ['desktop', desktopFile],
+]) {
   const raw = JSON.parse(readFileSync(file, 'utf8'));
   const score = (key) => Math.round((raw.categories?.[key]?.score ?? 0) * 100);
   const metric = (key) => raw.audits?.[key]?.numericValue ?? null;
