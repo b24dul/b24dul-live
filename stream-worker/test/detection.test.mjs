@@ -7,8 +7,15 @@ test("channel/live redirect detects broadcast", () => {
   assert.deepEqual(parseYouTubePage(url, 302, "", "https://www.youtube.com/watch?v=oYJneqAyj04"),
     { state: "live", videoId: "oYJneqAyj04", method: "channel-live-redirect" });
 });
-test("channel page when offline", () => {
-  assert.equal(parseYouTubePage(url, 200, '{"pageType":"WEB_PAGE_TYPE_CHANNEL"}').state, "offline");
+test("generic channel metadata is inconclusive, not offline", () => {
+  assert.equal(parseYouTubePage(url, 200, '{"pageType":"WEB_PAGE_TYPE_CHANNEL"}').state, "unknown");
+});
+test("explicit YouTube offline message is authoritative", () => {
+  assert.equal(parseYouTubePage(url, 200, "The channel is not currently live").state, "offline");
+});
+test("live watch page metadata with correct video ID is live", () => {
+  const html = '<meta itemprop="videoId" content="oYJneqAyj04"> {"isLiveNow":true}';
+  assert.equal(parseYouTubePage(url, 200, html).state, "live");
 });
 test("upcoming event does not trigger live", () => {
   const html = '{"videoId":"oYJneqAyj04","isLiveNow":false,"isUpcoming":true}';
