@@ -212,6 +212,20 @@ When a new chat begins, the assistant should:
 
 **Next:** Verify site appearance on desktop and mobile (320/375/768/1280px), test gate/chat/video/live transition/Sudoku/2048/privacy/admin paths, fix any regressions, and continue exact reference-sheet component fidelity in small committed stages.
 
+## 10.6 Supplied HTML and actual artwork component integration (2026-11-17)
+
+**User feedback:** Owner could not see either original reference sheet being used. Distinction clarified: previously only styling principles were used. The latest pass now includes **actual original SVG artwork files rendered by the live page**, modelled on the uploaded reference-sheet component language. The two original reference sheets remain design references; they are **not** published wholesale as images, because they include example labels and illustrative fictional metrics.
+
+**New repository assets:** `assets/b24dul-live-logo.svg`, `assets/hud-sudoku.svg`, `assets/hud-2048.svg`, `assets/hud-videos.svg`. These are small custom SVGs (not traced/copyrighted game assets), committed on `main`. `index.html` now uses an actual `<img>` for the wordmark and each card icon.
+
+**Owner-supplied HTML mapped:** `b24dul-logo` applied to the existing header brand as an accessible link using `./` (correct for GitHub Pages project path); `hud-on-air` applied to the existing Firebase-driven `liveBadge` so the animation is shown only when a confirmed live state removes `.off`; `hud-nav`/`hud-tab` applied to the five existing destination buttons rather than inventing Schedule/Clips/Crew; `gta-btn` used for existing subscribe, stream fallback, chat and notification controls; `mission-banner` applied to the existing stream-start announcement rather than fabricating a subscriber event. New CSS implements actual hover/focus/animation styling and reduced-motion support.
+
+**Intentionally not activated from sample markup:** hard-coded `$12,450` cash, donation/secure funds, wanted stars, made-up hype level, and fake subscriber success banner; these need authentic data/behaviour. User can request them as static non-stat decorative components separately.
+
+**Commits:** Four original SVG asset commits `07a543b2`, `56cee32c`, `8a43fb56`, `7b51eefd`; asset-usage commit [`1b5a1afb`](https://github.com/b24dul/b24dul-live/commit/1b5a1afbfbc9d1b59e7c61997953f46ff195a6fd); reference-sheet class CSS commit [`64ba4a1e`](https://github.com/b24dul/b24dul-live/commit/64ba4a1e04f26ac4e5eea5365b27aa6dc28f78b2).
+
+**Checks:** Four referenced SVG files exist in the repo. All 112 HTML IDs remain unique, CSS braces balanced, and original application Firebase/live-detector module remains in place. **Browser, chat, admin and GitHub Pages publishing checks are still outstanding.**
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Phases 1–3 and coastal colour pass were superseded by the owner's uploaded reference-sheet Tactical HUD implementation on `main`. External CSS, fonts and core visual layout committed; browser/deployment acceptance tests still outstanding.
