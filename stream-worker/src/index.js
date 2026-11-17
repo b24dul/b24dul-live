@@ -52,22 +52,38 @@ export function parseYouTubePage(url, status, html = "", location = "") {
   return { state: "unknown", reason: "unrecognised-youtube-response" };
 }
 
-async function detectYouTube() {
-  const response = await fetch(CHANNEL_LIVE_URL, {
-    redirect: "manual",
-    headers: {
-      "accept": "text/html,application/xhtml+xml",
-      "accept-language": "en-GB,en;q=0.9",
-      "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    },
-    signal: AbortSignal.timeout(12000)
-  });
-  const location = response.headers.get("location") || "";
-  const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
-  const parsed = parseYouTubePage(CHANNEL_LIVE_URL, response.status, html, location);
-  // Only public, non-sensitive metadata used for diagnosis; no page HTML exposed.
-  return { ...parsed, upstreamStatus: response.status, redirected: Boolean(location),
-    pageType: /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ? "channel" : "other" };
+// Cloudflare often reaches YouTube without a browser's consent-cookie state.
+// Request the public channel with privacy-choice cookie and only retry once
+// on a consent redirect. Never POST a consent form or follow an untrusted URL.
+export async function detectYouTube(fetchImpl = fetch) {
+  async function requestChannel(url) {
+    const response = await fetchImpl(url, {
+      redirect: "manual",
+      headers: {
+        "accept": "text/html,application/xhtml+xml",
+        "accept-language": "en-GB,en;q=0.9",
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "cookie": "SOCS=CAI",
+      },
+      signal: AbortSignal.timeout(12000)
+    });
+    const location = response.headers.get("location") || "";
+    const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
+    return { parsed: parseYouTubePage(url, response.status, html, location),
+      upstreamStatus: response.status, location,
+      pageType: /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ? "channel" : "other" };
+  }
+
+  let result = await requestChannel(CHANNEL_LIVE_URL);
+  let consentRetry = false;
+  if (result.parsed.redirectHost === "consent.youtube.com") {
+    // Re-request YouTube itself, never the consent endpoint. Query parameter
+    // is the public no-cookie banner fallback; failures remain inconclusive.
+    consentRetry = true;
+    result = await requestChannel(CHANNEL_LIVE_URL + "?ucbcb=1");
+  }
+  return { ...result.parsed, upstreamStatus: result.upstreamStatus,
+    redirected: Boolean(result.location), pageType: result.pageType, consentRetry };
 }
 
 const base64url = (bytes) => {
