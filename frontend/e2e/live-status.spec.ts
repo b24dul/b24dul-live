@@ -52,6 +52,8 @@ test('stale or blocked API never invents a live or offline state', async ({ page
   );
   await page.goto('./#/watch');
   await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
+  await expect(page.getByRole('button', { name: 'Load verified live player' })).toHaveCount(0);
+  await expect(page.getByTitle('B24DUL verified live broadcast')).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Open confirmed broadcast/ })).toHaveCount(0);
   await page.route(endpoint, (route) => route.abort());
   await page.reload();
