@@ -254,8 +254,10 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Audit documentation commit: `aec0ade9c57f6ee62347e997e90caaf594861c8e`. This status-file commit's own SHA is obtained from Git history.
 
 ## 2026-11-17 — M2 Step 2: Firebase Auth providers confirmed by owner
-- Owner reports Firebase Authentication **Email/Password, Anonymous and Google** are all enabled (Console report, not independently verified via Firebase API).
-- Documented non-destructive auth migration contract in `docs/m2-integration-audit.md`: preserve restored anonymous UID, never automatically overwrite current sessions, explicit Google/password actions and provider-linking where appropriate, no client admin trust, no token storage or user-record resets.
+- Owner initially reported all three providers, but **subsequently corrected this: only Anonymous and Google are enabled; Email/Password is disabled** (Console report, not independently verified via Firebase API).
+- Documented non-destructive auth migration contract in `docs/m2-integration-audit.md`: preserve restored anonymous UID, never automatically overwrite current sessions, explicit Google sign-in and provider-linking where appropriate, no client admin trust, no token storage or user-record resets.
 - This is documentation only; no production rules/data/auth settings, legacy website, or React authentication code changed. No new tests run.
 - Next implementation gate: isolated RTDB emulator rule tests from supplied rules snapshot, then carefully tested modular Firebase Auth context in `frontend/` without production cutover.
 - Previous audit documentation commit: `98c67bda8753bb33fd07d9320a592f8ed50daef4`.
+
+- **Correction confirmed:** Only Anonymous and Google providers enabled. Email/Password must NOT be represented as enabled or implemented as a current provider. Audit correction commit: `2e93c6effc860f2a50bde511f5bd985e74620058`.
