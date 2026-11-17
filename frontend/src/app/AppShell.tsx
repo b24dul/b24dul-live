@@ -158,9 +158,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           transition={{ duration: 0.16 }}
           className="app-page-transition"
         >
-          <div id="route-content" tabIndex={-1} className="app-page-container">
+          <main id="route-content" tabIndex={-1} className="app-page-container">
             {children}
-          </div>
+          </main>
         </motion.div>
       </div>
       <nav className="app-mobile-nav" aria-label="Mobile navigation">

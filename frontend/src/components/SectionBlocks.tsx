@@ -106,7 +106,7 @@ export function ArchiveTile({ video }: { video: ArchivedVideo }) {
         href={video.watchUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={'Watch ' + video.title + ' on YouTube'}
+        aria-label={'Watch on YouTube: ' + video.title}
       >
         Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" />
       </a>
