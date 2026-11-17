@@ -1,4 +1,4 @@
-import { ArrowUpRight, Gamepad2, Play, Sparkles } from 'lucide-react';
+import { Gamepad2, Play, Sparkles } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { GlassCard, StatusIndicator } from './ui';
 
