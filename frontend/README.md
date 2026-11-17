@@ -54,3 +54,16 @@ and measured scores are documented in `../docs/testing.md`.
 
 **Important:** local Lighthouse against `vite preview` is not a production website
 audit or complete WCAG certification. The existing published website is unchanged.
+
+## Phase 7 — Release candidate (NOT public deployment)
+
+GitHub Actions workflow `frontend-release-candidate.yml` installs locked dependencies,
+checks lint/TypeScript/unit tests/formatting, builds the static site, verifies every
+referenced asset uses `/b24dul-live/`, tests the **built** app with Chromium and
+uploads a downloadable `b24dul-react-release-candidate` artifact. It also produces
+a GitHub Pages-formatted artifact **without calling deploy-pages**. Review
+`../docs/release-candidate.md` for the safe preview and rollback process.
+
+The React prototype does **not** yet provide production Firebase Auth, community/chat,
+stream embeds, real games, live moderation or admin workflows. It must not replace the
+legacy production site merely because the isolated pages pass automated tests.
