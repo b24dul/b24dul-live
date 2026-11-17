@@ -102,8 +102,8 @@ export function PublishedStreamStatus() {
             </button>
           )}
           <p className="mt-2 text-xs text-slate-400">
-            The YouTube player loads only when you choose to open it. If playback is blocked,
-            use the direct YouTube broadcast link above.
+            The YouTube player loads only when you choose to open it. If playback is blocked, use
+            the direct YouTube broadcast link above.
           </p>
         </div>
       )}

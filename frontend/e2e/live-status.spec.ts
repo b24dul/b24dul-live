@@ -78,10 +78,7 @@ test('embedded player is opt-in and limited to a fresh verified broadcast', asyn
   const embed = page.getByTitle('B24DUL verified live broadcast');
   await expect(embed).toHaveCount(0);
   await page.getByRole('button', { name: 'Load verified live player' }).click();
-  await expect(embed).toHaveAttribute(
-    'src',
-    'https://www.youtube-nocookie.com/embed/1yVlKouJnag',
-  );
+  await expect(embed).toHaveAttribute('src', 'https://www.youtube-nocookie.com/embed/1yVlKouJnag');
 });
 
 test('offline and stale states never load an embedded YouTube player', async ({ page }) => {

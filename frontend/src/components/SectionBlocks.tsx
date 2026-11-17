@@ -67,7 +67,9 @@ export function StreamPresentation({ compact = false }: { compact?: boolean }) {
     <GlassPanel className="stream-presentation p-5 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <StatusIndicator status="neutral">
-          {compact ? 'Live status unavailable in this preview' : 'Verified playback available when live'}
+          {compact
+            ? 'Live status unavailable in this preview'
+            : 'Verified playback available when live'}
         </StatusIndicator>
         <span className="text-xs font-semibold tracking-widest text-slate-300 uppercase">
           Stream placeholder
