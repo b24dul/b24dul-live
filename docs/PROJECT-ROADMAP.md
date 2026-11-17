@@ -262,6 +262,16 @@ When a new chat begins, the assistant should:
 
 **Next:** Compare rendered homepage at 320/375/768/1280px and correct readability/overflow. Test navigation via new hero buttons (Watch and Chat), actual YouTube playback, chat focus and admin relocation, Sudoku/2048 and privacy. Record real failures with reproduction steps rather than assuming the static checks prove full functionality.
 
+## 10.10 Owner validation and Phase 6 plan (2026-11-17)
+
+**Owner feedback:** "It works I tested it" following the Phase 5B broadcast command-deck changes. This establishes positive owner testing of the currently published redesign; the owner did **not** specify exact browsers, devices or individual workflows. Do not mark the comprehensive QA matrix as passed on this basis.
+
+**Done:** Source/layout work through Phase 5B; owner confirms that the live site works. Record this as user acceptance feedback, not exhaustive smoke-test evidence.
+
+**Next proposed phase — Phase 6 (site-wide design completion):** (1) dedicated Watch Stream broadcast-focused presentation with existing YouTube player and chat, (2) consistent arcade and Sudoku/2048 design, (3) media-library UI, (4) mobile layout/accessibility refinement, (5) admin styling without altering controls. Preserve the two uploaded visual reference sheets as the visual standard; retain existing data, Firebase auth/chat, Cloudflare detector and privacy flows. Start with Watch Stream presentation and proceed by small commits and verification.
+
+**Outstanding:** Individual tests for desktop/mobile breakpoints, stream live/stale/offline behaviour, chat/moderation, games, privacy and admin need explicit PASS/FAIL observations in `docs/QA-STATUS.md`.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B broadcast command-deck layout and chat-rail composition committed. Source-level checks passed; runtime/browser/deployment acceptance remains UNVERIFIED.
