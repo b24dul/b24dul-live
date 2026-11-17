@@ -30,17 +30,17 @@ export function parseYouTubePage(url, status, html = "", location = "") {
     return { state: "unknown", reason: "unrecognised-redirect" };
   }
   if (status !== 200) return { state: "unknown", reason: "youtube-http-" + status };
-  // Positive signals must reference an actual live video, not an upcoming event.
-  const id = html.match(/"videoId":"([\w-]{11})"/)?.[1] ||
-             html.match(/youtube\.com\/watch\?v=([\w-]{11})/)?.[1];
-  const liveNow = /"isLiveNow":true|"isLiveContent":true|"isLive":true/.test(html);
-  const upcoming = /"isUpcoming":true|"isLiveNow":false/.test(html);
-  if (id && liveNow && !upcoming) return { state: "live", videoId: id, method: "live-page-metadata" };
-  if (/the channel is not currently live/i.test(html) ||
-      /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ||
-      /"channelMetadataRenderer":/.test(html)) {
-    return { state: "offline", method: "channel-page" };
-  }
+  // Generic channel metadata occurs on LIVE channel pages too.
+  // Never use pageType/channelMetadataRenderer as evidence of being offline.
+  // Prefer the selected page's own video ID rather than an unrelated video in
+  // recommendation/sidebar metadata.
+  const pageId = html.match(/<meta[^>]+itemprop=["']videoId["'][^>]+content=["']([\\w-]{11})["']/i)?.[1]
+    || html.match(/"canonicalBaseUrl":"\\/watch\\?v=([\\w-]{11})"/)?.[1]
+    || html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["'][^"']*[?&]v=([\\w-]{11})/i)?.[1];
+  const streaming = /"isLiveNow":true|"isLiveContent":true|"isLive":true/.test(html);
+  if (pageId && streaming) return { state: "live", videoId: pageId, method: "live-page-metadata" };
+  // Only the explicit /live "not currently live" response confirms offline.
+  if (/the channel is not currently live/i.test(html)) return { state: "offline", method: "youtube-explicit-offline" };
   return { state: "unknown", reason: "unrecognised-youtube-response" };
 }
 
@@ -56,7 +56,10 @@ async function detectYouTube() {
   });
   const location = response.headers.get("location") || "";
   const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
-  return parseYouTubePage(CHANNEL_LIVE_URL, response.status, html, location);
+  const parsed = parseYouTubePage(CHANNEL_LIVE_URL, response.status, html, location);
+  // Only public, non-sensitive metadata used for diagnosis; no page HTML exposed.
+  return { ...parsed, upstreamStatus: response.status, redirected: Boolean(location),
+    pageType: /"pageType":"WEB_PAGE_TYPE_CHANNEL"/.test(html) ? "channel" : "other" };
 }
 
 const base64url = (bytes) => {
@@ -143,6 +146,18 @@ export default {
     const url = new URL(request.url);
     if (request.method !== "GET") return json({ error: "Method not allowed" }, 405);
     if (url.pathname === "/api/health") return json({ ok: true, service: "b24dul-live-monitor", source: "youtube-channel-live" }, 200, request.headers.get("origin"));
+    if (url.pathname === "/api/probe") {
+      // Diagnostic only: check YouTube NOW, never write Firebase. The answer
+      // is distinct from /api/status, which shows last *published* Firebase state.
+      try {
+        const detected = await detectYouTube();
+        return json({ ...detected, checkedAt: Date.now(), writes: false }, 200, request.headers.get("origin"));
+      } catch (error) {
+        return json({ state: "unknown", reason: "youtube-fetch-failed",
+          message: String(error).slice(0, 180), checkedAt: Date.now(), writes: false },
+          200, request.headers.get("origin"));
+      }
+    }
     if (url.pathname === "/api/status") {
       // Read-only public status. Data is already public at Firebase settings/liveDetection.
       try {
