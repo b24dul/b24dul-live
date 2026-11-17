@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { EmptyState, GlassPanel, PageHeader, SecondaryButton, StatusIndicator } from '../components/ui';
+import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { routes } from './navigation';
 
 const content: Record<string, { title: string; summary: string; details: string; related: string[] }> = {
