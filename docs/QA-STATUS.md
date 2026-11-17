@@ -131,3 +131,11 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 ## Outer section-frame border — owner diagnosis (2026-11-17)
 
 Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS” title/description as the apparent source of the layout issue (not the text itself). Current code shows title within `.visitor-content-head` and a mobile `main` border declaration. Commit `d7c501b0` removes that border only, with exact source round-trip equality for all other CSS; commit `1aeceab0` versions the stylesheet request for cache busting. **Device PASS is not claimed**; watch for border removal and any remaining height/overflow issue on owner iPhone. Do not resume broad CSS redesign without measured evidence.
+
+## Owner rejection of 10.18 border change — 2026-11-17
+
+**FAIL (owner confirmation):** After the surgical `main` border removal and versioned stylesheet, the user reports **"It not fixed"**. Do not represent commit `d7c501b0` as a successful solution. GitHub Actions reports a successful Pages deployment for head `f7bb14e2fbb7a38f5679c94b372d664fa5869b0a`; successful deployment does **not** prove a specific pixel rendered correctly.
+
+**Next investigation must use rendered element geometry.** Current markup nests `.visitor-content-head` and `.hud-feed-heading` above `#playerFrame.offline`, with `#offline` and individual sections beneath; `main` has its own border in the desktop rules, and `#playerFrame.offline` also has a border. Removing only the mobile `main` border was inadequate. Need an actual Safari/Chromium DOM-bound measurement or screenshot with element outlines and computed styles to locate the frame/height mismatch before editing again.
+
+**Action:** Live CSS frozen at current baseline pending measurement; no additional speculative styles applied in response to this failure.
