@@ -77,22 +77,22 @@ B24DUL Live is an independent gaming/creator livestream website. It provides an 
 
 ## 6. Implementation roadmap
 
-### Phase 0 — Inventory / baseline (IN PROGRESS)
+### Phase 0 — Inventory / baseline (static audit completed; visual QA pending)
 - [x] Inspect `index.html` structure, key DOM IDs, navigation, Firebase/live detection listeners, embeds, video fallback, games, chat, privacy/admin and notifications (static source audit, not browser QA).
 - [x] Produce a baseline list of visible sections and their interactions; note unverified behaviour below.
 - [x] Retain actual Home / Watch stream / Games / Videos / Chat tabs and preserve mobile horizontal tab scrolling with 44px touch targets; assess on devices before final sign-off.
 - [ ] Record baseline screenshots or equivalent visual reference **if useful and possible**.
 - [x] Document initial accessibility and performance constraints (focus-visible, reduced motion, font loading, existing responsive CSS).
 
-### Phase 1 — Core design system and brand (IN PROGRESS)
-- [x] Add initial visitor-scoped HUD CSS tokens, Google Fonts and focus/hover conventions on review branch (not yet deployed).
-- [x] Initial original wordmark, header/status and segmented nav restyling on review branch; existing link, button, and status IDs preserved. **Browser acceptance testing pending.**
+### Phase 1 — Core design system and brand (merged to main; browser QA pending)
+- [x] Add initial visitor-scoped HUD CSS tokens, Google Fonts and focus/hover conventions; merged to `main` in `bd5fb618` (GitHub Pages publishing not independently verified).
+- [x] Initial original wordmark, header/status and segmented nav restyling merged to `main`; existing link, button, and status IDs preserved. **Browser acceptance testing pending.**
 - [ ] Adapted layout and touch sizing in CSS; still test narrow-screen layout, auth/nav and live/offline visual states in a browser.
 
-### Phase 2 — Livestream experience
-- [ ] Restyle real YouTube player into tactical video-frame layout.
-- [ ] Keep direct stream view accessible when monitoring is stale.
-- [ ] Redesign chat frame and stream-status UI while preserving Firebase event listeners.
+### Phase 2 — Livestream experience (visual foundation committed to main)
+- [x] Add viewer-only tactical frame/border/corner details to the real YouTube player when open; gameplay/offline containers excluded. Browser QA pending.
+- [x] Preserve existing direct stream view regardless of stale/absent monitor status; unchanged functional JS, browser QA pending.
+- [x] Restyle chat shell, message list, composer, host labels, pinned message and broadcast notifications without modifying Firebase listeners; browser QA pending.
 - [ ] Confirm Cloudflare live/offline updates still reflect correctly in the redesigned interface.
 
 ### Phase 3 — Content and interactive sections
@@ -119,9 +119,9 @@ B24DUL Live is an independent gaming/creator livestream website. It provides an 
 
 ## 8. Current priorities / open questions
 
-1. Start with a **code-level audit** and map actual navigation before touching UI.
-2. Decide exact active tab labels from existing site content; schedule/clips/store are optional *future* features and must not be represented as existing if absent.
-3. Establish desktop and mobile HUD layouts within performance/contrast limits.
+1. Validate the new Phase 1/2 visitor styling in a browser at mobile and desktop sizes.
+2. Keep Home / Watch stream / Games / Videos / Chat as actual navigation; schedule/clips/store are future ideas only.
+3. Confirm desktop and mobile HUD layouts against performance, contrast and 44px touch-target goals.
 4. Viewer, follower and “hype” counters require real data sources or should be omitted.
 5. Keep progress updates and known bugs inside this file; place links to relevant commits.
 
@@ -146,7 +146,7 @@ When a new chat begins, the assistant should:
 
 **Risks/unknowns:** No automated visitor UI browser test suite currently present. Responsive rules are layered and duplicated; must test 320px, 375px, 768px and desktop widths. Admin DOM relocation may interact with shared CSS. Need real anonymous-auth + chat/send/ban, account gate, privacy flow and games smoke tests; live/offline UI transitions require controlled testing. The text of visitor-gate privacy disclosures should be reviewed for consistency with actual collection separately from visual design. Font CDN may be unavailable: local fallbacks are supplied.
 
-**Review:** [Draft PR #4](https://github.com/b24dul/b24dul-live/pull/4) — intentionally unmerged until manual visitor/admin/browser acceptance testing.
+**Review:** [PR #4](https://github.com/b24dul/b24dul-live/pull/4) was merged into `main` on 2026-11-17 at user's request, despite browser QA still outstanding. Merge commit: [`bd5fb618`](https://github.com/b24dul/b24dul-live/commit/bd5fb6183c485628041c4955f820b47a4c8d05f7).
 
 **First review commit:** [`1febb384`](https://github.com/b24dul/b24dul-live/commit/1febb3843e9388f993b70b851b03b905d7c2f1fd) on branch `design/neo-noir-phase-1`. Adds original Anton/Yellowtail header wordmark, Inter/Barlow type stack, scoped neo-noir palette, live/offline styles and segmented scrolling responsive navigation. Changes only `index.html`; no script handlers, Firebase paths, embeds or existing IDs removed. This is **a source-level preservation check, not a verified working browser build or deployed change**.
 
@@ -155,6 +155,18 @@ When a new chat begins, the assistant should:
 **Next:** compare CSS at responsive widths, test Firebase/YouTube admin transitions and key keyboard/touch flows in-browser, then submit review PR; merge only after verification.  
 **New decisions:** horizontal scrollable mobile nav rather than an unnecessary hamburger menu; preserve five real tabs and visitor-only palette overrides to limit administrator regressions.  
 **Known issues:** no confirmed new regression; live runtime/browser testing is outstanding.
+
+## 10.2 Phase 2 broadcast/chat style pass (2026-11-17)
+
+**Done:** Committed [`83254e39`](https://github.com/b24dul/b24dul-live/commit/83254e39470e1bd56baf9cac62d6228494095a2a) directly to `main` at user request. The visitor-facing livestream frame now receives a sharp tactical border and non-interactive cyan corner highlights only while a video is displayed. Restyled visitor heading and YouTube link, live-monitor-delay fallback, community chat panel/header/messages/composer, pinned announcements and live-start notification. Existing DOM hierarchy, the complete Firebase module JavaScript, live-status freshness logic and all 112 existing HTML IDs were preserved in a source-level invariant check.
+
+**In progress:** Phase 2 browser/device QA and accessibility checking; published GitHub Pages state not independently verified by available web access.
+
+**Next:** Confirm actual browser display at 320/375/768/1280px, watch/chat split, chat and administrator DOM relocation, game view rendering, live/offline switch and direct player access. Then advance to Phase 3 video/game cards after resolving issues.
+
+**New decision:** Limit this update to scoped CSS. Overlay corners have `pointer-events: none` to avoid blocking YouTube playback; do not draw overlay over offline games. Do not fabricate stats or alter monitor/Worker code.
+
+**Known issues:** No regression verified; runtime browser testing remains outstanding. The site itself could not be fetched through available web preview tooling, so deployment cannot yet be certified.
 
 ## 10. Progress snapshots
 
