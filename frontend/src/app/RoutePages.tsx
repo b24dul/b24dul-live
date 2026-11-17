@@ -22,6 +22,7 @@ import {
 import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { games, utilities } from '../data/directory';
 import { archivedVideos } from '../services/videoArchive';
+import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
 import { routes } from './navigation';
 
@@ -114,6 +115,7 @@ function WatchPage() {
       description="The home for broadcasts, highlights and the B24DUL channel."
     >
       <StreamPresentation />
+      <PublishedStreamStatus />
       <div className="grid gap-5 md:grid-cols-2">
         <PlannedPanel
           title="Stream schedule"
