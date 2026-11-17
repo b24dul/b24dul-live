@@ -22,7 +22,11 @@ test('every gate must be verified and have a real local evidence path', () => {
 });
 
 test('a false gate or unsupported evidence never unlocks production', () => {
-  const base = { schemaVersion: 1, status: 'ready', gates: { chat: { passed: false, evidence: ['e2e/chat.spec.ts'] } } };
+  const base = {
+    schemaVersion: 1,
+    status: 'ready',
+    gates: { chat: { passed: false, evidence: ['e2e/chat.spec.ts'] } },
+  };
   assert.equal(evaluateProductionGates(base, () => true).ready, false);
   base.gates.chat.passed = true;
   base.gates.chat.evidence = ['https://example.com/claimed-success'];
