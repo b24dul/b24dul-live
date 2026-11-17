@@ -1,0 +1,38 @@
+name: M2 production readiness gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/production-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    name: Verify automatic advancement prerequisites
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Test fail-closed production gate
+        run: node --test scripts/production-gates.test.mjs
+      - name: Check remaining live requirements
+        run: |
+          if node scripts/production-gates.mjs; then
+            echo "All tracked parity gates have evidence. Full end-to-end production checks and Pages publishing verification are still required." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Production deployment blocked until feature parity is proven. Continue the next development phase." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: CI release policy
+        run: |
+          echo "This job does not deploy or edit the live site. Existing GitHub Pages and Firebase stay unchanged."
