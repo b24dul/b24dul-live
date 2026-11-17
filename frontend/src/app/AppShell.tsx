@@ -150,7 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             href="https://b24dul.github.io/b24dul-live/"
             className="inline-flex items-center gap-1 font-semibold underline underline-offset-4"
           >
-            Production website <ArrowUpRight size={15} aria-hidden="true" />
+            Visit current site <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         </div>
         <motion.div
