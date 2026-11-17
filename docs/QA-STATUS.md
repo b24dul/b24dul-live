@@ -97,3 +97,15 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Static PASS:** CSS block balance/closed comments; 112 original HTML IDs unique; existing `ytFrame` present; Phase 6A absent; no new live-player iframe styles.
 
 **Device/browser UNVERIFIED:** On the owner's same iPhone, check Home/Games/Videos headings visible below tabs and outer border encloses full content; cards and thumbnails have consistent insets and no horizontal overspill; board/game controls usable; and Watch still plays. Need user or browser capture before converting FAIL to PASS.
+
+## Phase 6B.3 delivery/visibility investigation — 2026-11-17
+
+**Owner FAIL:** Previous Phase 6B.2 patch yielded no visible improvement. Treat the screenshot issue as OPEN.
+
+**Implementation:** `a789b692` visibly flattens non-Watch mobile content: removes the redundant MAIN DISPLAY bar and its offline border, keeps content height auto. `b9a34e89` changes the stylesheet URL to `styles.css?v=6b3-mobile-frame-20261117` to break mobile browser CSS caching after publishing.
+
+**Source PASS:** 112 unique original IDs, CSS balance passed, JS unchanged, Watch iframe/Phase 6A still untouched.
+
+**Deployment evidence:** One GitHub Pages Actions run for head `613f8d47` completed successfully at 09:03:29Z, but that run predates the new B.3 commit and cannot verify B.3 publishing. Published HTTP content is inaccessible from the current execution environment.
+
+**User-visible test UNVERIFIED:** On iPhone in Home, Games, Videos, the `MAIN DISPLAY` strip must be ABSENT. If it remains, diagnose publication/caching before editing the CSS again. If absent, assess card containment, nav overlap and 2048 board. Do not call fixed without an actual observation.
