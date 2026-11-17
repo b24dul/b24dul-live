@@ -68,19 +68,28 @@ export async function detectYouTube(fetchImpl = fetch) {
       signal: AbortSignal.timeout(12000)
     });
     const location = response.headers.get("location") || "";
-    const html = response.status === 200 ? (await response.text()).slice(0, 1200000) : "";
+    const html = response.status === 200 ? (await response.text()).slice(0, 5000000) : "";
     // Diagnostic signatures, not page contents. These reveal what sort of
     // page YouTube returned without leaking consent/session query parameters.
     const pageSignals = {
       htmlBytes: html.length,
+      reachedSafetyLimit: html.length === 5000000,
       contentType: (response.headers.get("content-type") || "").split(";")[0],
       title: (html.match(/<title[^>]*>([^<]{0,100})<\/title>/i)?.[1] || "").slice(0, 100),
       hasPlayerResponse: /ytInitialPlayerResponse|playerResponse/.test(html),
       hasInitialData: /ytInitialData/.test(html),
       hasVideoId: /"videoId":"[\\w-]{11}"/.test(html),
+      hasVideoDetails: /"videoDetails"\\s*:\\s*\\{/.test(html),
+      hasChannelMetadata: /channelMetadataRenderer|WEB_PAGE_TYPE_CHANNEL/.test(html),
+      hasStreamBadge: /BADGE_STYLE_TYPE_LIVE_NOW|LIVE NOW|\\"label\\":\\"LIVE\\"/.test(html),
+      hasWatchCanonical: /<link[^>]+rel=["\x27]canonical["\x27][^>]+watch\\?v=/.test(html),
+      hasUnavailableText: /this video is unavailable|video unavailable|something went wrong/i.test(html),
       hasLiveNow: /"isLiveNow":true/.test(html),
       hasIsLiveContent: /"isLiveContent":true/.test(html),
       hasLiveBroadcastDetails: /"liveBroadcastDetails"/.test(html),
+      playerResponseOffset: html.indexOf("ytInitialPlayerResponse"),
+      firstVideoIdOffset: html.indexOf("\\"videoId\\""),
+      firstLiveNowOffset: html.indexOf("\\"isLiveNow\\""),
       hasConsentPage: /consent\.youtube\.com|before you continue to youtube|consent-bump/i.test(html),
       hasBotChallenge: /unusual traffic|verify you are human|automated queries/i.test(html),
     };
