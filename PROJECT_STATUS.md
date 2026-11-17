@@ -62,6 +62,12 @@
 - Files/areas involved: `PROJECT_STATUS.md`, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md`; future isolated Vite frontend folder, package/CI/test files **only when authorised**.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
+## 2026-11-17 review session
+- Measured and fixed the outer frame cut-off (see `docs/QA-STATUS.md`, last section). CSS only, visitor view only.
+- Removed committed Python bytecode and added `.gitignore`.
+- `fetch_videos.py` no longer wipes `videos.json` when the YouTube feed returns nothing.
+- Checks run: inline JS syntax and ESLint (no errors), 112 unique IDs, stream-worker tests 13/13 pass, Python scripts compile.
+
 ## Known issues and blockers
 - Issue: production real-name entry gate conflicts with new no-real-name public browsing. Impact: new UX and privacy design must migrate carefully. Proposed resolution: public-first guest shell and explicit future backend/data migration review. Approval required: yes, before changing existing visitor-data collection.
 - Issue: complete published RTDB rules and actual production credentials/settings not available in Git repo. Impact: cannot claim real backend security verified. Proposed resolution: backup/inspect Console rules before M2; do not publish M1 database changes. Approval required: for any later rules/data changes.

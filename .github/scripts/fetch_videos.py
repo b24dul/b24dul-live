@@ -28,6 +28,11 @@ def main(path="videos.json"):
     req = urllib.request.Request(FEED, headers={"User-Agent": "b24dul-live-site"})
     with urllib.request.urlopen(req, timeout=30) as r:
         videos = parse(r.read())
+    if not videos:
+        # The feed sometimes comes back empty for a while. Keep the current list
+        # instead of wiping the Videos page.
+        print("Feed returned no videos, keeping the existing list")
+        return
     with open(path, "w", encoding="utf-8") as f:
         json.dump(videos, f, ensure_ascii=False, indent=1)
     print(f"Saved {len(videos)} videos")

@@ -1545,3 +1545,13 @@ body.admin .hud-feed-heading,body.admin .hud-chat-signal,body.admin .hud-chat-ch
 @media (prefers-reduced-motion: reduce) {
   body:not(.admin) .of-card,body:not(.admin) .hud-hero-actions button {transition:none}
 }
+
+/* Frame fix, measured in Chromium at 320 to 1600px wide. body is a fixed-height
+   flex column (html, body {height:100%}), so main (flex:1 1 0%) and the player
+   frame were squeezed to the window height and the content spilled out below the
+   border on every screen shorter than the page. Let the visitor page grow with
+   its content. The chat column keeps its own fixed sticky height. Admin untouched. */
+body:not(.admin) {height:auto;min-height:100%}
+body:not(.admin) main {flex:0 0 auto;height:auto;min-height:0;align-items:start}
+body:not(.admin) main > .player > * {flex-shrink:0}
+body:not(.admin) #playerFrame.offline {height:auto}

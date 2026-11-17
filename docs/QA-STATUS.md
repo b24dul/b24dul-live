@@ -139,3 +139,15 @@ Owner identified the border surrounding the â€œCATCH UP / PAST VIDEOS & STREAMSâ
 **Next investigation must use rendered element geometry.** Current markup nests `.visitor-content-head` and `.hud-feed-heading` above `#playerFrame.offline`, with `#offline` and individual sections beneath; `main` has its own border in the desktop rules, and `#playerFrame.offline` also has a border. Removing only the mobile `main` border was inadequate. Need an actual Safari/Chromium DOM-bound measurement or screenshot with element outlines and computed styles to locate the frame/height mismatch before editing again.
 
 **Action:** Live CSS frozen at current baseline pending measurement; no additional speculative styles applied in response to this failure.
+
+## Outer frame cut-off: measured root cause and fix (2026-11-17)
+
+**Measured, not guessed.** Rendered `index.html` in headless Chrome with Firebase stubbed, at 320, 390, 768, 1024, 1280 and 1600px, and read element geometry. Reproduced the owner's screenshot at 390px: `main` and `#playerFrame.offline` ended at 826px and 812px while `#offline` content ran to 1575px.
+
+**Root cause:** `html, body {height:100%}` plus `body {display:flex; flex-direction:column}` and `main {flex:1}` (basis 0%) squeezed `main` to the window height. `#playerFrame` is a shrinkable flex child of `.player`, so the frame border shrank with it and the content spilled out below. It happened at every width whenever the page was taller than the window, which is why the earlier border/nav patches made no difference.
+
+**Fix:** four rules at the end of `styles.css`, scoped to `body:not(.admin)`: body `height:auto; min-height:100%`, main `flex:0 0 auto`, player children `flex-shrink:0`, offline frame `height:auto`. Stylesheet link versioned `?v=mobile-frame-fix-20261117b`.
+
+**Measured after fix:** for Home, Games, Videos, Watch and Chat at all six widths, `main` bottom equals the lowest content bottom (within 1px) and no page has horizontal scroll. Watch player keeps 16:9 (it was previously squashed on short windows). Mobile Chat tab still fills the screen. Admin rules untouched.
+
+**Still needs owner check on iPhone Safari.** Headless Chrome used fallback fonts because Google Fonts was blocked in the test machine; with Anton loaded the large headings should be narrower than in the test screenshots.
