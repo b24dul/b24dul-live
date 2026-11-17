@@ -159,3 +159,9 @@ Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS�
 **Browser PASS (source/layout, not backend):** [GitHub Actions run 44057705008](https://github.com/b24dul/b24dul-live/actions/runs/44057705008), Ubuntu 24.04 / Playwright 1.57 Chromium. 30 combinations: Home/Games/Videos/Watch/Chat at 320,390,768,1024,1280,1600px. Tested expected offline `main`/frame containment, no page horizontal overflow, video cards within viewport, Watch 16:9 frame and mobile Chat section. All 30 passed; see action logs and `responsive-layout-results` artifact. External Firebase module was deliberately removed in the test fixture, so this does not prove real sign-in, chat, detector or YouTube playback.
 
 **Browser UNVERIFIED:** Actual iPhone Safari typography and embedded YouTube playback, Firebase-dependent actions, real thumbnails/playlist response, live Pages delivery, and all admin paths. User acceptance still needed. Future changes must first reproduce failures in browser and preserve the geometry checks.
+
+## Phase 6C merge checkpoint — 2026-11-17
+
+**Merged after tests:** [PR #5](https://github.com/b24dul/b24dul-live/pull/5) merged to `main` at `a63bf0e2738fa7727ec89a5055bdff4534057f5d`. The branch layout-run and PR verification completed successfully on Ubuntu 24.04; 30 browser geometry cases passed. GitHub source now contains 112 unique IDs, Claude's critical 4 flex/height rules verbatim, versioned Videos stylesheet, new archive UI and its specific CSS. Application JavaScript remains unchanged from base.
+
+**Production browser/iPhone owner acceptance:** Still UNVERIFIED. Live YouTube, Firebase and authenticated controls were not exercised by this static geometry suite. No further Videos/Watch styling changes until real-device feedback.
