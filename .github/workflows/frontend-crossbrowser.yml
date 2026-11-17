@@ -1,0 +1,44 @@
+name: M1 frontend cross-browser QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-crossbrowser.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-crossbrowser.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-compatibility:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Firefox and WebKit browser dependencies
+        run: npx playwright install --with-deps firefox webkit
+      - name: Run existing regression suites on both browser engines
+        run: npx playwright test --config=playwright.crossbrowser.config.ts --workers=2
+      - name: Upload browser reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: frontend-crossbrowser-failures
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 14
