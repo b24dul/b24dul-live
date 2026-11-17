@@ -87,3 +87,13 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Repair:** Commits `3035d919` and `fbaa3e5b`; CSS establishes shared max-width/min-width rules, an aspect-square board shell, 440px bounded board, flex stacking at <=1350px, constrained controls, text wrapping and mobile rules restricted away from Watch. HTML and all JavaScript are unchanged; all 112 IDs preserved; CSS syntax checks passed.
 
 **Browser status UNVERIFIED after fix:** 2048 header/board fit at 320,375,390,768,1280px; Sudoku board and controls; Home/Games/Videos text containers; narrow phones show no horizontal overflow; Watch still works as in prior owner-approved version. Owner visual confirmation required to mark PASS.
+
+## Mobile screenshot regression — Home / Games / Videos (2026-11-17)
+
+**FAIL — owner-confirmed with screenshots:** Earlier Phase 6B.1 fix did not solve the problem. iPhone screenshots show (1) sticky nav overlaid on headings; (2) outer MAIN DISPLAY border ending while Home hero/Games selection extends below it; (3) Games cards and Videos fallback/list panels with inconsistent nested widths and clipping. Screenshots are the real acceptance reference; do not mark the defect passed based on static CSS.
+
+**Fix commit:** [`3edecd67`](https://github.com/b24dul/b24dul-live/commit/3edecd67b8de564b1ca9eadf7d1ca8e94a8fe644) adds a <=760px non-Watch/mobile content-shell layer, normalises width/box-sizing, allows offline frame to grow with content, aligns headings/card/video edges, scroll-offsets beneath sticky tabs, enforces hidden offline state, and keeps navigation horizontally scrollable. HTML/JS and Watch player unchanged.
+
+**Static PASS:** CSS block balance/closed comments; 112 original HTML IDs unique; existing `ytFrame` present; Phase 6A absent; no new live-player iframe styles.
+
+**Device/browser UNVERIFIED:** On the owner's same iPhone, check Home/Games/Videos headings visible below tabs and outer border encloses full content; cards and thumbnails have consistent insets and no horizontal overspill; board/game controls usable; and Watch still plays. Need user or browser capture before converting FAIL to PASS.
