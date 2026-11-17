@@ -6,8 +6,13 @@ import { resolve, dirname } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function evaluateProductionGates(manifest, evidenceExists) {
-  if (!manifest || manifest.schemaVersion !== 1 || !manifest.gates ||
-      typeof manifest.gates !== 'object' || Array.isArray(manifest.gates)) {
+  if (
+    !manifest ||
+    manifest.schemaVersion !== 1 ||
+    !manifest.gates ||
+    typeof manifest.gates !== 'object' ||
+    Array.isArray(manifest.gates)
+  ) {
     throw new Error('Invalid production gate manifest');
   }
   const names = Object.keys(manifest.gates);
@@ -25,8 +30,12 @@ export function evaluateProductionGates(manifest, evidenceExists) {
     }
     for (const path of gate.evidence) {
       // Only repository-local evidence can unlock a gate. URL claims cannot.
-      if (typeof path !== 'string' || !/^(src|e2e|scripts|tests)\/[A-Za-z0-9_./-]+$/.test(path) ||
-          path.split('/').includes('..') || !evidenceExists(path)) {
+      if (
+        typeof path !== 'string' ||
+        !/^(src|e2e|scripts|tests)\/[A-Za-z0-9_./-]+$/.test(path) ||
+        path.split('/').includes('..') ||
+        !evidenceExists(path)
+      ) {
         missing.push(name + ': missing local evidence ' + String(path));
       }
     }
