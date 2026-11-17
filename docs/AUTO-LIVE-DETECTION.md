@@ -5,11 +5,13 @@ It checks the public B24DUL YouTube channel's /live endpoint every five
 minutes (GitHub schedule execution can be delayed). It uses yt-dlp to
 distinguish a real live broadcast from an upcoming or finished stream.
 
-On a transition to a new live broadcast, it writes true to the *existing*
-Firebase Realtime Database location settings/live. When that broadcast
-ends and YouTube confirms it, it writes false. The site already listens to
-this setting, so its Live tab, stream player and start notifications work
-without changes to public Firebase rules or frontend credentials.
+Each successful YouTube check compares the detected status to the *actual*
+Firebase Realtime Database setting settings/live. If they differ, it corrects
+the Firebase value automatically: true when YouTube confirms a broadcast,
+false when the channel is offline. This also repairs any previously stale
+LIVE flag. The visitor website already listens to settings/live, so its
+Live tab, player and notifications react automatically without adding public
+credentials or changing Firebase rules.
 
 **Setup required before auto-detection will run:**
 
@@ -26,17 +28,15 @@ without changes to public Firebase rules or frontend credentials.
    verify that it can read YouTube and update Firebase. The Actions
    run log shows detection and success or a safe failure.
 
-The script never overwrites Firebase on an unchanged YouTube state.
-That lets an admin turn off the website's Live switch manually for the
-remainder of a particular broadcast. On the next distinct live event,
-it automatically enables the website again. An admin can still switch
-it on manually.
+The website no longer offers an admin LIVE override. YouTube is the sole
+source of truth; games, videos and chat remain available regardless of the
+broadcast status. Each successful check fixes mismatches in Firebase even
+when the stream status has not changed since the previous GitHub run.
 
-The workflow writes *only* settings/live in Firebase, through
-firebase-admin. No other database records are changed. It stores a
-non-secret live-monitor-state.json file in the repository only after
-a successful transition; that distinguishes a new broadcast from
-repeated checks of the same broadcast.
+The workflow reads and (when needed) writes *only* settings/live in Firebase,
+through firebase-admin. No other database records are changed. It retains
+non-secret transition history in live-monitor-state.json for diagnostics.
+That history no longer determines whether Firebase is up to date.
 
 Limits: GitHub scheduled runs are best-effort, can be delayed or skipped,
 and are not real-time. The typical detection interval is around five
