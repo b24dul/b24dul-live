@@ -378,7 +378,7 @@ When a new chat begins, the assistant should:
 
 **Proof, not assumption:** GitHub Actions `Visitor viewport layout verification` job [44057705008](https://github.com/b24dul/b24dul-live/actions/runs/44057705008) completed successfully using Playwright Chromium on Ubuntu 24.04 after fixing Ubuntu 26.04 browser installation incompatibility. 30 viewport/view checks (320/390/768/1024/1280/1600 x Home/Games/Videos/Watch/Chat) passed with no horizontal scroll or frame-cut-off; Watch frame remained 16:9 and mobile Chat visible. Browser mock deliberately strips external Firebase module, so these are **CSS/DOM geometry** tests, not end-to-end backend, login, game or YouTube tests. Source diff confirms only 2 new QA harness files plus Videos-only HTML/CSS. No app JS changed.
 
-**Remaining:** Complete branch verification after documentation changes; merge only after confirmed CI; check GitHub Pages deploy and owner iPhone Safari, especially Videos listing and player clicks. Maintain `PROJECT_STATUS.md`, this file and `docs/QA-STATUS.md`.
+**Remaining:** Branch and PR CI passed; merged to `main` via [PR #5](https://github.com/b24dul/b24dul-live/pull/5) with merge commit [`a63bf0e2`](https://github.com/b24dul/b24dul-live/commit/a63bf0e2738fa7727ec89a5055bdff4534057f5d). Check GitHub Pages deploy and owner iPhone Safari, especially Videos listing and real player clicks. Maintain `PROJECT_STATUS.md`, this file and `docs/QA-STATUS.md`.
 
 ## 10. Progress snapshots
 
