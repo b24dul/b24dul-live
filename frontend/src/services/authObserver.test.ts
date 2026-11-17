@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  subscribeToAuthSession,
-  type AuthObserver,
-  type ObservedUser,
-} from './authObserver';
+import { subscribeToAuthSession, type AuthObserver, type ObservedUser } from './authObserver';
 import type { AuthSession } from './authSession';
 
 function createObserverHarness() {
