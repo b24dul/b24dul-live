@@ -1,0 +1,68 @@
+name: M1 frontend foundation verification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-foundation.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve initial lockfile (temporary until committed)
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Using committed package-lock.json"
+          else
+            echo "::warning::package-lock.json has not been committed; producing one for review."
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          fi
+      - name: Upload lockfile for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-package-lock
+          path: frontend/package-lock.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: ESLint
+        run: npm run lint
+      - name: TypeScript strict checking
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Production build (not deployed)
+        run: npm run build
+      - name: Formatting check
+        run: npm run format:check
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser smoke test
+        run: npm run test:e2e
+      - name: Upload browser reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-browser-failures
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: ignore
