@@ -44,3 +44,12 @@ A local Chromium binary exists, but a proper in-browser integration run still re
 4. Consolidate remaining duplicated CSS declarations (there are many historical hard-coded colours) once acceptance tests run. Do not rewrite app logic to simplify styling.
 
 **No fake counters or donation/star/hype data:** Sample component CSS exists, but these metrics remain intentionally unrendered until there is a real data source.
+
+## Phase 5B implementation note (2026-11-17)
+
+**Source verification after the large-layout pass:** `index.html` retains 112 unique original IDs. The only new JS binds two hero buttons through existing `navigateVisitor()` (destinations `watch` and `chat`). Existing `ytFrame`, Firebase monitor subscription, other feature IDs and four SVG asset references remain. Added `hud-feed-heading`, `hud-hero-actions`, `hud-chat-signal`, `hud-chat-channel` are present in both HTML/CSS. The CSS brace/comment structure is balanced; responsive rules for 1180, 900, 760 and 390 px and admin isolation selectors are present. This is static evidence, **not** rendered/browser testing.
+
+**New visual acceptance points (UNVERIFIED):** Desktop 2-column framed command deck with main broadcast display and right-hand chat rail; radar art visibility and hero button legibility; joined 3-card destination strip; mobile one-column layout with chat tab/section hiding; game-only two-card layout; admin dashboard unaffected by visitor-only layout; Watch stream player unobstructed and YouTube frame interactive; hero WATCH STREAM/OPEN COMMUNITY CHAT buttons navigate correctly.
+
+**Implementation commits:** [`61a7b81a`](https://github.com/b24dul/b24dul-live/commit/61a7b81a5a878161df20860289909268c7ee5bd2), [`84d3f166`](https://github.com/b24dul/b24dul-live/commit/84d3f1662747373872ee5b400f64a9eb0a1201c4). Roadmap updated.
+
