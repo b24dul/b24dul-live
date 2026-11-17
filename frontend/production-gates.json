@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "target": "B24DUL Live production React cutover",
+  "status": "blocked",
+  "requirement": "Every gate must have passed checks and verifiable integration evidence before cutover.",
+  "gates": {
+    "firebaseRules": {
+      "passed": false,
+      "evidence": []
+    },
+    "anonymousGoogleAuth": {
+      "passed": false,
+      "evidence": []
+    },
+    "identityContinuity": {
+      "passed": false,
+      "evidence": []
+    },
+    "chatPresence": {
+      "passed": false,
+      "evidence": []
+    },
+    "moderation": {
+      "passed": false,
+      "evidence": []
+    },
+    "streamPlayback": {
+      "passed": false,
+      "evidence": []
+    },
+    "gamesAndSaves": {
+      "passed": false,
+      "evidence": []
+    },
+    "leaderboards": {
+      "passed": false,
+      "evidence": []
+    },
+    "privacyAndAdmin": {
+      "passed": false,
+      "evidence": []
+    },
+    "visitorAnalytics": {
+      "passed": false,
+      "evidence": []
+    },
+    "crossBrowser": {
+      "passed": false,
+      "evidence": []
+    },
+    "deployedSmokeTests": {
+      "passed": false,
+      "evidence": []
+    },
+    "rollbackReady": {
+      "passed": false,
+      "evidence": []
+    }
+  }
+}
