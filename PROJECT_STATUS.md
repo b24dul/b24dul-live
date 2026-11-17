@@ -13,8 +13,8 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 0 — repository reconnaissance and protection**
-- Overall status: **Phase 0 documentation complete at source-audit level; awaiting review/authorisation for Phase 1. Runtime/production functional verification pending.**
+- Current phase: **Phase 1 — isolated frontend foundation (implementation started; verification gate open)**
+- Overall status: **Phase 1 authorised 2026-11-17 and scaffold committed under `frontend/` only; NOT complete until lockfile and tests/build pass. Existing production site unchanged by this phase.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
@@ -39,7 +39,7 @@
 | Phase | Status | Commit SHA | Tests | Notes |
 |---|---|---|---|---|
 | 0 Repository audit | Documentation complete; live QA pending | `c8cee97dc283ad7bd1e5cb270fe22d3cd5efc168`, `000a10950a98eaa9b4921272cc764a0aee4c2446`, `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`; final status-file commit: inspect HEAD | GitHub source/tree/workflow inspections completed; runtime, build, browser and Firebase/Worker checks **not run** | Documentation-only; exact source baseline recorded; no new branch per owner |
-| 1 Frontend foundation | Not started | | Not run | Safe non-destructive Vite scaffolding; do not touch production homepage without a preview plan |
+| 1 Frontend foundation | In progress; initial scaffold committed | See `main` commits from `7f93883ff8b56c15823595dae40a03053f6c769b` to latest HEAD | Not run: npm registry unreachable in authoring environment; missing lockfile | Isolated `frontend/` React 19, TS strict, Vite base, Tailwind, HashRouter, Motion/Lucide dependencies, test configs; root Pages entrypoint untouched |
 | 2 Design system | Not started | | Not run | Glass tokens/components |
 | 3 App shell and routes | Not started | | Not run | Eleven HashRouter routes |
 | 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
@@ -57,9 +57,9 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 0 handoff and review; no application implementation in progress.
-- Exact next task: read this document and master PDF, recheck `main` HEAD, verify documentation-only Phase 0 diff and Pages status, then propose a safe **Phase 1 non-destructive frontend scaffold/preview path**, with no Firebase connection.
-- Files/areas involved: `PROJECT_STATUS.md`, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md`; future isolated Vite frontend folder, package/CI/test files **only when authorised**.
+- In progress: Phase 1 isolated frontend scaffold. Phase 0 audit/preservation plan retained.
+- Exact next task: validate Phase 1 in an npm-connected Node 22+ environment; generate and review `frontend/package-lock.json`; commit it; run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npx playwright install chromium`, `npm run test:e2e`, `npm run format:check`; fix any failures and only then close Phase 1 gate.
+- Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
 ## 2026-11-17 review session
@@ -130,3 +130,13 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - Owner confirmed: **"It works and looks ok."** Record this as acceptance of the deployed Phase 7 admin interface appearance and basic owner-observed usability, after merge `d39a3601423dd5ac48d1ee3c17d553e5b9713cb3` and successful Pages deployment.
 - **Phase 7 visual design: OWNER ACCEPTED.** No additional redesign or code changes requested; retain Claude's critical page-height fix and the browser regression workflow.
 - **Not implied by that statement:** formal validation of every Firebase permission, moderation write, account state, video playback, privacy workflow or automated end-to-end coverage. Those QA items remain open, and the separate React M1 rebuild is not started.
+
+## 2026-11-17 — M1 Phase 1 started: isolated React foundation
+- **Authorisation:** owner explicitly requested Phase 1 start in this conversation; this supersedes prior 'not authorised' statements for Phase 1 ONLY, not production cutover. Continue working directly on `main` per owner decision.
+- **Base main HEAD before implementation:** `9b56eef8240f1b04449b4cf45ff5428fb32ace06` (legacy Phase 7 owner acceptance record); historical production rollback baseline `18410c536caee8085b4edc23b960cc30677a5997` remains preserved.
+- **Implementation:** added independent `frontend/` with React, TypeScript strict configs, Vite base `/b24dul-live/`, HashRouter provider, Tailwind v4 Vite plugin, Motion and Lucide declared dependencies, ESLint, Prettier, Vitest/React Testing Library, Playwright configurations and initial test cases. Created all mandatory source directory boundaries. `frontend/README.md` explains isolated preview and reproducible installation steps. No Firebase SDK integration or live data.
+- **Preservation:** only `frontend/**` and this status file touched for Phase 1; root Pages `index.html`, `styles.css`, `assets/`, `videos.json`, existing Firebase scripts/rules, game code, stream worker and legacy layouts not changed. GitHub Pages remains pointed to its existing root. No preview is publicly deployed.
+- **Verification honesty:** npm registry DNS/network is unavailable from the authoring container. Dependency resolution, `package-lock.json`, `npm ci`, ESLint, TypeScript, Vitest, Playwright, formatting and production build are **NOT yet run/passed**. The current scaffold may require dependency/version compatibility fixes when first installed. No fake test success and no unverified phase acceptance.
+- **Phase 1 remaining:** generate and commit reviewed lockfile, execute all gate checks, fix failures, and capture actual CI/test output. Separate Phase 2 visual design system and Phase 3 eleven routes must NOT be marked done. Any new deployment pipeline must preserve live-root Pages behaviour.
+- **Git checkpoints:** initial Phase 1 file commit `7f93883ff8b56c15823595dae40a03053f6c769b`; remaining commits are visible in Git history; the status update's own commit SHA is the resulting GitHub HEAD and intentionally cannot self-reference.
+- **Next session:** verify current `main` HEAD and inspect all Phase 1 files, check legacy root untouched in compare diff from `9b56eef8240f1b04449b4cf45ff5428fb32ace06`, then complete missing lockfile/test gate before requesting Phase 2 acceptance. Do not reset independently refreshed videos archive commits.
