@@ -67,3 +67,9 @@ Owner corrected the provider list: Firebase Authentication enables **Anonymous a
 7. Before introducing database writes, run isolated Firebase Emulator RTDB permission regression tests against owner-supplied rule snapshot and confirm its deployed version still matches. Do not deploy/change Firebase rules or live data.
 
 **Status:** Owner correction supersedes the earlier three-provider statement; Email/Password is out of scope unless separately authorised. Provider-information gate satisfied; **offline rule tests and safe React integration implementation not yet completed**.
+
+## M2 Step 3 — React identity-policy foundation (2026-11-17)
+
+Added pure, non-networked `frontend/src/services/authSession.ts` with `normaliseAuthIdentity`, `planAnonymousEntry`, `planGoogleEntry`, and unit tests. The code only plans actions: it cannot sign in, link, read/write Firebase or alter the live site's state. It distinguishes auth-observer loading from confirmed signed-out state, keeps an existing anonymous UID, refuses silent identity replacement, and requires an explicit Google-linking step when transitioning an anonymous account. The configured providers remain **Anonymous and Google only**; Email/Password stays disabled.
+
+**Tests added:** six Vitest test cases covering auth-observer timing/error, UID preservation, signed-out entry, explicit Google linking, and identity normalisation. Running GitHub Actions is the verification gate; a committed test is not automatically a passed test. **Remaining:** confirm the supplied RTDB export matches deployed rules, add nonproduction emulator rule tests without publishing or deploying rules, add Firebase SDK and a safe Auth context with provider mocking, test session persistence and collision recovery. No DB writes or production cutover.
