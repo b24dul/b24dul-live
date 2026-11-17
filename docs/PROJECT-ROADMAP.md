@@ -370,6 +370,16 @@ When a new chat begins, the assistant should:
 
 **Verification:** GitHub source change committed; CSS string equivalence verified apart from the exact replacement. Owner/browser visual acceptance still open. If problems persist, measure actual browser element boundaries before further edits, not another blanket CSS override.
 
+## 10.19 Phase 6C — isolated Videos interface plus repeatable browser QA (2026-11-17)
+
+**Owner decision:** Adopt Claude's diagnosis-driven workflow and proceed with the next unfinished legacy UI stage; this entry covers **Videos only**, not the separate React/M1 frontend build referenced in `PROJECT_STATUS.md`.
+
+**Scope:** Review branch `phase-6c-videos-browser-qa` based on Claude's proven `ebb3298c` layout fix. New media/archive heading and toolbar in `#ofVideos`; scoped video list thumbnails, metadata, playback container, mobile single-column card layout and accessible focus styling. Existing `vidGrid`, `vidPlayer`, `vidFrame`, all 112 IDs, URL/Firestore/Firebase logic and game modules unchanged. CSS adds no global body, main, nav, Watch or game sizing changes; Claude's 4 frame sizing rules remain untouched. Stylesheet URL versioned to refresh browser cache.
+
+**Proof, not assumption:** GitHub Actions `Visitor viewport layout verification` job [44057705008](https://github.com/b24dul/b24dul-live/actions/runs/44057705008) completed successfully using Playwright Chromium on Ubuntu 24.04 after fixing Ubuntu 26.04 browser installation incompatibility. 30 viewport/view checks (320/390/768/1024/1280/1600 x Home/Games/Videos/Watch/Chat) passed with no horizontal scroll or frame-cut-off; Watch frame remained 16:9 and mobile Chat visible. Browser mock deliberately strips external Firebase module, so these are **CSS/DOM geometry** tests, not end-to-end backend, login, game or YouTube tests. Source diff confirms only 2 new QA harness files plus Videos-only HTML/CSS. No app JS changed.
+
+**Remaining:** Complete branch verification after documentation changes; merge only after confirmed CI; check GitHub Pages deploy and owner iPhone Safari, especially Videos listing and player clicks. Maintain `PROJECT_STATUS.md`, this file and `docs/QA-STATUS.md`.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 5B owner-tested files restored after further breakage; Phase 6B and mobile overrides undone. Published-site recheck pending.

@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700&family=Bebas+Neue&family=Cutive+Mono&family=Inter:wght@400;500;600;700&family=Yellowtail&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=mobile-frame-fix-20261117b">
+<link rel="stylesheet" href="styles.css?v=videos-archive-20261117">
 
 </head>
 <body>
@@ -176,11 +176,15 @@
             <div><strong>Want to check the livestream?</strong><p>Automatic status detection can be delayed. You can open the player anytime, even if the website still says offline.</p></div>
             <button type="button" id="tryLivePlayer" class="gta-btn primary"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="m6 3 15 9-15 9z"/></svg> Try live player</button>
           </div>
-          <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Old videos</span></div>
+          <div class="of-bar vid-archive-toolbar"><button class="of-back">← Back</button><span class="of-title">Video archive</span><span class="vid-archive-code" aria-hidden="true">MEDIA / 01</span></div>
           <div class="vid-player" id="vidPlayer" hidden>
             <iframe id="vidFrame" title="B24DUL video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
           </div>
           <div class="vid-now" id="vidNow" hidden></div>
+          <div class="vid-library-intro">
+            <div><span class="vid-library-kicker">B24DUL / ON DEMAND</span><h2>WATCH THE ARCHIVE<span aria-hidden="true">.</span></h2></div>
+            <p>Past uploads and highlights. Select a video to play it above.</p>
+          </div>
           <div class="vid-grid" id="vidGrid"><p class="empty">Loading videos…</p></div>
         </div>
         <div id="of2048" hidden>

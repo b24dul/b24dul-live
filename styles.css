@@ -1555,3 +1555,180 @@ body:not(.admin) {height:auto;min-height:100%}
 body:not(.admin) main {flex:0 0 auto;height:auto;min-height:0;align-items:start}
 body:not(.admin) main > .player > * {flex-shrink:0}
 body:not(.admin) #playerFrame.offline {height:auto}
+
+
+/* Phase 6C — video archive presentation, isolated from Home, Games and Watch.
+   The measured body/main/player shrink fix above remains unchanged. */
+body:not(.admin) #ofVideos {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+  background:#111820;
+}
+body:not(.admin) #ofVideos .visitor-stream-fallback {
+  margin:0 0 20px;
+  padding:clamp(16px,2vw,22px);
+  border:1px solid #62717E;
+  border-left:4px solid #2ECC71;
+  border-radius:0;
+  background:linear-gradient(110deg,#182730,#10151E);
+}
+body:not(.admin) #ofVideos .visitor-stream-fallback p {
+  color:#C9D3DE;line-height:1.55;
+}
+body:not(.admin) #ofVideos .vid-archive-toolbar {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  min-width:0;
+  gap:12px;
+  padding:13px 15px;
+  margin:0;
+  border:1px solid #62717E;
+  background:#080C12;
+}
+body:not(.admin) #ofVideos .vid-archive-toolbar .of-title {
+  font:400 clamp(28px,3.4vw,46px)/1 Anton,Impact,sans-serif;
+  text-transform:uppercase;
+  overflow-wrap:break-word;
+}
+body:not(.admin) #ofVideos .vid-archive-code {
+  margin-left:auto;
+  color:#91A7B6;
+  font:400 10px/1.4 'Cutive Mono',monospace;
+  letter-spacing:.025em;
+}
+body:not(.admin) #ofVideos .vid-library-intro {
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  flex-wrap:wrap;
+  gap:14px;
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+  padding:clamp(18px,2.7vw,31px);
+  margin:0;
+  border-inline:1px solid #62717E;
+  border-bottom:1px solid #52616C;
+  background:linear-gradient(100deg,#202B34,#101720);
+}
+body:not(.admin) #ofVideos .vid-library-kicker {
+  font:400 10px/1.45 'Cutive Mono',monospace;
+  color:#64D99A;
+  letter-spacing:.06em;
+}
+body:not(.admin) #ofVideos .vid-library-intro h2 {
+  font:400 clamp(29px,3.3vw,45px)/1.04 Anton,Impact,sans-serif;
+  margin:8px 0 0;
+  color:#F6F8FA;
+  letter-spacing:.02em;
+}
+body:not(.admin) #ofVideos .vid-library-intro h2 span {color:#2ECC71}
+body:not(.admin) #ofVideos .vid-library-intro p {
+  max-width:280px;
+  color:#C6D2DC;
+  font:400 12px/1.6 Inter,sans-serif;
+  margin:0;
+}
+body:not(.admin) #ofVideos .vid-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));
+  gap:clamp(12px,1.5vw,20px);
+  min-width:0;
+  max-width:100%;
+  padding:clamp(13px,2.4vw,24px);
+  margin:0;
+  border:1px solid #62717E;
+  border-top:0;
+  background:#111720;
+  box-sizing:border-box;
+}
+body:not(.admin) #ofVideos .vid-card {
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  gap:10px;
+  padding:10px;
+  border:1px solid #607080;
+  border-radius:0;
+  color:#F5F7FA;
+  background:#19222D;
+  transition:border-color .15s ease,background .15s ease;
+  text-align:left;
+}
+body:not(.admin) #ofVideos .vid-card:hover,
+body:not(.admin) #ofVideos .vid-card:focus-visible,
+body:not(.admin) #ofVideos .vid-card.on {
+  border-color:#2ECC71;
+  background:#20342E;
+}
+body:not(.admin) #ofVideos .vid-card .thumb {
+  width:100%;
+  aspect-ratio:16/9;
+  border-radius:0;
+  background:#080C12;
+  overflow:hidden;
+}
+body:not(.admin) #ofVideos .vid-card .vt {
+  font:700 15px/1.4 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:.02em;
+  overflow-wrap:anywhere;
+}
+body:not(.admin) #ofVideos .vid-card .vd {
+  color:#B6C4D0;
+  font:400 10px/1.4 'Cutive Mono',monospace;
+  margin-top:auto;
+}
+body:not(.admin) #ofVideos .vid-player:not([hidden]) {
+  display:block;
+  max-width:100%;
+  width:100%;
+  aspect-ratio:16/9;
+  border:2px solid #C2CCD3;
+  border-radius:0;
+  background:#000;
+}
+body:not(.admin) #ofVideos .vid-player[hidden],
+body:not(.admin) #ofVideos .vid-now[hidden] {display:none!important;}
+body:not(.admin) #ofVideos .vid-now {
+  min-width:0;
+  overflow-wrap:break-word;
+}
+@media (max-width:760px) {
+  body:not(.admin) #ofVideos .visitor-stream-fallback {
+    padding:15px;margin-bottom:14px;
+  }
+  body:not(.admin) #ofVideos .vid-archive-toolbar {
+    padding:12px;gap:10px;
+  }
+  body:not(.admin) #ofVideos .vid-archive-toolbar .of-title {
+    font-size:clamp(27px,8vw,40px);
+  }
+  body:not(.admin) #ofVideos .vid-archive-code {
+    width:100%;margin-left:0;
+  }
+  body:not(.admin) #ofVideos .vid-library-intro {
+    align-items:flex-start;
+    flex-direction:column;
+    padding:18px 15px;
+    gap:9px;
+  }
+  body:not(.admin) #ofVideos .vid-library-intro h2 {
+    font-size:clamp(27px,8vw,38px);
+  }
+  body:not(.admin) #ofVideos .vid-library-intro p {
+    max-width:100%;
+  }
+  body:not(.admin) #ofVideos .vid-grid {
+    grid-template-columns:minmax(0,1fr);
+    padding:12px;
+    gap:12px;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  body:not(.admin) #ofVideos .vid-card {transition:none}
+}

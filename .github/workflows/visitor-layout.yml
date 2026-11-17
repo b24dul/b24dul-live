@@ -1,0 +1,24 @@
+name: Visitor viewport layout verification
+on:
+  push:
+    branches: [phase-6c-videos-browser-qa]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  browser-layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - run: node .github/scripts/visitor-layout-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: responsive-layout-results
+          path: qa-artifacts/
