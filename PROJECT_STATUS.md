@@ -125,3 +125,8 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - Source verified on merged `main`: 112 original IDs unique, Claude's 4 visitor flex/height rules still present, admin Command Centre classes/markup applied and stylesheet URL updated to `?v=admin-phase7-20261117`.
 - Permanent Chromium GitHub Actions test now targets `main` and PRs, includes screenshots at 390 and 1280px and JSON geometry artifact.
 - **Remaining gates:** iPhone Safari and owner admin interface acceptance; production Firebase authentication/permissions, moderator controls, stream actions and embedded YouTube playback require real account / end-to-end exercise and are **unverified** by mock-geometry tests. Do not claim backend/privilege security validated. Do not undo Claude's height fix.
+
+## 2026-11-17 — Owner acceptance of Phase 7 visual design
+- Owner confirmed: **"It works and looks ok."** Record this as acceptance of the deployed Phase 7 admin interface appearance and basic owner-observed usability, after merge `d39a3601423dd5ac48d1ee3c17d553e5b9713cb3` and successful Pages deployment.
+- **Phase 7 visual design: OWNER ACCEPTED.** No additional redesign or code changes requested; retain Claude's critical page-height fix and the browser regression workflow.
+- **Not implied by that statement:** formal validation of every Firebase permission, moderation write, account state, video playback, privacy workflow or automated end-to-end coverage. Those QA items remain open, and the separate React M1 rebuild is not started.
