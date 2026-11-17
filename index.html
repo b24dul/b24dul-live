@@ -630,7 +630,7 @@
 </header>
 <nav id="visitorNav" aria-label="Explore B24DUL Live">
   <button type="button" data-visitor-view="home" class="active" aria-current="page">Home</button>
-  <button type="button" data-visitor-view="watch" aria-disabled="true" title="Stream is offline">Live · Offline</button>
+  <button type="button" data-visitor-view="watch" title="Open the YouTube player">Check stream</button>
   <button type="button" data-visitor-view="games">Games</button>
   <button type="button" data-visitor-view="videos">Videos</button>
   <button type="button" data-visitor-view="chat">Chat</button>
@@ -1392,7 +1392,7 @@
   let currentLiveNoticeId = 0;
   const visitorViews = {
     home: ["B24DUL COMMUNITY", "Welcome to B24DUL Live", "Games, videos and anonymous community chat — all in one place."],
-    watch: ["LIVE ON PS5", "Watch B24DUL live", "Catch the broadcast and chat with the community in real time."],
+    watch: ["YOUTUBE PLAYER", "Watch B24DUL", "The player is available even while live-status detection is catching up. If the stream just started, open it here."],
     games: ["COMMUNITY ARCADE", "Choose your next challenge", "Play Sudoku or 2048 and compete for the top spot."],
     game: ["SUDOKU", "Sudoku challenge", "Pick your difficulty and see how fast you can solve the puzzle."],
     g2048: ["2048", "Join the 2048 challenge", "Merge tiles, beat your best and climb the leaderboard."],
@@ -1405,9 +1405,9 @@
     $("visitorSubtitle").textContent = heading[2];
     $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : "Broadcast offline";
     const liveButton = $('visitorNav').querySelector('[data-visitor-view="watch"]');
-    liveButton.setAttribute("aria-disabled", String(!streamLive));
-    liveButton.title = streamLive ? "Watch the live stream" : "Stream is currently offline";
-    liveButton.textContent = streamLive ? "● Live now" : "Live · Offline";
+    liveButton.setAttribute("aria-disabled", "false");
+    liveButton.title = streamLive ? "Watch the live stream" : "Open the stream player while automatic detection catches up";
+    liveButton.textContent = streamLive ? "● Live now" : "Check stream";
     liveButton.classList.toggle("is-live", streamLive);
     document.querySelector("main").dataset.mobileSection = activeVisitorTab === "chat" ? "chat" : "content";
     document.querySelector("main").dataset.visitorSection = visitorView;
@@ -1420,7 +1420,9 @@
     }
   }
   function applyLive() {
-    const showVideo = streamLive && (isAdmin || visitorView === "watch");
+    // Never block visitor playback on a delayed GitHub/Firebase status update.
+    // Only label the stream LIVE after the detector confirms it.
+    const showVideo = (isAdmin && streamLive) || (!isAdmin && visitorView === "watch");
     const yt = $("ytFrame");
     $("playerFrame").classList.toggle("offline", !showVideo);
     yt.hidden = !showVideo;
@@ -1451,7 +1453,6 @@
       return;
     }
     if (view === "watch") {
-      if (!streamLive) return;
       visitorView = "watch";
       activeVisitorTab = "watch";
       applyLive();
@@ -1653,7 +1654,7 @@
     if (!streamLive) {
       streamNotice.hidden = true;
     }
-    if (!isAdmin && !streamLive && visitorView === "watch") {
+    if (!isAdmin && wasLive && !streamLive && visitorView === "watch") {
       visitorView = "home";
       activeVisitorTab = "home";
       ofView = "choose";
