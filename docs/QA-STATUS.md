@@ -57,3 +57,13 @@ A local Chromium binary exists, but a proper in-browser integration run still re
 ## Owner acceptance feedback — 2026-11-17
 
 After the Phase 5B redesign, the owner reported: **"It works I tested it."** This is a positive live-site user report for the new layout and operation, but it lacks individual device/workflow test details. Do **not** convert any of the specific UNVERIFIED test rows into PASS without a matching observation. Next planned work: Phase 6 site-wide polish, starting with the Watch Stream view. See `docs/PROJECT-ROADMAP.md` section 10.10.
+
+## Phase 6A — Watch Stream acceptance cases (2026-11-17)
+
+**Implementation:** [`a29bdbe8`](https://github.com/b24dul/b24dul-live/commit/a29bdbe8b53b071d9dce58078c1e657a9933e84b) and [`4db99a60`](https://github.com/b24dul/b24dul-live/commit/4db99a6080a1709cf051030d9f33c05c5c2b1cf0).
+
+**Static PASS:** All 112 original IDs preserved/unique; original `ytFrame` remains; Watch-specific display and CSS rules exist; watch signal label derives from existing verified `streamLive`/`liveDetectionReady`; Watch Chat action reuses `navigateVisitor()`; CSS brace/comment structure balanced. No backend modifications.
+
+**Browser UNVERIFIED:** YouTube iframe loads when Watch is opened offline, when detection is pending, and when live is confirmed; live label properly changes; fullscreen and player controls respond; desktop player and chat remain side-by-side; Watch→Chat works on mobile; switching back to Watch keeps the player usable; external YouTube link opens; admin workspace, games, videos and visitor gate remain unaffected; 320/375/768/1280px layouts have no overflow or clipped buttons.
+
+The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **before** the Phase 6A changes.
