@@ -1,0 +1,37 @@
+name: Temporary Watch file formatter
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/m2-watch-format.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - name: Format only the new stream feature and its tests
+        working-directory: frontend
+        run: npx prettier --write src/components/PublishedStreamStatus.tsx src/components/SectionBlocks.tsx e2e/live-status.spec.ts
+      - name: Commit formatter output
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add frontend/src/components/PublishedStreamStatus.tsx frontend/src/components/SectionBlocks.tsx frontend/e2e/live-status.spec.ts
+          if ! git diff --cached --quiet; then
+            git commit -m 'style(watch): apply Prettier formatting to verified player'
+            git push
+          fi
