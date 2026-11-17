@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseYouTubePage, detectYouTube, checkAndPublish } from "../src/index.js";
+import { parseYouTubePage, inspectVideoRenderers, detectYouTube, checkAndPublish } from "../src/index.js";
 
 const url = "https://www.youtube.com/channel/UCnXAfqk5I7QE3frLhHHyImQ/live";
 test("channel/live redirect detects broadcast", () => {
@@ -55,4 +55,18 @@ test("repeated consent redirects do not claim live or offline", async () => {
   assert.equal(result.state, "unknown");
   assert.equal(result.redirectHost, "consent.youtube.com");
   assert.equal(result.consentRetry, true);
+});
+
+test("renderer diagnostics associate live badges with their own video and owner", () => {
+  const entry = { videoId: "oYJneqAyj04",
+    ownerText: { runs: [{ navigationEndpoint: { browseEndpoint: { browseId: "UCnXAfqk5I7QE3frLhHHyImQ" } } }] },
+    badges: [{ metadataBadgeRenderer: { style: "BADGE_STYLE_TYPE_LIVE_NOW", label: "LIVE" } }] };
+  const result = inspectVideoRenderers('{"videoRenderer":' + JSON.stringify(entry) + '}');
+  assert.equal(result.rendererCount, 1);
+  assert.equal(result.liveCandidates[0].videoId, "oYJneqAyj04");
+  assert.equal(result.liveCandidates[0].ownerMatchesChannel, true);
+});
+test("unrelated live badge does not contaminate renderer candidate", () => {
+  const html = '"LIVE NOW" {"videoRenderer":{"videoId":"oYJneqAyj04","badges":[]}}';
+  assert.deepEqual(inspectVideoRenderers(html).liveCandidates, []);
 });
