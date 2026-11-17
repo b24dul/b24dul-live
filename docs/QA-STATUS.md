@@ -53,3 +53,7 @@ A local Chromium binary exists, but a proper in-browser integration run still re
 
 **Implementation commits:** [`61a7b81a`](https://github.com/b24dul/b24dul-live/commit/61a7b81a5a878161df20860289909268c7ee5bd2), [`84d3f166`](https://github.com/b24dul/b24dul-live/commit/84d3f1662747373872ee5b400f64a9eb0a1201c4). Roadmap updated.
 
+
+## Owner acceptance feedback — 2026-11-17
+
+After the Phase 5B redesign, the owner reported: **"It works I tested it."** This is a positive live-site user report for the new layout and operation, but it lacks individual device/workflow test details. Do **not** convert any of the specific UNVERIFIED test rows into PASS without a matching observation. Next planned work: Phase 6 site-wide polish, starting with the Watch Stream view. See `docs/PROJECT-ROADMAP.md` section 10.10.
