@@ -35,7 +35,12 @@ for(const width of widths){
     const doc=document.documentElement,selectors=["#adminWorkspace",".adm-intro",".adm-controls",".adm-grid",".adm-work",".adm-rail",".adm-chat-wrap",".adm-preview-wrap","#adminBar","#adminAnalyticsSlot","#adminInspectorSlot"];
     const bounds=Object.fromEntries(selectors.map(s=>[s,box(s)]));
     const errors=[];
-    if(doc.scrollWidth>width+2)errors.push("document overflows horizontally: "+doc.scrollWidth+" > "+width);
+    if(doc.scrollWidth>width+2){
+      const offenders=[...document.querySelectorAll("body *")].map(el=>{
+        const b=el.getBoundingClientRect();return {tag:el.tagName,selector:el.id?"#"+el.id:el.className&&typeof el.className==="string"?"."+el.className.trim().replace(/\\s+/g,"."):el.tagName,left:Math.round(b.left),right:Math.round(b.right),width:Math.round(b.width)};
+      }).filter(b=>b.right>width+3||b.left< -3).sort((a,b)=>b.right-a.right).slice(0,14);
+      errors.push("document overflows horizontally: "+doc.scrollWidth+" > "+width+" offenders="+JSON.stringify(offenders));
+    }
     if(!bounds["#adminWorkspace"]||bounds["#adminWorkspace"].display==="none")errors.push("admin workspace hidden");
     for(const [sel,r] of Object.entries(bounds)){
       if(!r)errors.push("missing "+sel);
