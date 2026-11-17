@@ -13,8 +13,8 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 1 — isolated frontend foundation (implementation started; verification gate open)**
-- Overall status: **Phase 1 authorised 2026-11-17 and scaffold committed under `frontend/` only; NOT complete until lockfile and tests/build pass. Existing production site unchanged by this phase.**
+- Current phase: **Phase 1 — foundation verified; Phase 2 design system is next**
+- Overall status: **Phase 1 complete: committed npm lockfile and full automated installation, lint, typecheck, Vitest, Vite build, formatting and Chromium Playwright checks passed on GitHub Actions run 44068641885. Existing production site unchanged.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
@@ -39,7 +39,7 @@
 | Phase | Status | Commit SHA | Tests | Notes |
 |---|---|---|---|---|
 | 0 Repository audit | Documentation complete; live QA pending | `c8cee97dc283ad7bd1e5cb270fe22d3cd5efc168`, `000a10950a98eaa9b4921272cc764a0aee4c2446`, `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`; final status-file commit: inspect HEAD | GitHub source/tree/workflow inspections completed; runtime, build, browser and Firebase/Worker checks **not run** | Documentation-only; exact source baseline recorded; no new branch per owner |
-| 1 Frontend foundation | In progress; initial scaffold committed | See `main` commits from `7f93883ff8b56c15823595dae40a03053f6c769b` to latest HEAD | Not run: npm registry unreachable in authoring environment; missing lockfile | Isolated `frontend/` React 19, TS strict, Vite base, Tailwind, HashRouter, Motion/Lucide dependencies, test configs; root Pages entrypoint untouched |
+| 1 Frontend foundation | **Complete — CI gate passed** | `f991293a1907c731a0eec336ef5d21cd7e1889bb` (lockfile + formatted files); `1ec13733060724858f27b9510fcef796247618cd` (read-only verification workflow) | [GitHub Actions run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885): npm ci, lint, typecheck, Vitest (1 test), Vite build, formatting, Chromium Playwright **passed** | Isolated `frontend/`; `package-lock.json` committed; no Firebase or production cutover |
 | 2 Design system | Not started | | Not run | Glass tokens/components |
 | 3 App shell and routes | Not started | | Not run | Eleven HashRouter routes |
 | 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
@@ -57,8 +57,8 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 1 isolated frontend scaffold. Phase 0 audit/preservation plan retained.
-- Exact next task: validate Phase 1 in an npm-connected Node 22+ environment; generate and review `frontend/package-lock.json`; commit it; run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npx playwright install chromium`, `npm run test:e2e`, `npm run format:check`; fix any failures and only then close Phase 1 gate.
+- In progress: Phase 1 closeout and handoff, following successful GitHub Actions gate. Phase 2 may begin when requested; Phase 0 audit/preservation plan retained.
+- Exact next task: start Phase 2 glassmorphism design tokens and reusable components per master specification, in isolated `frontend/`; maintain unit/Playwright verification and production preservation. Phase 3 full routes and release cutover remain separate.
 - Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
@@ -147,3 +147,12 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - **CI outcome:** workflow committed; execution result not independently verified from this session. Do not interpret creation of a CI file as a passing workflow. Node 22/npm installed locally but external GitHub/npm DNS is blocked in the container, so no local install/test success can be asserted.
 - **Next action:** open GitHub Actions > M1 frontend foundation verification; inspect actual run logs, retrieve the `frontend-package-lock` artifact, commit reviewed `frontend/package-lock.json` to `main` (if valid), rerun CI with the committed lock and repair any failures. Record passing job URL before marking Phase 1 complete. **Do not start Phase 2/production cutover until the Phase 1 gate is recorded as passing.**
 - **Scope difference from initial Phase 1 compare:** `frontend/**`, `.github/workflows/frontend-foundation.yml`, and `PROJECT_STATUS.md` only. Existing root frontend, games, live detector, Firebase paths and accepted Phase 7 fixes unchanged.
+
+## 2026-11-17 — M1 Phase 1 gate PASSED; freeze tested foundation
+- **Failed first run (diagnosed, corrected):** [44068195161](https://github.com/b24dul/b24dul-live/actions/runs/44068195161) passed dependency installation, ESLint, TypeScript, 1 Vitest unit test and Vite build; Prettier failed on exactly `src/styles/index.css` and `tsconfig.json`. Browser test was skipped due to early failure. Original Node 20 deprecation message from action runtime was a warning, not the failing step.
+- **Fix:** upgraded Actions setup/checkout/upload to v5, used the CI runner to generate and commit `frontend/package-lock.json` and Prettier-correct the two files; resulting GitHub bot commit: `f991293a1907c731a0eec336ef5d21cd7e1889bb`. An intermediate bootstrap run `44068624155` failed because of incorrect working-directory-relative staging paths; corrected in `afe90859da6110e8a5b6dab19aee9bf12fcb1592`.
+- **Successful required gate:** [run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885), foundation job `133988829561`, **conclusion success**. Confirmed steps: lockfile resolved, npm ci, ESLint, strict TypeScript, Vitest, Vite build, Prettier formatting, Chromium install, Playwright browser smoke **all success**. One unit test and one browser smoke test; this is Phase 1 minimal verification, not comprehensive E2E of legacy Firebase/live features.
+- **Least privilege cleanup:** removed CI bootstrap self-committing step and changed workflow back to `contents: read`; final configuration commit `1ec13733060724858f27b9510fcef796247618cd`. From here, `npm ci` requires the committed lockfile. Check this subsequent workflow run independently if needed; earlier passing run had equivalent application checks.
+- **Preservation:** all Phase 1 changes under `frontend/**`, its GitHub Actions validation workflow and `PROJECT_STATUS.md`; no root `index.html`/legacy `styles.css` changes, no Firebase connections/rules/data changes, no worker edits or production deployment.
+- **Scope complete:** Phase 1 foundation accepted on passing automated gate and owner-observed check. **Phase 2 not started**; next action is semantic glassmorphism tokens and reusable accessible visual components inside the isolated frontend. Phase 7 cutover still requires explicit approval.
+- **Rollback:** `9b56eef8240f1b04449b4cf45ff5428fb32ace06` is pre-Phase-1 main HEAD. Git commits, not this Markdown file, are actual rollback points. This status commit's SHA is discoverable from GitHub HEAD.
