@@ -1,7 +1,6 @@
 // M2, step 1: read-only published stream status. No Firebase auth, database writes,
 // service credentials or admin privileges are used by this adapter.
-export const PUBLISHED_STATUS_URL =
-  'https://b24dul-live-monitor.b24dul.workers.dev/api/status';
+export const PUBLISHED_STATUS_URL = 'https://b24dul-live-monitor.b24dul.workers.dev/api/status';
 
 const FRESHNESS_MS = 3 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 60 * 1000;

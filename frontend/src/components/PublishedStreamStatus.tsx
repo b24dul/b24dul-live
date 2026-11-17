@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, Radio } from 'lucide-react';
 import { GlassPanel, StatusIndicator } from './ui';
-import {
-  fetchPublishedLiveStatus,
-  type PublishedLiveStatus,
-} from '../services/liveStatus';
+import { fetchPublishedLiveStatus, type PublishedLiveStatus } from '../services/liveStatus';
 
 const REFRESH_MS = 60_000;
 const DIRECT_CHANNEL_URL = 'https://www.youtube.com/channel/UCnXAfqk5I7QE3frLhHHyImQ/live';
@@ -57,7 +54,8 @@ export function PublishedStreamStatus() {
             : 'The current broadcast state could not be verified. This does not mean the channel is offline.'}
       </p>
       <p className="mt-2 text-xs text-slate-400">
-        Read-only public monitor; results may be delayed. No Firebase account or data is accessed directly.
+        Read-only public monitor; results may be delayed. No Firebase account or data is accessed
+        directly.
       </p>
       <a
         className="ui-button ui-button--secondary mt-4"

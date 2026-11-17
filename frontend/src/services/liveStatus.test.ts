@@ -66,14 +66,20 @@ describe('read-only live status adapter', () => {
   });
 
   it('treats request failures and rejected responses as unavailable', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('offline');
+      }),
+    );
     expect(await fetchPublishedLiveStatus(undefined, NOW)).toEqual({
       state: 'unavailable',
       reason: 'network',
     });
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));
-    expect(await fetchPublishedLiveStatus(undefined, NOW).then((v) => v.state)).toBe(
-      'unavailable',
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: false })),
     );
+    expect(await fetchPublishedLiveStatus(undefined, NOW).then((v) => v.state)).toBe('unavailable');
   });
 });
