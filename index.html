@@ -16,6 +16,9 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0e0f12;
@@ -613,6 +616,182 @@
     body:not(.admin) #of2048 { padding:5px; }
     body:not(.admin) .g2-board { width:100%; max-width:100%; }
   }
+
+  /* Phase 1: visitor-facing neo-noir design layer. Admin layout remains unchanged. */
+  :root {
+    --hud-bg: #0B0C10;
+    --hud-surface: #12141C;
+    --hud-glass: rgba(20,24,34,.88);
+    --hud-green: #2ECC71;
+    --hud-green-soft: #4ADE80;
+    --hud-red: #FF1E1E;
+    --hud-magenta: #FF2A85;
+    --hud-orange: #FF6B35;
+    --hud-cyan: #00F0FF;
+    --hud-text: #FFFFFF;
+    --hud-muted: #A0A8B8;
+    --hud-border: #343B49;
+  }
+  body:not(.admin) {
+    --bg: var(--hud-bg);
+    --panel: var(--hud-surface);
+    --panel-2: #1B2030;
+    --line: var(--hud-border);
+    --text: var(--hud-text);
+    --muted: var(--hud-muted);
+    --plate: var(--hud-green);
+    --plate-text: #07140c;
+    --live: var(--hud-red);
+    --ok: var(--hud-green-soft);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: radial-gradient(ellipse at 80% -16%, rgba(255,107,53,.11), transparent 48%), var(--hud-bg);
+  }
+  body:not(.admin) > header {
+    position: relative;
+    gap: clamp(12px,2vw,24px);
+    min-height: 76px;
+    padding: 13px clamp(16px,3.2vw,48px);
+    background: linear-gradient(110deg,#12141C 5%,#181925 65%,#16121B 100%);
+    border-bottom: 1px solid var(--hud-border);
+  }
+  body:not(.admin) > header::before {
+    content: '';
+    position: absolute;
+    width: 46px;
+    height: 2px;
+    bottom: -1px;
+    left: clamp(16px,3.2vw,48px);
+    background: var(--hud-orange);
+  }
+  .brand-wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    flex: none;
+    gap: 7px;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .brand-name {
+    color: #fff;
+    font-family: 'Anton', Impact, 'Arial Narrow', sans-serif;
+    font-size: clamp(27px,3vw,37px);
+    letter-spacing: .065em;
+  }
+  .brand-live {
+    color: var(--hud-magenta);
+    font-family: 'Yellowtail', cursive;
+    font-size: clamp(25px,2.6vw,34px);
+    transform: rotate(-6deg);
+    text-shadow: 1px 2px 0 #301523;
+  }
+  body:not(.admin) #liveBadge {
+    border-radius: 2px;
+    padding: 7px 10px;
+    border: 1px solid var(--hud-red);
+    background: rgba(255,30,30,.12);
+    color: #fff;
+    font: 700 12px/1 'Barlow Condensed', Impact, sans-serif;
+    letter-spacing: .14em;
+    white-space: nowrap;
+  }
+  body:not(.admin) #liveBadge::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    background: var(--hud-red);
+    vertical-align: 1px;
+    border-radius: 50%;
+  }
+  body:not(.admin) #liveBadge.off {
+    background: #1B202A;
+    border-color: #465061;
+    color: #C6CDD8;
+  }
+  body:not(.admin) #liveBadge.off::before { background: #8F9BAA; }
+  body:not(.admin) header a.sub {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 19px;
+    background: var(--hud-green);
+    border: 1px solid var(--hud-green-soft);
+    border-radius: 2px;
+    color: #07140c;
+    font: 800 15px/1 'Barlow Condensed', Impact, sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transition: background-color .18s ease, border-color .18s ease;
+  }
+  body:not(.admin) header a.sub:hover { background: #7BE5A0; }
+  body:not(.admin) #visitorNav {
+    gap: 6px;
+    padding: 9px clamp(16px,3.2vw,48px);
+    background: var(--hud-surface);
+    border-bottom: 1px solid var(--hud-border);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #596374 transparent;
+    scroll-snap-type: x proximity;
+  }
+  body:not(.admin) #visitorNav button {
+    min-height: 44px;
+    padding: 10px 17px;
+    flex: 0 0 auto;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    color: #BBC4D2;
+    font: 700 15px/1 'Barlow Condensed', Impact, sans-serif;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    scroll-snap-align: start;
+    transition: color .18s ease, background-color .18s ease, border-color .18s ease;
+  }
+  body:not(.admin) #visitorNav button.active {
+    color: #07140c;
+    background: var(--hud-green);
+    border-color: var(--hud-green-soft);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.2);
+  }
+  body:not(.admin) #visitorNav button:hover:not(.active) {
+    color: #fff;
+    background: #242A38;
+    border-color: #3A4659;
+  }
+  body:not(.admin) #visitorNav button[data-visitor-view="watch"].is-live:not(.active) {
+    color: #FF7777;
+    border-color: rgba(255,30,30,.4);
+  }
+  body:not(.admin) #visitorNav button[data-visitor-view="watch"].is-live.active { color: #07140c; }
+  body:not(.admin) .visitor-nav-status {
+    font: 600 12px/1 'Barlow Condensed', sans-serif;
+    letter-spacing: .06em;
+  }
+  body:not(.admin) :is(button,a,input,select,textarea):focus-visible {
+    outline: 3px solid var(--hud-cyan);
+    outline-offset: 3px;
+  }
+  @media (max-width: 760px) {
+    body:not(.admin) > header { min-height: 67px; padding: 10px 14px; gap: 11px; }
+    .brand-name { font-size: 28px; }
+    .brand-live { font-size: 25px; }
+    body:not(.admin) #liveBadge { font-size: 11px; padding: 7px; }
+    body:not(.admin) header a.sub { min-height: 42px; padding: 8px 11px; font-size: 13px; }
+    body:not(.admin) #visitorNav { padding: 7px 12px; gap: 5px; }
+    body:not(.admin) #visitorNav button { min-height: 44px; padding: 10px 13px; font-size: 14px; }
+  }
+  @media (max-width: 420px) {
+    body:not(.admin) > header { flex-wrap: wrap; }
+    body:not(.admin) > header .spacer { flex: 1; }
+    body:not(.admin) #liveBadge { order: 3; }
+    body:not(.admin) header a.sub { order: 4; margin-left: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body:not(.admin) header a.sub,
+    body:not(.admin) #visitorNav button { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -642,8 +821,8 @@
   </div>
 </div>
 <header>
-  <span class="plate">B24DUL</span>
-  <span class="badge off" id="liveBadge">OFFLINE</span>
+  <span class="brand-wordmark" aria-label="B24DUL Live"><span class="brand-name">B24DUL</span><span class="brand-live">Live</span></span>
+  <span class="badge off" id="liveBadge" role="status" aria-live="polite">OFFLINE</span>
   <span class="spacer"></span>
   <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
 </header>
