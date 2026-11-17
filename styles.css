@@ -1830,7 +1830,7 @@ body:not(.admin) #ofGame .sd-levels button {
   }
 }
 @media (max-width:760px) {
-  body:not(.admin) #visitorContent {
+  body:not(.admin) main:is([data-visitor-section="g2048"],[data-visitor-section="game"],[data-visitor-section="games"]) #visitorContent {
     width:100%;
     padding-inline:clamp(9px,3vw,14px);
   }
@@ -1850,7 +1850,7 @@ body:not(.admin) #ofGame .sd-levels button {
     width:100%;
     max-width:440px;
   }
-  body:not(.admin) .visitor-content-head h1 {
+  body:not(.admin) main:not([data-visitor-section="watch"]) .visitor-content-head h1 {
     font-size:clamp(30px,9vw,47px);
     line-height:1.04;
   }
