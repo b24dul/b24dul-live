@@ -28,11 +28,25 @@ Lighthouse on this corrected revision [run 44080262038](https://github.com/b24du
 ## Known limitations and review boundary
 
 - The master WCAG 2.2 AA goal is a target; automated Lighthouse/Playwright checks cannot certify every criterion. Manual screen-reader testing and a visual keyboard audit on real devices remain recommended before Phase 7.
-- Chrome/Chromium CI is tested. Safari/WebKit and Firefox-specific behavior is not certified unless separately tested.
+- Chromium, Firefox and WebKit browser engines all passed the existing Playwright suites in [run 44081098413](https://github.com/b24dul/b24dul-live/actions/runs/44081098413) (38/38 cross-browser tests). This still does not certify real iOS Safari or physical-device assistive technology.
 - Lighthouse locally served preview may differ in hosting latency and compression from the GitHub Pages target after release. Run a post-deployment audit only after explicit production cutover approval.
 - Historical legacy game, stream, Firebase, chat, moderation and privacy features are **untouched, not migrated**. They require separate integration validation.
 - No credentials, Firebase data mutations, production route overrides or deployment steps are part of these tests.
 
 ## Next
 
-Finish all automated CI and Lighthouse budget checks and record real final run IDs in `PROJECT_STATUS.md`. Phase 7 is a separate preview/release-candidate stage. Do not overwrite the live Pages root or make Firebase changes without explicit permission.
+All automated Phase 6 checks passed on source commit `5e1256ee043159ad0c14f0eff4f18f4b995ab120`: [22 Vitest / 19 Chromium](https://github.com/b24dul/b24dul-live/actions/runs/44081098328), [38 Firefox/WebKit](https://github.com/b24dul/b24dul-live/actions/runs/44081098413) and [Lighthouse/budget](https://github.com/b24dul/b24dul-live/actions/runs/44081098445). Phase 7 is a separate preview/release-candidate stage. Do not overwrite the live Pages root or make Firebase changes without explicit permission.
+
+## Final measured gate — Phase 6
+
+| Criterion | Mobile | Desktop | Target | Result |
+| --- | ---: | ---: | --- | --- |
+| Lighthouse Performance | 91 | 100 | 90+ | Pass |
+| Lighthouse Accessibility | 100 | 100 | 95+ | Pass |
+| Lighthouse Best Practices | 100 | 100 | 95+ | Pass |
+| Lighthouse SEO | 100 | 100 | 90+ | Pass |
+| Lighthouse CLS | 0 | 0 | below 0.1 | Pass |
+| Lighthouse total transfer | ~144,894 bytes | ~144,894 bytes | informative | Measured |
+| Production JS gzip | 136,057 bytes | same built asset | below 250,000 bytes | Pass |
+
+Artifacts and logs: [Lighthouse 44081098445](https://github.com/b24dul/b24dul-live/actions/runs/44081098445), [foundation 44081098328](https://github.com/b24dul/b24dul-live/actions/runs/44081098328), [cross-browser 44081098413](https://github.com/b24dul/b24dul-live/actions/runs/44081098413). Lighthouse metrics are one-run CI lab values; expect fluctuations and repeat measurements around the release candidate. No public deployment was performed by these workflows.
