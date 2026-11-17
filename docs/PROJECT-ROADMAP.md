@@ -272,6 +272,20 @@ When a new chat begins, the assistant should:
 
 **Outstanding:** Individual tests for desktop/mobile breakpoints, stream live/stale/offline behaviour, chat/moderation, games, privacy and admin need explicit PASS/FAIL observations in `docs/QA-STATUS.md`.
 
+## 10.11 Phase 6A — Watch Stream broadcast-control view (2026-11-17)
+
+**Approved phase:** Owner explicitly authorised Phase 6A after confirming the previously redesigned site works. Focus this stage on the existing Watch Stream visitor destination (no new backend or app infrastructure).
+
+**Implementation:** [`a29bdbe8`](https://github.com/b24dul/b24dul-live/commit/a29bdbe8b53b071d9dce58078c1e657a9933e84b) adds a Watch-only `watch-hud-details` panel after the unchanged `playerFrame`, with labelled broadcast controls, an external YouTube channel link, and a Chat button that delegates to the already-existing `data-hud-jump` navigation handler. A small presentational addition to `renderVisitorView()` sets `data-broadcast-state` on `main` and updates the visible status based **only** on the pre-existing `streamLive` and `liveDetectionReady` flags. A stale/offline status never becomes LIVE just because a viewer opens the player. [`4db99a60`](https://github.com/b24dul/b24dul-live/commit/4db99a6080a1709cf051030d9f33c05c5c2b1cf0) adds `main[data-visitor-section="watch"]`-scoped typography, large YouTube frame presentation, signal badge, channel and chat actions, full-height desktop chat rail, responsive tablet/mobile stacking and reduced-motion rules.
+
+**Preservation:** Existing 112 HTML IDs remain unique and unchanged; the same YouTube `ytFrame`, `applyLive()` player fallback, Firebase stream detector freshness policy, chat, games, privacy and administration stay in place. Original five visitor tabs retained. No invented counters, messages or third-party visuals. Other repo projects untouched.
+
+**Source-level verification:** Correct Watch markup and CSS selectors present, dynamically derived state label, existing chat navigation reused, mobile chat-specific layout selectors, CSS braces/comments balanced. This is **not an independently executed browser QA pass**.
+
+**Outstanding:** Watch opening offline or stale, confirmed-live and end transitions, iframe pointer controls and fullscreen, mobile Watch→Chat and return, iOS Safari/desktop breakpoints and admin DOM relocation need individual live-browser checks. Owner previously reported the Phase 5B layout works, but that report predates Phase 6A.
+
+**Next:** Run Phase 6A acceptance testing and fix any regressions; then Phase 6B arcade/game experience, followed by video library, mobile refinement and admin style pass. The test register is `docs/QA-STATUS.md`.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B broadcast command-deck layout and chat-rail composition committed. Source-level checks passed; runtime/browser/deployment acceptance remains UNVERIFIED.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested; Phase 6A Watch Stream view committed. Source checks passed; Phase 6A browser acceptance remains UNVERIFIED.
