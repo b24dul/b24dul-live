@@ -146,6 +146,8 @@ When a new chat begins, the assistant should:
 
 **Risks/unknowns:** No automated visitor UI browser test suite currently present. Responsive rules are layered and duplicated; must test 320px, 375px, 768px and desktop widths. Admin DOM relocation may interact with shared CSS. Need real anonymous-auth + chat/send/ban, account gate, privacy flow and games smoke tests; live/offline UI transitions require controlled testing. The text of visitor-gate privacy disclosures should be reviewed for consistency with actual collection separately from visual design. Font CDN may be unavailable: local fallbacks are supplied.
 
+**Review:** [Draft PR #4](https://github.com/b24dul/b24dul-live/pull/4) — intentionally unmerged until manual visitor/admin/browser acceptance testing.
+
 **First review commit:** [`1febb384`](https://github.com/b24dul/b24dul-live/commit/1febb3843e9388f993b70b851b03b905d7c2f1fd) on branch `design/neo-noir-phase-1`. Adds original Anton/Yellowtail header wordmark, Inter/Barlow type stack, scoped neo-noir palette, live/offline styles and segmented scrolling responsive navigation. Changes only `index.html`; no script handlers, Firebase paths, embeds or existing IDs removed. This is **a source-level preservation check, not a verified working browser build or deployed change**.
 
 **Done:** roadmap read, code inventory, navigation model, first isolated visitor theme/nav styling commit.  
