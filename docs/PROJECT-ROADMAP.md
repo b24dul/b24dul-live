@@ -77,17 +77,17 @@ B24DUL Live is an independent gaming/creator livestream website. It provides an 
 
 ## 6. Implementation roadmap
 
-### Phase 0 — Inventory / baseline (NEXT)
-- [ ] Inspect full `index.html`, its DOM IDs, routing/navigation logic, Firebase listeners, embeds, videos, game UI, chat, privacy/admin and notifications.
-- [ ] Produce a baseline list of visible sections and their working interactions; mark any known bugs before redesign.
-- [ ] Agree on a reasonable mobile navigation layout and which actual current tabs appear.
+### Phase 0 — Inventory / baseline (IN PROGRESS)
+- [x] Inspect `index.html` structure, key DOM IDs, navigation, Firebase/live detection listeners, embeds, video fallback, games, chat, privacy/admin and notifications (static source audit, not browser QA).
+- [x] Produce a baseline list of visible sections and their interactions; note unverified behaviour below.
+- [x] Retain actual Home / Watch stream / Games / Videos / Chat tabs and preserve mobile horizontal tab scrolling with 44px touch targets; assess on devices before final sign-off.
 - [ ] Record baseline screenshots or equivalent visual reference **if useful and possible**.
-- [ ] Note accessibility and performance constraints.
+- [x] Document initial accessibility and performance constraints (focus-visible, reduced motion, font loading, existing responsive CSS).
 
-### Phase 1 — Core design system and brand
-- [ ] Add reusable CSS variables, typography imports and focus/hover conventions.
-- [ ] Redesign logo/header/nav/ON AIR state while preserving existing links, routing and event handlers.
-- [ ] Adapt header to narrow screens; test auth/navigation and live/offline visual states.
+### Phase 1 — Core design system and brand (IN PROGRESS)
+- [x] Add initial visitor-scoped HUD CSS tokens, Google Fonts and focus/hover conventions on review branch (not yet deployed).
+- [x] Initial original wordmark, header/status and segmented nav restyling on review branch; existing link, button, and status IDs preserved. **Browser acceptance testing pending.**
+- [ ] Adapted layout and touch sizing in CSS; still test narrow-screen layout, auth/nav and live/offline visual states in a browser.
 
 ### Phase 2 — Livestream experience
 - [ ] Restyle real YouTube player into tactical video-frame layout.
@@ -133,6 +133,28 @@ When a new chat begins, the assistant should:
 3. Work directly in the correct repo when authorized, using small commits and reporting commit links.
 4. Do not alter unrelated repos, require secrets in chat, invent metrics, or rebuild working features unnecessarily.
 5. Update this document after significant changes, documenting `Done / In progress / Next / New decisions / Known issues`.
+
+## 10.1 Phase 0 static audit and Phase 1 review implementation (2026-11-17)
+
+**Baseline source:** `main/index.html` was approximately 151 KB / 2,910 lines; a single inline stylesheet and a single Firebase-backed ES module script. Do not split those before establishing browser coverage.
+
+**Existing visitor tabs:** `home`, `watch`, `games`, `videos`, `chat` all use `data-visitor-view` and `navigateVisitor()`. `watch` permits opening the YouTube channel player whether the detection signal is delayed or offline. `games` is a chooser for Sudoku / 2048, `videos` loads `videos.json` with an uploads playlist fallback, and mobile `chat` switches to a dedicated view while desktop chat remains in a sidebar.
+
+**Must preserve:** `liveBadge`, `visitorNav`, `visitorNavStatus`, `playerFrame`, `ytFrame`, `offline`, `tryLivePlayer`, all `of*` chooser/game containers, `vid*` video elements, Sudoku `sd*`, 2048 `g2*`, `sendForm`, `messages`, `gateForm`, `privacyDialog`, `adminWorkspace` and administration-related IDs. The script relocates management/chat/player DOM into the administrator layout. Firebase paths include `settings/liveDetection`, chat, viewer and moderation/leaderboard data; do not alter them for visual work. Livestream freshness logic uses `LIVE_FRESH_MS = 12 * 60 * 1000`, with periodic rechecks. Both Sudoku and 2048 have keyboard/touch functionality, whose runtime regression tests remain pending.
+
+**Other architecture:** `videos.json`; `stream-worker/` scheduled monitor; `.github/workflows/videos.yml` for video updates; `auto-live.yml` manual fallback; privacy documentation and rules fragment. No changes to monitor, scripts, workflows or Firebase rules in the redesign's first commit.
+
+**Risks/unknowns:** No automated visitor UI browser test suite currently present. Responsive rules are layered and duplicated; must test 320px, 375px, 768px and desktop widths. Admin DOM relocation may interact with shared CSS. Need real anonymous-auth + chat/send/ban, account gate, privacy flow and games smoke tests; live/offline UI transitions require controlled testing. The text of visitor-gate privacy disclosures should be reviewed for consistency with actual collection separately from visual design. Font CDN may be unavailable: local fallbacks are supplied.
+
+**Review:** [Draft PR #4](https://github.com/b24dul/b24dul-live/pull/4) — intentionally unmerged until manual visitor/admin/browser acceptance testing.
+
+**First review commit:** [`1febb384`](https://github.com/b24dul/b24dul-live/commit/1febb3843e9388f993b70b851b03b905d7c2f1fd) on branch `design/neo-noir-phase-1`. Adds original Anton/Yellowtail header wordmark, Inter/Barlow type stack, scoped neo-noir palette, live/offline styles and segmented scrolling responsive navigation. Changes only `index.html`; no script handlers, Firebase paths, embeds or existing IDs removed. This is **a source-level preservation check, not a verified working browser build or deployed change**.
+
+**Done:** roadmap read, code inventory, navigation model, first isolated visitor theme/nav styling commit.  
+**In progress:** review-branch testing and refinement, accessibility and mobile checks.  
+**Next:** compare CSS at responsive widths, test Firebase/YouTube admin transitions and key keyboard/touch flows in-browser, then submit review PR; merge only after verification.  
+**New decisions:** horizontal scrollable mobile nav rather than an unnecessary hamburger menu; preserve five real tabs and visitor-only palette overrides to limit administrator regressions.  
+**Known issues:** no confirmed new regression; live runtime/browser testing is outstanding.
 
 ## 10. Progress snapshots
 
