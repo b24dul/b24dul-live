@@ -6,7 +6,7 @@ Source of truth: the owner's complete Firebase Realtime Database rules export, n
 
 - `rtdb-security-audit.mjs`: conservative structural/static contract checker for existing read/write restrictions. It prints risks and fails if expected restrictions are missing.
 - `rtdb-security-audit.test.mjs`: synthetic negative regression tests; automatically run by the read-only `rtdb-contract.yml` workflow.
-- `rtdb-emulator.test.mjs`: **real Firebase emulator** tests using the supplied (private) rules snapshot, mocked unauthenticated, ordinary and email-verified administrator tokens, and isolated local fixture data.
+- `rtdb-emulator.test.mjs`: **real Firebase emulator** tests using the supplied (private) rules snapshot, mocked unauthenticated, ordinary and email-verified administrator tokens, and isolated local fixture data. It also tests atomic chat posting/cooldown and demonstrates that a plausible-looking but unverified leaderboard score can satisfy the current rules.
 - `firebase-emulator.json`: local database emulator on port 9000; no production endpoint.
 - `rtdb-emulator-private.yml`: manually triggered CI suite requiring a repository secret. This intentionally fails without the private snapshot instead of giving a false green result.
 
