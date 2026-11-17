@@ -1,9 +1,5 @@
 import { forwardRef, useEffect, useId, useRef } from 'react';
-import type {
-  ButtonHTMLAttributes,
-  HTMLAttributes,
-  ReactNode,
-} from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 type PanelProps = HTMLAttributes<HTMLElement> & {
@@ -24,14 +20,28 @@ export const PrimaryButton = forwardRef<HTMLButtonElement, ActionProps>(function
   { className = '', type = 'button', ...props },
   ref,
 ) {
-  return <button ref={ref} type={type} className={`ui-button ui-button--primary ${className}`} {...props} />;
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={`ui-button ui-button--primary ${className}`}
+      {...props}
+    />
+  );
 });
 
 export const SecondaryButton = forwardRef<HTMLButtonElement, ActionProps>(function SecondaryButton(
   { className = '', type = 'button', ...props },
   ref,
 ) {
-  return <button ref={ref} type={type} className={`ui-button ui-button--secondary ${className}`} {...props} />;
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={`ui-button ui-button--secondary ${className}`}
+      {...props}
+    />
+  );
 });
 
 type IconButtonProps = ActionProps & { label: string; icon: ReactNode };
@@ -41,7 +51,12 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   ref,
 ) {
   return (
-    <SecondaryButton ref={ref} aria-label={label} className={`ui-icon-button ${className}`} {...props}>
+    <SecondaryButton
+      ref={ref}
+      aria-label={label}
+      className={`ui-icon-button ${className}`}
+      {...props}
+    >
       <span aria-hidden="true">{icon}</span>
     </SecondaryButton>
   );
@@ -162,16 +177,21 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
 
   if (!open) return null;
   return (
-    <div className="ui-overlay" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <GlassPanel
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="ui-dialog"
-      >
+    <div
+      className="ui-overlay"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <GlassPanel role="dialog" aria-modal="true" aria-labelledby={titleId} className="ui-dialog">
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-xl font-bold">{title}</h2>
-          <IconButton ref={closeRef} label="Close dialog" icon={<X size={18} />} onClick={onClose} />
+          <h2 id={titleId} className="text-xl font-bold">
+            {title}
+          </h2>
+          <IconButton
+            ref={closeRef}
+            label="Close dialog"
+            icon={<X size={18} />}
+            onClick={onClose}
+          />
         </div>
         {children}
       </GlassPanel>
@@ -189,7 +209,11 @@ export function Toast({
   onDismiss: () => void;
 }) {
   return (
-    <GlassPanel role="status" aria-live="polite" className="ui-toast flex items-center justify-between gap-4">
+    <GlassPanel
+      role="status"
+      aria-live="polite"
+      className="ui-toast flex items-center justify-between gap-4"
+    >
       <StatusIndicator status={tone}>{message}</StatusIndicator>
       <IconButton label="Dismiss notification" icon={<X size={18} />} onClick={onDismiss} />
     </GlassPanel>

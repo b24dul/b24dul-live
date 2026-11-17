@@ -19,11 +19,7 @@ export function GameCard({ title, description, action }: CardBase) {
   );
 }
 
-export function VideoCard({
-  title,
-  description,
-  action,
-}: CardBase) {
+export function VideoCard({ title, description, action }: CardBase) {
   return (
     <GlassCard className="flex h-full flex-col gap-4 p-5">
       <div className="ui-preview-art" aria-hidden="true">
@@ -37,11 +33,7 @@ export function VideoCard({
   );
 }
 
-export function FeatureCard({
-  title,
-  description,
-  action,
-}: CardBase) {
+export function FeatureCard({ title, description, action }: CardBase) {
   return (
     <GlassCard className="flex h-full flex-col gap-4 p-5">
       <Sparkles aria-hidden="true" className="text-brand-cyan" size={28} />

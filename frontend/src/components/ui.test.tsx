@@ -27,7 +27,9 @@ describe('design-system components', () => {
     const handler = vi.fn();
     render(
       <>
-        <PrimaryButton disabled onClick={handler}>Disabled</PrimaryButton>
+        <PrimaryButton disabled onClick={handler}>
+          Disabled
+        </PrimaryButton>
         <IconButton label="Open menu" icon={<span>+</span>} onClick={handler} />
       </>,
     );
@@ -66,7 +68,10 @@ describe('design-system components', () => {
     const trigger = screen.getByRole('button', { name: 'Open dialog' });
     trigger.focus();
     fireEvent.click(trigger);
-    expect(screen.getByRole('dialog', { name: 'Example dialog' })).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('dialog', { name: 'Example dialog' })).toHaveAttribute(
+      'aria-modal',
+      'true',
+    );
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
