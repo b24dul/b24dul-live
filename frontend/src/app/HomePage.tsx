@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, CalendarClock, Clapperboard, Compass, Gamepad2, MessageCircle, Sparkles, Trophy, Wrench } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CalendarClock, Clapperboard, Gamepad2, MessageCircle, Sparkles, Trophy, Wrench } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ArchiveTile, EditorialSection, FeatureTile, PlannedPanel, StreamPresentation } from '../components/SectionBlocks';
 import { GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
