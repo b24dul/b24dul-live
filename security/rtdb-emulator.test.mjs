@@ -1,7 +1,7 @@
 import { before, after, test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { getDatabase, ref, get, set, update, remove, serverTimestamp } from 'firebase/database';
+import { ref, get, set, remove, serverTimestamp } from 'firebase/database';
 
 const path = process.env.RTDB_RULES_PATH;
 if (!path) throw new Error('RTDB_RULES_PATH must point to the private owner-supplied rules snapshot');
