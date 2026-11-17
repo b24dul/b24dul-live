@@ -1545,3 +1545,225 @@ body.admin .hud-feed-heading,body.admin .hud-chat-signal,body.admin .hud-chat-ch
 @media (prefers-reduced-motion: reduce) {
   body:not(.admin) .of-card,body:not(.admin) .hud-hero-actions button {transition:none}
 }
+
+/* ===========================================================
+   PHASE 6A / WATCH STREAM — dedicated broadcast presentation
+   Watch is always accessible; never implies video itself is live.
+   Existing YouTube iframe and all admin relocation selectors stay intact.
+   =========================================================== */
+body:not(.admin) .watch-hud-details {display:none;}
+body:not(.admin) main[data-visitor-section="watch"] {
+  grid-template-columns:minmax(0,1fr) minmax(325px,380px);
+  background:#080B10;
+}
+body:not(.admin) main[data-visitor-section="watch"] > .player {
+  background:
+    linear-gradient(90deg,rgba(46,204,113,.027) 1px,transparent 1px) 0 0/88px 88px,
+    #0B0E14;
+}
+body:not(.admin) main[data-visitor-section="watch"] .visitor-content-head {
+  padding-bottom:24px;
+}
+body:not(.admin) main[data-visitor-section="watch"] .visitor-content-head h1 {
+  font-family:Anton,Impact,sans-serif;
+  font-size:clamp(46px,5.1vw,83px);
+  line-height:.92;
+}
+body:not(.admin) main[data-visitor-section="watch"] .visitor-eyebrow {
+  color:var(--cash-green);font:700 15px 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:.2em;
+}
+body:not(.admin) main[data-visitor-section="watch"] .hud-feed-heading {
+  min-height:64px;
+  background:#05070A;
+  border-color:#A6B2BE;
+}
+body:not(.admin) main[data-visitor-section="watch"] .hud-feed-title {
+  font:400 30px/1 'Bebas Neue',Impact,sans-serif;
+  letter-spacing:.08em;
+}
+body:not(.admin) main[data-visitor-section="watch"] .hud-feed-title::after {
+  content:" / LIVE PLAYER";color:var(--cash-green);
+}
+body:not(.admin) main[data-visitor-section="watch"] #playerFrame:not(.offline) {
+  position:relative;
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  border:2px solid #AAB4BD;
+  border-radius:0;
+  background:#000;
+  overflow:hidden;
+  box-shadow:0 0 0 6px #1B222A,0 20px 50px #0009;
+}
+body:not(.admin) main[data-visitor-section="watch"] #playerFrame:not(.offline)::after {
+  opacity:.45;
+  inset:10px;
+  pointer-events:none;
+}
+body:not(.admin) main[data-visitor-section="watch"] #ytFrame:not([hidden]) {
+  width:100%;height:100%;display:block;border:0;
+  position:relative;z-index:1;
+}
+body:not(.admin) main[data-visitor-section="watch"] .watch-hud-details {
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(180px,.6fr);
+  gap:0;
+  margin-top:25px;
+  border:1px solid #6C7884;
+  background:linear-gradient(135deg,#19202A,#0D1219);
+}
+body:not(.admin) .watch-hud-primary {
+  padding:clamp(20px,2.7vw,38px);
+  min-width:0;
+  border-right:1px solid #56626E;
+}
+body:not(.admin) .watch-hud-tag {
+  color:var(--cash-green);
+  font:400 11px/1.6 'Cutive Mono',monospace;
+  letter-spacing:.04em;
+}
+body:not(.admin) .watch-hud-primary h2 {
+  font:400 clamp(43px,5vw,75px)/.96 Anton,Impact,sans-serif;
+  color:#fff;
+  margin:13px 0 12px;
+  letter-spacing:.02em;
+}
+body:not(.admin) .watch-hud-primary h2 span {color:var(--cash-green)}
+body:not(.admin) .watch-hud-primary p {
+  color:#CAD3DB;
+  font:400 13px/1.65 Inter,sans-serif;
+  max-width:525px;margin:0 0 23px;
+}
+body:not(.admin) .watch-hud-status {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 13px;
+  border:1px solid #697684;
+  background:#090D13;
+  color:#D7DEE5;
+}
+body:not(.admin) .watch-hud-status strong {
+  font:400 12px/1.3 'Cutive Mono',monospace;
+  letter-spacing:0;
+}
+body:not(.admin) .watch-hud-lamp {
+  display:block;width:10px;height:10px;
+  border-radius:50%;background:#A6B0BA;flex:none;
+}
+body:not(.admin) main[data-broadcast-state="checking"] .watch-hud-lamp {
+  background:#E9C07B;
+}
+body:not(.admin) main[data-broadcast-state="live"] .watch-hud-status {
+  border-color:var(--alert-red);
+  background:rgba(255,30,30,.08);
+}
+body:not(.admin) main[data-broadcast-state="live"] .watch-hud-lamp {
+  background:var(--alert-red);
+  box-shadow:0 0 8px rgba(255,30,30,.7);
+}
+body:not(.admin) .watch-hud-actions {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  gap:12px;
+  padding:clamp(18px,2.2vw,28px);
+}
+body:not(.admin) .watch-hud-channel,
+body:not(.admin) .watch-hud-chat {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  width:100%;
+  min-height:48px;
+  padding:12px 15px;
+  border:2px solid #EDF1F4;
+  border-radius:0;
+  background:transparent;
+  color:#fff;
+  font:700 18px/1 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;
+  transition:background .12s,color .12s,border-color .12s;
+  cursor:pointer;
+}
+body:not(.admin) .watch-hud-chat {
+  border-color:var(--cash-green);
+  color:var(--cash-green);
+}
+body:not(.admin) .watch-hud-channel:hover,
+body:not(.admin) .watch-hud-chat:hover {
+  background:#fff;color:#000;border-color:#fff;
+}
+body:not(.admin) .watch-hud-hint {
+  font:400 10px/1.6 'Cutive Mono',monospace;
+  color:#9BAAB8;
+  margin:4px 0 0;
+}
+body:not(.admin) main[data-visitor-section="watch"] > .chat {
+  height:min(900px,calc(100dvh - 136px));
+  min-height:630px;
+  background:rgba(20,24,34,.97);
+}
+body:not(.admin) main[data-visitor-section="watch"] .visitor-chat-heading strong {
+  font-size:36px;
+}
+@media (max-width:1180px) and (min-width:761px) {
+  body:not(.admin) main[data-visitor-section="watch"] {
+    grid-template-columns:minmax(0,1fr) 320px;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-details {
+    grid-template-columns:1fr;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-primary {
+    border-right:0;border-bottom:1px solid #56626E;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-actions {
+    display:grid;grid-template-columns:1fr 1fr;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-hint {
+    grid-column:1/-1;
+  }
+}
+@media (max-width:760px) {
+  body:not(.admin) main[data-visitor-section="watch"] {
+    display:flex;flex-direction:column;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] > .player {
+    width:100%;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .visitor-content-head h1 {
+    font-size:clamp(42px,10vw,59px);
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .hud-feed-title {
+    font-size:23px;
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .hud-feed-title::after {
+    content:" / PLAYER";
+  }
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-details {
+    grid-template-columns:1fr;
+    margin-top:16px;
+  }
+  body:not(.admin) .watch-hud-primary {padding:23px;border-right:0;border-bottom:1px solid #56626E;}
+  body:not(.admin) .watch-hud-primary h2 {font-size:50px;}
+  body:not(.admin) .watch-hud-actions {padding:17px;}
+  body:not(.admin) main[data-visitor-section="watch"]:not([data-mobile-section="chat"]) > .chat {display:none;}
+  body:not(.admin) main[data-visitor-section="watch"][data-mobile-section="chat"] > .chat {
+    display:flex;width:100%;height:calc(100dvh - 180px);
+    min-height:370px;position:static;border:0;
+  }
+}
+@media (max-width:380px) {
+  body:not(.admin) main[data-visitor-section="watch"] .watch-hud-details {margin-top:14px;}
+  body:not(.admin) .watch-hud-primary {padding:17px;}
+  body:not(.admin) .watch-hud-primary h2 {font-size:41px;}
+  body:not(.admin) .watch-hud-status strong {font-size:10px;}
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.admin) .watch-hud-channel,
+  body:not(.admin) .watch-hud-chat {transition:none}
+}
