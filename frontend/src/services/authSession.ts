@@ -6,9 +6,7 @@
  * actual user once the isolated integration has passed review.
  */
 export type AuthIdentity =
-  | { kind: 'anonymous'; uid: string }
-  | { kind: 'google'; uid: string }
-  | { kind: 'signed-out' };
+  { kind: 'anonymous'; uid: string } | { kind: 'google'; uid: string } | { kind: 'signed-out' };
 
 export type AuthSession =
   | { status: 'checking' }
