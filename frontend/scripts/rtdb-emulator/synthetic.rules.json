@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "status": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber()"
+      }
+    },
+    "messages": {
+      ".read": true,
+      "$message": {
+        ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && newData.parent().parent().child('lastPost').child(auth.uid).val() === now && !root.child('banned').child(auth.uid).exists() && (!root.child('timeouts').child(auth.uid).exists() || root.child('timeouts').child(auth.uid).val() <= now)",
+        ".validate": "newData.hasChildren(['uid', 'name', 'text', 'ts']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 200 && newData.child('ts').val() === now"
+      }
+    },
+    "lastPost": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.val() === now"
+      }
+    },
+    "statusV2": {
+      ".read": true,
+      "$uid": {
+        "$connection": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "banned": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.token.email === 'moderator@example.invalid' && auth.token.email_verified === true",
+        ".validate": "newData.val() === true"
+      }
+    },
+    "timeouts": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.token.email === 'moderator@example.invalid' && auth.token.email_verified === true",
+        ".validate": "newData.isNumber()"
+      }
+    }
+  }
+}

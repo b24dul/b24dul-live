@@ -1,0 +1,37 @@
+name: Synthetic RTDB chat and presence emulator verification
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/scripts/rtdb-emulator/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - '.github/workflows/rtdb-synthetic-emulator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rtdb-synthetic-emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test synthetic chat and presence in local emulators
+        run: >-
+          npx --yes firebase-tools@15.36.0 emulators:exec
+          --project demo-b24dul-rtdb --config scripts/rtdb-emulator/firebase.json --only auth,database
+          'node --experimental-strip-types --test --test-force-exit scripts/rtdb-emulator/presence.emulator.test.ts'

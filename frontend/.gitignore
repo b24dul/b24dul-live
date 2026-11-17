@@ -4,3 +4,6 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
+firebase-debug.log
+database-debug.log
+ui-debug.log
