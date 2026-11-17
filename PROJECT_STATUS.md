@@ -252,3 +252,10 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Verified prior green M2 Step 1 workflows remain previous test evidence; **no new runtime tests or Firebase emulator tests run in this documentation audit**. Production root frontend, worker, and Firebase were unchanged by this documentation increment.
 - **Next:** confirm current deployed rules version/contents and Firebase Auth sign-in providers in Console, then build isolated emulator rule tests and define anonymous-to-registered identity continuity before React Firebase connections. No production cutover.
 - Audit documentation commit: `aec0ade9c57f6ee62347e997e90caaf594861c8e`. This status-file commit's own SHA is obtained from Git history.
+
+## 2026-11-17 — M2 Step 2: Firebase Auth providers confirmed by owner
+- Owner reports Firebase Authentication **Email/Password, Anonymous and Google** are all enabled (Console report, not independently verified via Firebase API).
+- Documented non-destructive auth migration contract in `docs/m2-integration-audit.md`: preserve restored anonymous UID, never automatically overwrite current sessions, explicit Google/password actions and provider-linking where appropriate, no client admin trust, no token storage or user-record resets.
+- This is documentation only; no production rules/data/auth settings, legacy website, or React authentication code changed. No new tests run.
+- Next implementation gate: isolated RTDB emulator rule tests from supplied rules snapshot, then carefully tested modular Firebase Auth context in `frontend/` without production cutover.
+- Previous audit documentation commit: `98c67bda8753bb33fd07d9320a592f8ed50daef4`.
