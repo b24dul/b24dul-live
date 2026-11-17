@@ -77,3 +77,13 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Phase 6B source PASS:** Games-only arcade heading and scoped Sudoku/2048 layout styles added via `1cd4ad82` and `46e67c0c`. Current HTML differs from approved Phase 5B only by the new 6B arcade heading. Current CSS differs from Phase 5B only by appended 6B arcade rules. Inline JS byte-identical, original 112 IDs unchanged/unique, CSS brace/comment balance passes. No player modifications.
 
 **Phase 6B browser UNVERIFIED:** Desktop and mobile Games selection, both game openings and Back actions, Sudoku difficulty/pad/touch/keyboard, 2048 swipe/keys and leaderboard, narrow-screen overflow/overlap, and Watch mobile playback after rollback. Seek actual browser/user feedback before recording PASS.
+
+## Owner-reported 2048 header-vs-board mismatch — Phase 6B.1 (2026-11-17)
+
+**FAIL — owner observation:** "JOIN THE 2048 CHALLENGE / Merge tiles, beat your best and climb the leaderboard" heading/container is smaller than the 2048 board. Owner described repeated untidy container sizing elsewhere on site. Exact device width and screenshot not provided.
+
+**Source analysis:** 2048 board shell had up-to-520px sizing while heading and content frame were constrained by the main content column next to the chat rail. Multiple prior responsive rules gave inconsistent board/title/container width. Identified as a likely cause, not empirically measured in browser.
+
+**Repair:** Commits `3035d919` and `fbaa3e5b`; CSS establishes shared max-width/min-width rules, an aspect-square board shell, 440px bounded board, flex stacking at <=1350px, constrained controls, text wrapping and mobile rules restricted away from Watch. HTML and all JavaScript are unchanged; all 112 IDs preserved; CSS syntax checks passed.
+
+**Browser status UNVERIFIED after fix:** 2048 header/board fit at 320,375,390,768,1280px; Sudoku board and controls; Home/Games/Videos text containers; narrow phones show no horizontal overflow; Watch still works as in prior owner-approved version. Owner visual confirmation required to mark PASS.
