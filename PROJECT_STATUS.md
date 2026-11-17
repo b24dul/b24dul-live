@@ -267,3 +267,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Policy waits for Firebase observer before sign-in, reuses restored UID, blocks silent Google replacement of anonymous UID, and never initiates database writes. **Not a connected Firebase Auth implementation**: SDK, Auth context, emulator rules tests, provider-linking, and deployed-rules verification still outstanding.
 - Existing root website, Firebase production state/rules and Worker untouched. GitHub CI verification pending until corresponding Actions run completes; do not claim tests passed before examining results.
 - Next: validate offline security rules in emulator, then introduce modular Firebase Auth to isolated React with persistence/collision tests. No live cutover.
+
+## 2026-11-17 — M2 Step 3 verification and formatter cleanup
+- Auth identity policy code/6 unit tests remain isolated, no Firebase SDK/backend requests or production data changes. Exact Prettier formatting fix commit `b1af534c8466d20e2216ef40c3208e2fc8efca83`.
+- **Verified** [foundation run 44103971832](https://github.com/b24dul/b24dul-live/actions/runs/44103971832) SUCCESS at `b1af534c`: npm ci, ESLint, strict TypeScript, unit tests, production build, Prettier and Chromium browser smoke checks passed. The six new unit tests are part of the 33-test suite. Earlier foundation attempts failed exclusively on `authSession.ts` Prettier formatting; fixed using actual formatter diff, not guessed changes.
+- Temporary read-only formatter inspection workflow was created solely to expose the exact diff and then **deleted** in `5f35c54b94337f9399fa6565127e75f3352a016d`; no lingering write-enabled helper. The normal workflow checks for release/cross-browser may still be pending at status-update time.
+- Still **not** connected Firebase Auth or production deployed. Next: offline rules emulator suite and modular Auth provider integration, with current users' UID and data preserved.
