@@ -594,6 +594,19 @@
     .chat { border-left: 0; border-top: 1px solid var(--line); min-height: 50vh; }
     header a.sub { padding: 6px 10px; font-size: 12px; }
   }
+
+  /* Predictable 2048 tile geometry, including narrow phones and 4-digit tiles. */
+  body:not(.admin) .g2-wrap { width:100%; max-width:100%; gap:15px; align-items:flex-start; }
+  .g2-board-shell { position:relative; flex:0 1 520px; width:min(520px,100%); min-width:0; }
+  body:not(.admin) .g2-board { width:100%; max-width:520px; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(0,1fr)); gap:clamp(5px,1.5vw,10px); padding:clamp(6px,1.5vw,11px); }
+  body:not(.admin) .g2-cell { min-width:0; min-height:0; width:100%; height:100%; font-size:clamp(17px,5.4vw,34px); line-height:1; overflow:hidden; }
+  @media (max-width:760px) {
+    body:not(.admin) .g2-wrap { display:flex; flex-direction:column; align-items:center; }
+    body:not(.admin) .g2-board-shell { width:100%; max-width:min(520px,calc(100vw - 46px)); flex:none; }
+    body:not(.admin) .g2-side { width:100%; max-width:520px; }
+    body:not(.admin) #of2048 { padding:10px; }
+    body:not(.admin) .g2-board { width:100%; max-width:100%; }
+  }
 </style>
 </head>
 <body>
@@ -740,7 +753,7 @@
         <div id="of2048" hidden>
           <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">2048</span></div>
           <div class="g2-wrap">
-            <div style="position:relative">
+            <div class="g2-board-shell">
               <div class="g2-board" id="g2Board"></div>
               <div class="g2-over" id="g2Over" hidden>
                 <h3 id="g2OverTitle">Game over</h3>
@@ -1204,6 +1217,7 @@
     const visitEpoch = authEpoch;
     entered = true;
     hideGate();
+    if (streamLive && pendingStreamNoticeId) announceStreamStart(pendingStreamNoticeId);
     const base = `viewers/${visitUid}`;
     const updates = {};
     updates[`${base}/anonName`] = anonName;
@@ -1386,6 +1400,11 @@
   // ===================================================================
   const YT_URL = "https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1";
   let streamLive = false;
+  let detectedLive = false;
+  let detectionCheckedAt = 0;
+  let detectedVideoId = "";
+  let liveDetectionReady = false;
+  const LIVE_FRESH_MS = 12 * 60 * 1000;
   let visitorView = "home";
   let activeVisitorTab = "home";
   let hasLiveSnapshot = false;
@@ -1403,11 +1422,11 @@
     $("visitorEyebrow").textContent = heading[0];
     $("visitorHeading").textContent = heading[1];
     $("visitorSubtitle").textContent = heading[2];
-    $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : "Broadcast offline";
+    $("visitorNavStatus").textContent = streamLive ? "Broadcast live" : (liveDetectionReady ? "Broadcast offline" : "Checking broadcast…");
     const liveButton = $('visitorNav').querySelector('[data-visitor-view="watch"]');
     liveButton.setAttribute("aria-disabled", "false");
-    liveButton.title = streamLive ? "Watch the live stream" : "Open the stream player while automatic detection catches up";
-    liveButton.textContent = streamLive ? "● Live now" : "Check stream";
+    liveButton.title = streamLive ? "Watch the livestream" : "Browse past videos while B24DUL is offline";
+    liveButton.textContent = streamLive ? "● Live now" : "Past videos";
     liveButton.classList.toggle("is-live", streamLive);
     document.querySelector("main").dataset.mobileSection = activeVisitorTab === "chat" ? "chat" : "content";
     document.querySelector("main").dataset.visitorSection = visitorView;
@@ -1420,9 +1439,9 @@
     }
   }
   function applyLive() {
-    // Never block visitor playback on a delayed GitHub/Firebase status update.
-    // Only label the stream LIVE after the detector confirms it.
-    const showVideo = (isAdmin && streamLive) || (!isAdmin && visitorView === "watch");
+    // Video is shown only after a recent positive YouTube detection.
+    // Offline and stale results reveal past uploads instead of an empty embed.
+    const showVideo = streamLive && (isAdmin || visitorView === "watch");
     const yt = $("ytFrame");
     $("playerFrame").classList.toggle("offline", !showVideo);
     yt.hidden = !showVideo;
@@ -1453,9 +1472,13 @@
       return;
     }
     if (view === "watch") {
-      visitorView = "watch";
-      activeVisitorTab = "watch";
-      applyLive();
+      if (!streamLive) {
+        showOffline("videos");
+      } else {
+        visitorView = "watch";
+        activeVisitorTab = "watch";
+        applyLive();
+      }
     } else if (view === "videos") {
       showOffline("videos");
     } else if (view === "games") {
@@ -1471,7 +1494,7 @@
   const streamNotice = $("streamStartedNotice");
   function dismissStreamNotice() {
     streamNotice.hidden = true;
-    // One reminder per observed live session, including across same-tab reloads.
+    // A dismissed stream should not interrupt the same visitor again.
     try { sessionStorage.setItem("b24dul-live-notice", String(currentLiveNoticeId)); } catch {}
   }
   $("streamNoticeWatch").addEventListener("click", () => {
@@ -1479,9 +1502,15 @@
     navigateVisitor("watch");
   });
   $("streamNoticeDismiss").addEventListener("click", dismissStreamNotice);
-  function announceStreamStart() {
-    if (isAdmin || !me || !entered) return;
-    currentLiveNoticeId = Date.now();
+  let pendingStreamNoticeId = "";
+  function announceStreamStart(videoId) {
+    if (isAdmin || !videoId) return;
+    pendingStreamNoticeId = videoId;
+    if (!me || !entered || visitorView === "watch") return;
+    try {
+      if (sessionStorage.getItem("b24dul-live-notice") === videoId) return;
+    } catch {}
+    currentLiveNoticeId = videoId;
     streamNotice.hidden = false;
   }
 
@@ -1637,34 +1666,52 @@
   }
   boardListeners.add((b) => { if (b === "g2048") drawBoard($("g2Lb"), "g2048", 8); });
   document.querySelectorAll(".of-back").forEach((b) => b.addEventListener("click", () => showOffline("choose")));
-  onValue(ref(db, "settings/live"), (snap) => {
+  function syncDetectedBroadcast() {
     const wasLive = streamLive;
-    streamLive = snap.val() === true;
-    // The first snapshot represents the current state, not a new broadcast.
-    // Never pull an existing visitor out of a game when live begins.
-    if (!hasLiveSnapshot) {
+    const previousVideoId = window.__b24dulLastLiveVideo || "";
+    // GitHub Actions is best-effort. Do not display LIVE indefinitely when
+    // no successful checker heartbeat has been published recently.
+    streamLive = detectedLive && detectionCheckedAt > 0
+      && Date.now() >= detectionCheckedAt - 60000
+      && Date.now() - detectionCheckedAt < LIVE_FRESH_MS;
+    if (streamLive) window.__b24dulLastLiveVideo = detectedVideoId;
+    if (liveDetectionReady && hasLiveSnapshot && streamLive
+        && (!wasLive || (previousVideoId && previousVideoId !== detectedVideoId))) {
+      announceStreamStart(detectedVideoId);
+    }
+    if (!hasLiveSnapshot && liveDetectionReady) {
       hasLiveSnapshot = true;
-      if (!isAdmin && streamLive && visitorView === "home") {
-        visitorView = "watch";
-        activeVisitorTab = "watch";
-      }
-    } else if (!wasLive && streamLive) {
-      announceStreamStart();
+      // Initial detection must not forcibly interrupt someone opening the site.
     }
     if (!streamLive) {
       streamNotice.hidden = true;
+      pendingStreamNoticeId = "";
     }
     if (!isAdmin && wasLive && !streamLive && visitorView === "watch") {
-      visitorView = "home";
-      activeVisitorTab = "home";
-      ofView = "choose";
-      $("ofChoose").hidden = false;
-      $("ofGame").hidden = true;
-      $("of2048").hidden = true;
-      $("ofVideos").hidden = true;
+      // Only redirect stream watchers. Keep Sudoku/2048 and chat intact.
+      showOffline("videos");
+    } else {
+      applyLive();
     }
-    applyLive();
-  }, () => applyLive());
+  }
+  onValue(ref(db, "settings/liveDetection"), (snap) => {
+    const value = snap.val() || {};
+    detectedLive = value.live === true;
+    detectedVideoId = typeof value.videoId === "string" ? value.videoId : "";
+    detectionCheckedAt = Number(value.checkedAt) || 0;
+    liveDetectionReady = true;
+    syncDetectedBroadcast();
+  }, () => {
+    liveDetectionReady = false;
+    detectedLive = false;
+    syncDetectedBroadcast();
+  });
+  setInterval(() => {
+    if (document.visibilityState !== "hidden") syncDetectedBroadcast();
+  }, 20000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") syncDetectedBroadcast();
+  });
 
   // ----- Sudoku engine -----
   const SD_CLUES = { easy: 42, medium: 33, hard: 27 };
