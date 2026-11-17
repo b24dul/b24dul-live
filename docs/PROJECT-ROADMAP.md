@@ -336,6 +336,18 @@ When a new chat begins, the assistant should:
 
 **Status:** Committed but user-device validation pending; do not mark fixed. Pause further aesthetic redesign until delivery and mobile rendering are confirmed.
 
+## 10.16 Phase 6B.4 — iOS floating navigation correction (2026-11-17)
+
+**New owner screenshot and report:** Mobile Safari Videos page shows the horizontal navigation bar floating in the middle of the video card list. This is a distinct, owner-confirmed regression after prior layout patches. Root cause is likely the multiple legacy mobile `position:sticky;top:0;z-index:12` rules for `#visitorNav` and `.hud-nav`, combined with scroll/overflow interactions; no measured browser layout available.
+
+**Action committed:** [`f084c125`](https://github.com/b24dul/b24dul-live/commit/f084c12562e112346a596e05e70a1d309e9ad0ba) appends a final <=760px rule setting mobile navigation `position:static!important`, normal `top`/`bottom` and stacking, while retaining horizontal tab scrolling. It resets earlier `html` scroll padding / visitor content scroll margin to 0 so the static nav does not obscure headings. [`07dca232`](https://github.com/b24dul/b24dul-live/commit/07dca232e01801649b64498e888fe1f8ffb43fd4) updates the stylesheet URL to `styles.css?v=6b4-mobile-nav-20261117` to bypass old cached CSS after publication.
+
+**Expected behavior:** Nav appears between header and content at the top of the normal document flow and **scrolls away** instead of floating over the Videos list. This deliberately gives up mobile sticky tabs to restore readable content and reliable iOS Safari layout.
+
+**Preservation/static checks:** CSS braces/comments balanced; 112 original HTML IDs intact/unique; original Watch iframe preserved; no application JS changes, no gameplay or Firebase modifications.
+
+**Acceptance still open:** Owner should check on iPhone after latest GitHub Pages successful deployment, scroll through Videos and ensure nav never floats over video cards; check Home/Games/Chat routing and Watch player. No direct device/browser verification has occurred. Avoid claiming this fixes the issue until visually confirmed. Continue to hold unrelated new UI features.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B.2 screenshot-driven mobile shell repair committed after owner reported 6B.1 did not fix the layout. Source checks passed; iPhone visual confirmation pending.
