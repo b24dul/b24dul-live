@@ -13,7 +13,7 @@ from pathlib import Path
 import firebase_admin
 from firebase_admin import credentials, db
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import ExtractorError
+from yt_dlp.utils import DownloadError, ExtractorError
 
 CHANNEL_URL = "https://www.youtube.com/channel/UCnXAfqk5I7QE3frLhHHyImQ/live"
 DATABASE_URL = "https://b24duls-anonymous-chat-default-rtdb.europe-west1.firebasedatabase.app"
@@ -34,10 +34,12 @@ def detect_live():
     try:
         with YoutubeDL(opts) as ydl:
             info = ydl.extract_info(CHANNEL_URL, download=False)
-    except ExtractorError as error:
+    except (DownloadError, ExtractorError) as error:
         reason = str(error).lower()
-        # The channel's /live endpoint explicitly reports not broadcasting.
-        if error.expected and ("not live" in reason or "not currently live" in reason or "not broadcasting" in reason):
+        # yt-dlp wraps expected ExtractorError instances in DownloadError.
+        # Only this exact channel-offline condition is a confirmed offline
+        # result; all other YouTube failures must preserve Firebase status.
+        if "the channel is not currently live" in reason:
             return False, None
         raise RuntimeError("Could not reliably check YouTube: " + str(error)) from error
     if not isinstance(info, dict) or info.get("_type") == "playlist":
