@@ -240,6 +240,16 @@ When a new chat begins, the assistant should:
 
 **Next:** Check that GitHub Pages publishes the latest `styles.css` and test desktop/mobile interactions; correct any UI regressions before adding additional features.
 
+## 10.8 Phase 5 — QA and stabilisation initiated (2026-11-17)
+
+**Current project position:** Phase 4 Tactical HUD implementation, image assets, owner-supplied CSS and design documentation have been committed to `main`. Before adding new features, the next stage is deployment verification, responsive QA and regression testing.
+
+**Done:** Re-read the current repo and roadmap; verified the published-site fetch **could not be completed from the available tools** (both the GitHub Pages and owner `b24dul.live` host, plus `styles.css` and logo, were inaccessible in the tool environment). Do not infer a site outage or deployment success. Completed static source inspection: `styles.css` linked, four SVG asset references present, 112 HTML IDs unique, five navigation sections present, expected Google Fonts import, existing Firebase/auth/chat/games/privacy modules, freshness-based live detection, manual Watch access, reduced-motion and notice hidden-state styles. **No browser runtime or visual screenshot acceptance has been claimed.**
+
+**QA working record:** [`docs/QA-STATUS.md`](QA-STATUS.md), established in commit [`c62094d4`](https://github.com/b24dul/b24dul-live/commit/c62094d4c73feac74fe53a0f2e32b48bd9f4f58a). Treat its UNVERIFIED cases as open, not failed or passed.
+
+**Next:** Get an actual browser-accessible application run (published or local), check 320/375/768/1280px and all real visitor/admin paths, compare to the two user-provided sheets, log PASS/FAIL and fix regressions in small commits. Defer invented cash/wanted/hype stats and unrelated features.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Phases 1–3 and coastal colour pass were superseded by the owner's uploaded reference-sheet Tactical HUD implementation on `main`. External CSS, fonts and core visual layout committed; browser/deployment acceptance tests still outstanding.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD implementation and original SVG artwork committed to `main`. Phase 5 QA register opened; source-level checks completed, but live deployment/browser/function acceptance remains UNVERIFIED.
