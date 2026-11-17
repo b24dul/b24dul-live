@@ -13,8 +13,8 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 2 — glassmorphism design system and reusable components**
-- Overall status: **Phase 1 complete. Phase 2 implementation committed in isolated `frontend/`; automated Phase 2 gate run 44069800672 in progress at time of this update. No production UI cutover.**
+- Current phase: **Phase 2 complete — Phase 3 responsive application shell is next**
+- Overall status: **Phase 1 and Phase 2 complete, with full automated Phase 2 gate passed in GitHub Actions run 44069800672. Production site still unchanged.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
@@ -40,7 +40,7 @@
 |---|---|---|---|---|
 | 0 Repository audit | Documentation complete; live QA pending | `c8cee97dc283ad7bd1e5cb270fe22d3cd5efc168`, `000a10950a98eaa9b4921272cc764a0aee4c2446`, `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`; final status-file commit: inspect HEAD | GitHub source/tree/workflow inspections completed; runtime, build, browser and Firebase/Worker checks **not run** | Documentation-only; exact source baseline recorded; no new branch per owner |
 | 1 Frontend foundation | **Complete — CI gate passed** | `f991293a1907c731a0eec336ef5d21cd7e1889bb` (lockfile + formatted files); `1ec13733060724858f27b9510fcef796247618cd` (read-only verification workflow) | [GitHub Actions run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885): npm ci, lint, typecheck, Vitest (1 test), Vite build, formatting, Chromium Playwright **passed** | Isolated `frontend/`; `package-lock.json` committed; no Firebase or production cutover |
-| 2 Design system | In verification | `78db0f2356ebd02e956d4325bb3bfc8cb577b357` (formatted components); `6c150bc852a6e92830165bf327273698c788cd23` (validation trigger) | [GitHub run 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672), pending final conclusion when status file first updated | Tokens, fifteen named components, responsive demo, docs and new component/browser tests in isolated frontend |
+| 2 Design system | **Complete — CI gate passed** | `78db0f2356ebd02e956d4325bb3bfc8cb577b357` (formatted components); `6c150bc852a6e92830165bf327273698c788cd23` (passing CI source revision) | [Run 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672): npm ci, ESLint, strict TypeScript, Vitest (5 tests), Vite build, Prettier and Chromium Playwright **passed** | Fifteen components, semantic glass tokens, responsive showcase, documentation; root production UI preserved |
 | 3 App shell and routes | Not started | | Not run | Eleven HashRouter routes |
 | 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
 | 5 Local settings | Not started | | Not run | Versioned local preferences |
@@ -57,8 +57,8 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 2 component and visual accessibility verification; Phase 1 gate remains complete. Phase 0 preservation plan retained.
-- Exact next task: inspect GitHub Actions run 44069800672, fix any failing Phase 2 checks, then record the passing run and Phase 2 completion. Phase 3 responsive app shell and eleven routes follows only after the Phase 2 gate passes; production cutover stays separate.
+- In progress: Phase 2 completion/handoff after successful required CI. Next phase is Phase 3 responsive app shell with eleven HashRouter routes; no cutover approval granted.
+- Exact next task: implement Phase 3 responsive application shell and eleven HashRouter routes in isolated `frontend/`, preserving existing tests, accessibility and root production code. Do not connect Firebase or deploy new UI to Pages without explicit cutover approval.
 - Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
@@ -166,3 +166,8 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - **Build evidence:** intermediate GitHub run [44069510346](https://github.com/b24dul/b24dul-live/actions/runs/44069510346) passed ESLint, TypeScript, Vitest (5 tests), Vite build; failed Prettier on five new files. Formatted all Phase 2 frontend files using a one-time GitHub Actions formatter, successful run `44069681530`; bot commit `78db0f2356ebd02e956d4325bb3bfc8cb577b357`. Deleted temporary write-permission workflow in commit `410875892dd9080b53a6a2490e13bac3a87630b3`. Normal verification retains `contents: read`.
 - **Final gate:** [44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672) triggered by `6c150bc852a6e92830165bf327273698c788cd23`. At recording time installation, lint, typecheck, tests, build and formatting steps were passing; Chromium installation / browser smoke awaited final outcome. **Do NOT mark Phase 2 complete until the full run concludes successfully.**
 - **Next session:** recheck `main` HEAD and CI latest conclusion, update this section and phase tracker with real successful run or fix, then Phase 3 shell + eleven routes if passed. Preserve Git rollback commit `7a4fa98980f4495b87404eff98e1631b20aa0c7e` as pre-Phase-2 checkpoint.
+
+## 2026-11-17 — M1 Phase 2 acceptance checkpoint
+- **Gate PASSED:** [GitHub Actions 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672), `foundation` job success on source commit `6c150bc852a6e92830165bf327273698c788cd23`. Confirmed all seven checks: `npm ci`, ESLint, strict TypeScript, Vitest (5 passing tests), Vite production build, Prettier and Chromium Playwright browser smoke. Browser tests include 320/390/768/1280 responsive overflow and accessible modal focus/keyboard behavior. This is Phase 2 automated coverage, **not** a full WCAG or Firebase production E2E audit.
+- **Scope verification:** GitHub compare `7a4fa98980f4495b87404eff98e1631b20aa0c7e...537bb85ae8b02ef3301fb6a8c00ac048ba6bb552` shows only `frontend/**`, `docs/design-system.md`, and `PROJECT_STATUS.md`. Temporary formatter workflow was removed and does not exist in final tree. Existing published HTML/CSS/Firebase/game/chat/video/Worker assets unchanged.
+- **Status:** Phase 2 **COMPLETE**, no owner visual sign-off implied; user may request refinement. Next: Phase 3 desktop sidebar/header, mobile bottom navigation, eleven accessible HashRouter routes. Do not start backend migration or change public GitHub Pages entrypoint. Exact status-file commit SHA is in GitHub HEAD, not self-embedded.
