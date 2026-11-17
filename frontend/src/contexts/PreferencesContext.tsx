@@ -49,10 +49,18 @@ export function readPreferences(): Preferences {
   try {
     const stored = window.localStorage.getItem(PREFERENCES_KEY);
     if (stored !== null) {
-      const parsed = parsePreferences(JSON.parse(stored) as unknown);
-      if (parsed) return parsed;
-      // A malformed or future schema is never trusted. Recover to safe defaults.
-      window.localStorage.removeItem(PREFERENCES_KEY);
+      try {
+        const parsed = parsePreferences(JSON.parse(stored) as unknown);
+        if (parsed) return parsed;
+      } catch {
+        // Invalid JSON is treated the same as a malformed or future schema.
+      }
+      // Never preserve malformed local preferences or use a stale legacy value.
+      try {
+        window.localStorage.removeItem(PREFERENCES_KEY);
+      } catch {
+        // Storage may be disabled; continue safely with in-memory defaults.
+      }
       return DEFAULT_PREFERENCES;
     }
     // Migrate only when there is no new-schema value, never on corrupt new data.
