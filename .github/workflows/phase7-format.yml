@@ -1,0 +1,34 @@
+name: Phase 7 one-time frontend formatting
+
+on:
+  push:
+    paths:
+      - '.github/workflows/phase7-format.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install locked frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Apply project's Prettier formatting
+        working-directory: frontend
+        run: npm run format
+      - name: Commit only formatted React sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- frontend/
+          if ! git diff --cached --quiet; then
+            git commit -m "style(release): format release candidate verification files"
+            git push origin HEAD:main
+          fi
