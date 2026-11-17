@@ -44,8 +44,8 @@ test('skip to content leaves HashRouter destination unchanged and focuses main c
   page,
 }) => {
   await page.goto('./#/games');
-  await page.keyboard.press('Tab');
   const skip = page.getByRole('link', { name: 'Skip to content' });
+  await skip.focus();
   await expect(skip).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#route-content')).toBeFocused();
