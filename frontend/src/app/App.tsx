@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { AppShell } from './AppShell';
+import { PreferencesProvider } from '../contexts/PreferencesContext';
 import { ErrorBoundary } from './ErrorBoundary';
 import { HomePage } from './HomePage';
 import { DestinationPage, ExplorePage, NotFoundPage } from './RoutePages';
@@ -8,7 +9,8 @@ import { routes } from './navigation';
 export function App() {
   return (
     <ErrorBoundary>
-      <AppShell>
+      <PreferencesProvider>
+        <AppShell>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/explore" element={<ExplorePage />} />
@@ -23,7 +25,8 @@ export function App() {
             ))}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </AppShell>
+        </AppShell>
+      </PreferencesProvider>
     </ErrorBoundary>
   );
 }

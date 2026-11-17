@@ -19,6 +19,7 @@ import {
 } from '../components/SectionBlocks';
 import { GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { archivedVideos } from '../services/videoArchive';
+import { usePreferences } from '../contexts/PreferencesContext';
 
 const features = [
   {
@@ -60,6 +61,7 @@ const features = [
 ];
 
 export function HomePage() {
+  const { preferences } = usePreferences();
   return (
     <div className="flex min-w-0 flex-col gap-10">
       <GlassPanel className="home-hero p-6 sm:p-10">
@@ -98,7 +100,8 @@ export function HomePage() {
         <StreamPresentation compact />
       </EditorialSection>
 
-      <EditorialSection
+      <div className="home-feature-order" data-layout={preferences.homeLayout}>
+      <div className="home-feature-discover"><EditorialSection
         title="Discover B24DUL"
         description="Everything in one place. Explore the sections, games and community spaces."
         action={{ label: 'Explore all', to: '/explore' }}
@@ -110,7 +113,8 @@ export function HomePage() {
         </div>
       </EditorialSection>
 
-      <EditorialSection
+      </div>
+      <div className="home-feature-games"><EditorialSection
         title="Featured games"
         description="Sudoku and 2048 exist on the current site; additional games are planned."
         action={{ label: 'Game Centre', to: '/games' }}
@@ -140,6 +144,8 @@ export function HomePage() {
         </div>
       </EditorialSection>
 
+      </div>
+      </div>
       <EditorialSection
         title="Community"
         description="Announcements, chat and activity — presented without fictional online members."

@@ -22,6 +22,7 @@ import {
 import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { games, utilities } from '../data/directory';
 import { archivedVideos } from '../services/videoArchive';
+import { PreferenceControls } from '../components/PreferenceControls';
 import { routes } from './navigation';
 
 const website = 'https://b24dul.github.io/b24dul-live/';
@@ -354,16 +355,8 @@ function SettingsPage() {
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel
-          title="Appearance"
-          description="Theme, accent and layout preferences belong to Phase 5; no nonworking toggles are shown."
-        />
-        <PlannedPanel
-          title="Accessibility"
-          description="Keyboard focus, reduced motion and responsive navigation already work in the shell. Additional preferences come in Phase 5."
-        />
-      </div>
+      <PreferenceControls />
+      <PlannedPanel title="Theme" description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested." />
       <RelatedLinks paths={['/profile', '/explore']} />
     </PageFrame>
   );

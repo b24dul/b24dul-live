@@ -2,28 +2,21 @@ import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { ArrowUpRight, Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import { usePreferences } from '../contexts/PreferencesContext';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { IconButton, Modal, SecondaryButton, StatusIndicator } from '../components/ui';
 import { findDestination, mobileRoutes, routes } from './navigation';
 
-const preferenceKey = 'b24dul.sidebar.collapsed.v1';
-
-function readSidebarPreference(): boolean {
-  try {
-    return window.localStorage.getItem(preferenceKey) === 'true';
-  } catch {
-    return false;
-  }
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(readSidebarPreference);
+  const { preferences, updatePreferences } = usePreferences();
+  const collapsed = preferences.sidebarCollapsed;
   const [search, setSearch] = useState('');
   const [searchError, setSearchError] = useState('');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const reducedMotion = useReducedMotion();
+  const systemReducedMotion = useReducedMotion();
+  const reducedMotion = preferences.motion === 'reduce' || systemReducedMotion;
   const current = routes.find((route) => route.path === location.pathname);
 
   useEffect(() => {
@@ -33,15 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [location.pathname, current?.label]);
 
   function toggleSidebar() {
-    setCollapsed((value) => {
-      const next = !value;
-      try {
-        window.localStorage.setItem(preferenceKey, String(next));
-      } catch {
-        // Storage might be disabled; the control still works for this session.
-      }
-      return next;
-    });
+    updatePreferences({ sidebarCollapsed: !collapsed });
   }
 
   function goToKnownSection(event: FormEvent<HTMLFormElement>) {
@@ -57,7 +42,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="app-layout" data-sidebar={collapsed ? 'collapsed' : 'expanded'}>
+    <div
+      className="app-layout"
+      data-sidebar={collapsed ? 'collapsed' : 'expanded'}
+      data-accent={preferences.accent}
+      data-density={preferences.density}
+      data-motion={reducedMotion ? 'reduce' : 'system'}
+    >
       <a href="#route-content" className="skip-link">
         Skip to content
       </a>

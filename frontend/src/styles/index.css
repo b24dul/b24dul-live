@@ -785,3 +785,101 @@ input {
     min-height: 0;
   }
 }
+
+/* Phase 5 user-selected local appearance preferences. Only the dark theme is implemented. */
+.app-layout[data-accent='cyan'] {
+  --accent: #79e6ef;
+  --accent-hover: #b5f5f7;
+}
+
+.app-layout[data-accent='violet'] {
+  --accent-hover: #c2b8ff;
+}
+
+.app-layout .ui-button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.app-layout .eyebrow,
+.app-layout .guest-avatar {
+  color: var(--accent);
+}
+
+.app-layout[data-density='compact'] .app-page-container {
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.app-layout[data-density='compact'] .feature-tile {
+  min-height: 96px;
+  padding: 0.8rem;
+}
+
+.app-layout[data-density='compact'] .glass-panel:not(.app-sidebar) {
+  --radius: 0.9rem;
+}
+
+.app-layout[data-density='compact'] .app-page-container > section,
+.app-layout[data-density='compact'] .app-page-container > div {
+  row-gap: 1.25rem;
+}
+
+.app-layout[data-motion='reduce'] *,
+.app-layout[data-motion='reduce'] *::before,
+.app-layout[data-motion='reduce'] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.home-feature-order {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.home-feature-order[data-layout='games-first'] .home-feature-games {
+  order: -1;
+}
+
+.preference-field {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+}
+
+.preference-option {
+  display: flex;
+  min-width: 0;
+  min-height: 76px;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 1rem;
+  background: rgb(255 255 255 / 5%);
+  cursor: pointer;
+}
+
+.preference-option:hover {
+  border-color: rgb(164 147 255 / 65%);
+}
+
+.preference-option[data-selected='true'] {
+  border-color: var(--accent);
+  background: rgb(164 147 255 / 12%);
+}
+
+.preference-option input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
+}
+
+.preference-option:focus-within {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
