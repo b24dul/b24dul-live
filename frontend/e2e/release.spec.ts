@@ -19,9 +19,10 @@ test('static Vite production release candidate loads assets and every hash route
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  const initialResponse = await page.goto('./#/');
+  expect(initialResponse?.status()).toBe(200);
   for (const [path, title] of routes) {
-    const response = await page.goto('./#' + path);
-    expect(response?.status()).toBe(200);
+    await page.goto('./#' + path);
     await expect(page.locator('#route-content h1')).toHaveText(title);
     expect(
       await page
