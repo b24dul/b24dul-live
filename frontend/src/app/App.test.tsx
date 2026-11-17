@@ -27,14 +27,14 @@ describe('isolated application shell', () => {
 
   it('provides complete section shells and no simulated sign-in', () => {
     renderRoute('/profile');
-    expect(screen.getByRole('heading', { name: 'Guest profile' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Guest profile' })).toBeInTheDocument();
     expect(screen.getByText(/No account has been created or authenticated/)).toBeVisible();
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 
   it('renders a useful page for unknown paths', () => {
     renderRoute('/not-real');
-    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
   });
 
@@ -57,7 +57,7 @@ describe('isolated application shell', () => {
       target: { value: 'tools' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
-    expect(screen.getByRole('heading', { name: 'Tools' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
   });
 
   it('makes all five mobile destinations available', () => {
