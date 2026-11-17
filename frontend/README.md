@@ -5,25 +5,18 @@ The existing repository-root `index.html`, `styles.css`, assets, Firebase integr
 games, video sync and stream worker remain the production site. Nothing here changes the
 GitHub Pages entrypoint.
 
-## Planned development commands
+## Local development and verification
 
-Requires Node.js 22+ and a verified npm registry connection.
+Requires Node.js 22+ and access to npm. The dependency lockfile is already committed.
 
-1. `npm install` to resolve dependencies and **generate package-lock.json**.
-2. Review and commit that lockfile before calling the foundation reproducible.
-3. `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`,
-   `npm run build`, `npx playwright install chromium`, `npm run test:e2e`.
-4. `npm run dev` for local development; use the URL Vite prints under
-   `/b24dul-live/` to preview. Do not deploy `frontend/dist` to the root Pages URL.
+1. `npm ci` installs the committed dependencies.
+2. `npm run dev` starts the isolated Vite preview using `/b24dul-live/` as the base.
+3. `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` and `npm run format:check` are checked in GitHub Actions.
+4. `npx playwright install chromium` then `npm run test:e2e` exercises the browser checks.
 
-**Verification status:** Scaffolding committed, commands not run/verified in the
-authoring environment because its npm registry is unreachable. This phase is NOT complete.
-Do not assert that dependency versions, builds, tests or browser checks pass until
-a real successful run is recorded. In particular, the package lock is still missing.
-
-Phase 2 design tokens and components, Phase 3 the full 11 routes, and
-Phase 7 production cutover remain separate approved gates.
-No Firebase SDK is installed here; no credentials, mock auth or live stream data exist.
+Phases 1–4 have passed GitHub Actions. Phase 5 introduces local, versioned preferences;
+refer to `../docs/local-preferences.md` and `PROJECT_STATUS.md` for current gate status.
+No Firebase SDK is installed here, and no production cutover has been authorised.
 
 ## Phase 2 showcase
 
@@ -43,3 +36,11 @@ GitHub Pages production entrypoint.
 
 Phase 4 tests include video adapter edge cases, page content and video link validation,
 and responsive/browser checks for all routes.
+
+## Phase 5 — Browser-only preferences
+
+The settings page applies a validated `b24dul.preferences.v1` record. It supports violet/cyan
+accent, comfortable/compact density, device/reduced-motion setting, homepage editorial
+order and expanded/collapsed desktop navigation. Existing `b24dul.sidebar.collapsed.v1`
+preference is migrated when appropriate. The verified dark theme is retained;
+no untested light-theme toggle, real profile setting or cloud sync is presented.
