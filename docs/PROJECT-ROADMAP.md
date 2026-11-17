@@ -226,6 +226,20 @@ When a new chat begins, the assistant should:
 
 **Checks:** Four referenced SVG files exist in the repo. All 112 HTML IDs remain unique, CSS braces balanced, and original application Firebase/live-detector module remains in place. **Browser, chat, admin and GitHub Pages publishing checks are still outstanding.**
 
+## 10.7 Owner-supplied tactical HUD CSS applied (2026-11-17)
+
+**Source:** The owner provided a CSS specification defining `--bg-dark`, `--hud-surface`, `--cash-green`, `--alert-red`, `--neon-pink`, `--neon-cyan`, `--gold`; logo styles, live pulse, cash counter, stars, pause-menu tabs, buttons, stat bar and mission banner. This specification supersedes conflicting details in earlier HUD passes.
+
+**Implemented:** [`979db0d8`](https://github.com/b24dul/b24dul-live/commit/979db0d80e46ea62e4363adf11fab20fea4c2058) adds Anton and Barlow Condensed font imports alongside already-used Bebas Neue, Cutive Mono, Inter and Yellowtail. [`19c8081f`](https://github.com/b24dul/b24dul-live/commit/19c8081f0bf13aaae15944a8b2601db7b1e3baed) implements the owner CSS in `styles.css`: white active/inverted pause-menu tabs, green secondary outlines, revised live-only red pulse, gold genuine stream-start alert title, shared CSS custom properties, optional unused stat component classes, reduced-motion support and an explicit hidden-notification rule. Existing logo remains the previously added SVG image instead of substituting untested `.logo-main`/`.logo-sub` text. Sudoku/2048/videos cards retain real referenced SVG assets.
+
+**Not displayed:** Sample cash, stars, hype and fabricated subscriber announcement; classes exist for future authenticated data-driven integrations only. Actual stream-start notifications keep their true existing copy.
+
+**Preserved:** 112 unique HTML IDs, Firebase module/monitor logic, existing five destinations and navigation handlers, stream player fallback, games, privacy and admin. No Worker updates or unrelated repo changes.
+
+**Checks:** Static CSS brace/comment balance, correct font import, class mappings, asset references, live detection and explicit hidden notice checked. Browser rendering, deploy status and full functional regression testing still **unverified**.
+
+**Next:** Check that GitHub Pages publishes the latest `styles.css` and test desktop/mobile interactions; correct any UI regressions before adding additional features.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Phases 1–3 and coastal colour pass were superseded by the owner's uploaded reference-sheet Tactical HUD implementation on `main`. External CSS, fonts and core visual layout committed; browser/deployment acceptance tests still outstanding.
