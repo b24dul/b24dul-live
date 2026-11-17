@@ -26,3 +26,24 @@ for (const [name, file] of [
 }
 writeFileSync('lighthouse-summary.json', JSON.stringify(report, null, 2) + '\n');
 process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+
+const minimumScores = {
+  performance: 90,
+  accessibility: 95,
+  bestPractices: 95,
+  seo: 90,
+};
+let failures = 0;
+for (const [profile, result] of Object.entries(report)) {
+  for (const [metric, minimum] of Object.entries(minimumScores)) {
+    if (result[metric] < minimum) {
+      failures += 1;
+      process.stderr.write(`${profile}: ${metric} ${result[metric]} is below target ${minimum}\n`);
+    }
+  }
+  if (result.cls === null || result.cls >= 0.1) {
+    failures += 1;
+    process.stderr.write(`${profile}: CLS ${result.cls} must be below 0.1\n`);
+  }
+}
+if (failures) process.exitCode = 1;

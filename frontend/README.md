@@ -44,3 +44,13 @@ accent, comfortable/compact density, device/reduced-motion setting, homepage edi
 order and expanded/collapsed desktop navigation. Existing `b24dul.sidebar.collapsed.v1`
 preference is migrated when appropriate. The verified dark theme is retained;
 no untested light-theme toggle, real profile setting or cloud sync is presented.
+
+## Phase 6 — Automated QA and Lighthouse
+
+The read-only `frontend-foundation.yml` and `frontend-quality.yml` workflows validate
+the isolated build, browser navigation, errors, keyboard focus, viewport overflow and
+mobile/desktop Lighthouse scores, including a compressed JS budget. Full audit evidence
+and measured scores are documented in `../docs/testing.md`.
+
+**Important:** local Lighthouse against `vite preview` is not a production website
+audit or complete WCAG certification. The existing published website is unchanged.

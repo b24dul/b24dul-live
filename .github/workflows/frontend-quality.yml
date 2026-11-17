@@ -30,6 +30,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Build production preview (not deployed)
         run: npm run build
+      - name: Check compressed JavaScript transfer budget
+        run: node scripts/js-budget.mjs
       - name: Install Chrome
         run: npx playwright install --with-deps chromium
       - name: Start built preview
