@@ -23,3 +23,9 @@ Before publishing, confirm the selected hosting mechanism actually serves that p
 5. Run both desktop and physical-device parity tests and seek separate production cutover approval.
 
 **No schedule or hosted preview URL is claimed until the preview build and hosting step have actually succeeded.**
+
+## Continuous development and owner release direction — 2026-11-17
+
+The owner has now explicitly instructed development **not to stop at each successful test phase** and to proceed toward live deployment. This supersedes requests for routine approval at every technical milestone, but it does **not** waive production integrity requirements. Automatically progressing means the next development task becomes actionable on green tests; GitHub CI does not author missing source code by itself.
+
+`frontend/production-gates.json` records each unverified feature as blocked. `frontend/scripts/production-gates.mjs` enforces a fail-closed check; `.github/workflows/production-readiness.yml` runs it on frontend changes and reports whether cutover prerequisites have been met. Its current purpose is *readiness visibility*, not unattended production deployment. When gates are satisfied, a production deployment workflow, GitHub Pages source settings, full end-to-end staging parity, backup and rollback verification still require implementation/validation. No direct root deployment of this non-parity-ready React app is allowed.
