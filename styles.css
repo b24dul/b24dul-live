@@ -2162,3 +2162,35 @@ body:not(.admin) #ofGame .sd-levels button {
     border:1px solid #5E6B77;
   }
 }
+
+
+/* PHASE 6B.4 — iOS Safari mobile navigation position correction.
+   Owner screenshot shows nav hovering over Videos cards at an arbitrary
+   vertical position. Do not use sticky or fixed positioning on mobile.
+   The navigation stays in normal document flow, above <main>; visitors
+   can swipe the tabs horizontally as before. */
+@media (max-width:760px) {
+  html { scroll-padding-top:0; }
+  body:not(.admin) #visitorNav,
+  body:not(.admin) .hud-nav {
+    position:static!important;
+    top:auto!important;
+    bottom:auto!important;
+    inset-block:auto!important;
+    z-index:auto!important;
+    transform:none!important;
+    margin:0;
+    flex:none;
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  body:not(.admin) #visitorContent {
+    scroll-margin-top:0;
+  }
+  body:not(.admin) main:not([data-visitor-section="watch"]) > .player {
+    scroll-margin-top:0;
+  }
+}
