@@ -71,3 +71,17 @@ legacy production site merely because the isolated pages pass automated tests.
 ## Phase 7 verification evidence
 
 [Release run 44085481343](https://github.com/b24dul/b24dul-live/actions/runs/44085481343) passed 22 unit and 4 compiled-site browser tests, static asset verification and packaging. [Foundation 44085481249](https://github.com/b24dul/b24dul-live/actions/runs/44085481249) passed the existing 19 Chromium regression tests. The React preview artifact is **not** a production feature-parity replacement: authentication, streaming, chat, games, privacy and admin functionality still run on the legacy live site.
+
+## M2 — First backend-preservation integration
+
+The Watch route now uses the **public, read-only** Cloudflare live monitor `/api/status`
+endpoint through `src/services/liveStatus.ts`. LIVE is only reported when a
+recent, non-stale response supplies a valid YouTube video ID; network failures,
+stale status and invalid data show `Status unavailable`, never a false OFFLINE
+or LIVE claim. The channel remains reachable directly regardless of status.
+
+This is **not** Firebase authentication/RTDB integration, a connected stream
+player, or a production deployment. The full published Realtime Database rules
+are not checked into the repository and must be reviewed before authorising
+identity, chat, presence, admin or data-write migrations. See
+`../docs/m2-integration-audit.md` and `PROJECT_STATUS.md`.
