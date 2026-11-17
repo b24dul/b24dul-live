@@ -21,13 +21,21 @@ export function parseYouTubePage(url, status, html = "", location = "") {
   if (status === 429 || status >= 500 || status === 401 || status === 403) return { state: "unknown", reason: "youtube-unavailable" };
   if (status >= 300 && status < 400 && location) {
     const next = new URL(location, url);
-    if (!/(^|\.)youtube\.com$/.test(next.hostname)) return { state: "unknown", reason: "foreign-redirect" };
+    // Expose only the redirect host/path for debugging. Query values can
+    // contain visitor/session tokens and must never be returned publicly.
+    const details = {
+      redirectHost: next.hostname,
+      redirectPath: next.pathname.slice(0, 180),
+      redirectQueryKeys: [...new Set([...next.searchParams.keys()])].slice(0, 10),
+    };
+    if (!/(^|\.)youtube\.com$/.test(next.hostname)) {
+      return { state: "unknown", reason: "foreign-redirect", ...details };
+    }
     const id = next.searchParams.get("v") || next.pathname.match(/^\/live\/([\w-]{11})$/)?.[1];
     if (id && VIDEO_ID.test(id)) return { state: "live", videoId: id, method: "channel-live-redirect" };
-    if (next.pathname === "/channel/" + CHANNEL_ID || next.pathname === "/@B24DUL") {
-      return { state: "offline", method: "channel-redirect" };
-    }
-    return { state: "unknown", reason: "unrecognised-redirect" };
+    // A redirect to a channel page alone cannot prove that it is offline.
+    // The destination might represent a URL canonicalization or consent flow.
+    return { state: "unknown", reason: "unrecognised-redirect", ...details };
   }
   if (status !== 200) return { state: "unknown", reason: "youtube-http-" + status };
   // Generic channel metadata occurs on LIVE channel pages too.
