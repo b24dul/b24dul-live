@@ -55,15 +55,15 @@
 
 ## M2 Step 2 — Authentication provider confirmation (owner report, 2026-11-17)
 
-Owner confirmed enabled Firebase Authentication providers in Console: **Email/Password, Anonymous, and Google**. This is a user-reported configuration, not an independent Firebase Admin API check. Keep all three enabled during initial migration; changing providers or signing out/recreating accounts could break UID continuity.
+Owner corrected the provider list: Firebase Authentication enables **Anonymous and Google only**; **Email/Password is NOT enabled**. This is a user-reported configuration, not an independent Firebase Admin API check. Preserve these two enabled providers during initial migration; changing providers or signing out/recreating accounts could break UID continuity.
 
 **Safe React Auth integration contract:**
 1. Initialise one modular Firebase app/Auth client with existing public client configuration (never a service account); subscribe with `onAuthStateChanged` before deciding whether to offer anonymous sign-in.
 2. Reuse an existing persisted Firebase session and UID; never call `signInAnonymously` if a valid session already exists. Public page browsing must work without requiring an account.
-3. Google and Email/Password sign-in must be explicit user actions; do not silently replace an anonymous account. Offer clear choice about preserving anonymous-linked data. For an intended account upgrade, use Firebase provider linking when possible, and design recovery for `credential-already-in-use` without deleting either account.
+3. Google sign-in must be an explicit user action; do not silently replace an anonymous account. Offer clear choice about preserving anonymous-linked data. For an intended account upgrade, use Firebase provider linking when possible, and design recovery for `credential-already-in-use` without deleting either account.
 4. Treat client-side administrator badge/route as display only; trust RTDB rules and verified claims for privileged writes.
 5. Do not store Firebase tokens manually in preferences/localStorage; never reset `viewers/{uid}`, `status/{uid}`, saved games, scores, names or presence on session change.
-6. Tests before production: restoring an anonymous UID across refreshes; no automatic re-creation; safe Email/Password and Google flows with mocked providers; failed/redirected sign-in; credential collision; switching identities without data leakage; public anonymous-free browsing; account persistence on browser restart where supported.
+6. Tests before production: restoring an anonymous UID across refreshes; no automatic re-creation; safe Google sign-in flows with mocked providers; failed/redirected sign-in; credential collision; switching identities without data leakage; public anonymous-free browsing; account persistence on browser restart where supported.
 7. Before introducing database writes, run isolated Firebase Emulator RTDB permission regression tests against owner-supplied rule snapshot and confirm its deployed version still matches. Do not deploy/change Firebase rules or live data.
 
-**Status:** Provider-information gate satisfied; **offline rule tests and safe React integration implementation not yet completed**.
+**Status:** Owner correction supersedes the earlier three-provider statement; Email/Password is out of scope unless separately authorised. Provider-information gate satisfied; **offline rule tests and safe React integration implementation not yet completed**.
