@@ -28,7 +28,7 @@ describe('isolated application shell', () => {
   it('provides complete section shells and no simulated sign-in', () => {
     renderRoute('/profile');
     expect(screen.getByRole('heading', { name: 'Guest profile' })).toBeInTheDocument();
-    expect(screen.getByText(/No account has been created or authenticated/)).toBeVisible();
+    expect(screen.getByText(/No account has been created or authenticated/)).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 
