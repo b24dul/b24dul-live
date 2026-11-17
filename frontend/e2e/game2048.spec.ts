@@ -51,10 +51,12 @@ test('moves a loaded practice board with a swipe', async ({ page }) => {
   await page.getByRole('button', { name: 'Load saved game copy' }).click();
   const board = page.getByRole('grid', { name: '2048 board' });
   await board.evaluate((element) => {
-    const first = new Touch({ identifier: 1, target: element, clientX: 20, clientY: 40 });
-    const last = new Touch({ identifier: 1, target: element, clientX: 100, clientY: 40 });
-    element.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [first] }));
-    element.dispatchEvent(new TouchEvent('touchend', { bubbles: true, changedTouches: [last] }));
+    const start = new Event('touchstart', { bubbles: true });
+    Object.defineProperty(start, 'touches', { value: [{ clientX: 20, clientY: 40 }] });
+    const end = new Event('touchend', { bubbles: true });
+    Object.defineProperty(end, 'changedTouches', { value: [{ clientX: 100, clientY: 40 }] });
+    element.dispatchEvent(start);
+    element.dispatchEvent(end);
   });
   await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
