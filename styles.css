@@ -1966,3 +1966,27 @@ body.admin .adm-preview-wrap .player {
 @media (prefers-reduced-motion:reduce) {
   body.admin #adminWorkspace * {scroll-behavior:auto}
 }
+
+
+/* Phase 7 measured admin-only header fix: at 320/390px, #subLink
+   previously ended at x=472 while the viewport was narrower. */
+@media (max-width:760px) {
+  body.admin > header {
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    min-width:0;
+    width:100%;
+  }
+  body.admin > header .brand-wordmark {
+    min-width:0;
+    max-width:100%;
+  }
+  body.admin > header .brand-wordmark img {
+    display:block;
+    width:min(220px,100%);
+    max-width:100%;
+    height:auto;
+  }
+  body.admin > header .spacer {flex:1 1 0;min-width:0}
+  body.admin > header #subLink {margin-left:auto;flex:0 0 auto}
+}
