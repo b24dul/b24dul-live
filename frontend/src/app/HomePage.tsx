@@ -1,127 +1,91 @@
-import { useState } from 'react';
-import { ArrowUpRight, Bell, Check, Layers3 } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CalendarClock, Clapperboard, Compass, Gamepad2, MessageCircle, Sparkles, Trophy, Wrench } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { FeatureCard, GameCard, VideoCard } from '../components/content-cards';
-import {
-  EmptyState,
-  GlassPanel,
-  IconButton,
-  LoadingSkeleton,
-  Modal,
-  PageHeader,
-  PrimaryButton,
-  SecondaryButton,
-  SectionHeader,
-  StatusIndicator,
-  Toast,
-} from '../components/ui';
+import { ArchiveTile, EditorialSection, FeatureTile, PlannedPanel, StreamPresentation } from '../components/SectionBlocks';
+import { GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
+import { archivedVideos } from '../services/videoArchive';
+
+const features = [
+  { title: 'Game Centre', description: 'Puzzles, arcade and future releases.', to: '/games', icon: <Gamepad2 size={25} /> },
+  { title: 'Videos', description: 'Watch the existing YouTube archive.', to: '/videos', icon: <Clapperboard size={25} /> },
+  { title: 'Community', description: 'Connect and discover community spaces.', to: '/community', icon: <MessageCircle size={25} /> },
+  { title: 'Competitions', description: 'Challenges, events and rankings.', to: '/competitions', icon: <Trophy size={25} /> },
+  { title: 'Tools', description: 'Practical utilities in one destination.', to: '/tools', icon: <Wrench size={25} /> },
+  { title: 'Daily Challenges', description: 'Upcoming challenge formats and ideas.', to: '/competitions', icon: <CalendarClock size={25} /> },
+];
 
 export function HomePage() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [notice, setNotice] = useState(false);
   return (
-    <div className="flex flex-col gap-10">
-      <GlassPanel className="p-6 sm:p-10">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <span className="rounded-full border border-violet-300/35 px-3 py-1 text-xs font-semibold tracking-widest text-brand-violet uppercase">
-            Isolated development preview
-          </span>
-          <StatusIndicator status="neutral">Demo-only UI</StatusIndicator>
+    <div className="flex min-w-0 flex-col gap-10">
+      <GlassPanel className="home-hero p-6 sm:p-10">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <span className="eyebrow">Isolated development preview</span>
+          <StatusIndicator status="neutral">Public-facing design concept</StatusIndicator>
         </div>
-        <PageHeader
-          title="B24DUL"
-          description="Phase 2 design-system preview: accessible glass components, reusable tokens, and responsive layouts. This is not the live site."
-        />
-        <div className="mt-7 flex flex-wrap gap-3">
-          <a className="ui-button ui-button--primary" href="https://b24dul.github.io/b24dul-live/">
-            Visit current site <ArrowUpRight size={18} aria-hidden="true" />
-          </a>
-          <SecondaryButton onClick={() => setModalOpen(true)}>Open preview dialog</SecondaryButton>
-          <IconButton
-            label="Show sample notification"
-            icon={<Bell size={18} />}
-            onClick={() => setNotice(true)}
+        <div className="relative z-10 max-w-3xl">
+          <PageHeader
+            title="B24DUL"
+            description="Your place to watch, play, connect and explore. A whole universe of entertainment, built around one community."
           />
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300">
+            This is the new interface in development, not the published site. Live community and account features remain disconnected.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link to="/watch" className="ui-button ui-button--primary">Watch live section <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link to="/games" className="ui-button ui-button--secondary">Explore games <Gamepad2 size={17} aria-hidden="true" /></Link>
+          </div>
         </div>
+        <div className="home-hero-decoration" aria-hidden="true"><span>B</span></div>
       </GlassPanel>
 
-      <section aria-label="Sample components" className="flex flex-col gap-6">
-        <SectionHeader
-          title="Explore the design system"
-          description="Cards below contain example copy only; there is no Firebase connection, actual viewer count, or live stream state."
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <GameCard
-            title="Games"
-            description="A placeholder card for the future game library."
-            action={<SecondaryButton disabled>Coming in a later phase</SecondaryButton>}
-          />
-          <VideoCard
-            title="Watch"
-            description="Video listing presentation only; there is no stream or playback in this preview."
-          />
-          <FeatureCard
-            title="Discover"
-            description="Feature cards will support browsing the new B24DUL experience."
-            action={<PrimaryButton onClick={() => setNotice(true)}>Try notification</PrimaryButton>}
-          />
+      <EditorialSection title="Streaming" description="A dedicated place for live broadcasts, with a clearly labelled disconnected preview." action={{ label: 'Visit Watch', to: '/watch' }}>
+        <StreamPresentation compact />
+      </EditorialSection>
+
+      <EditorialSection title="Discover B24DUL" description="Everything in one place. Explore the sections, games and community spaces." action={{ label: 'Explore all', to: '/explore' }}>
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {features.map((item) => <FeatureTile key={item.title} {...item} />)}
         </div>
-      </section>
+      </EditorialSection>
 
-      <section className="grid gap-5 md:grid-cols-2" aria-label="Component states">
-        <GlassPanel className="p-6">
-          <SectionHeader
-            title="Status indicators"
-            description="Colour and readable text communicate states together."
-          />
-          <div className="mt-5 flex flex-wrap gap-4">
-            <StatusIndicator status="success">Ready (sample)</StatusIndicator>
-            <StatusIndicator status="warning">Pending (sample)</StatusIndicator>
-            <StatusIndicator status="danger">Unavailable (sample)</StatusIndicator>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <PrimaryButton onClick={() => setModalOpen(true)}>
-              <Layers3 size={18} aria-hidden="true" /> Modal example
-            </PrimaryButton>
-            <SecondaryButton disabled>Disabled action</SecondaryButton>
-          </div>
-        </GlassPanel>
-        <GlassPanel className="p-6">
-          <SectionHeader
-            title="Loading and empty states"
-            description="State components avoid false live-data claims."
-          />
-          <LoadingSkeleton label="Demonstration loading placeholder" className="mt-5 max-w-xs" />
-          <div className="mt-6">
-            <EmptyState
-              title="Nothing connected"
-              description="This preview deliberately does not read production accounts, games, or videos."
-            />
-          </div>
-        </GlassPanel>
-      </section>
+      <EditorialSection title="Featured games" description="Sudoku and 2048 exist on the current site; additional games are planned." action={{ label: 'Game Centre', to: '/games' }}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FeatureTile title="Sudoku" description="Number puzzles on the current website." to="/games" icon={<Gamepad2 size={25} />} note="Available on current site" />
+          <FeatureTile title="2048" description="Classic tile-merging on the current website." to="/games" icon={<Gamepad2 size={25} />} note="Available on current site" />
+          <FeatureTile title="More games" description="Arcade, strategy and casual games are planned." to="/games" icon={<Sparkles size={25} />} note="Coming soon" />
+        </div>
+      </EditorialSection>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-6 text-sm text-slate-300">
-        <span>New frontend is isolated. Existing live website remains unchanged.</span>
-        <Link className="underline underline-offset-4" to="/explore">
-          Explore destinations
-        </Link>
+      <EditorialSection title="Community" description="Announcements, chat and activity — presented without fictional online members." action={{ label: 'Community', to: '/community' }}>
+        <PlannedPanel title="A place to connect" description="Live chat and announcements remain on the current production site. This preview shows their future home without inventing messages, notifications or people online." />
+      </EditorialSection>
+
+      <EditorialSection title="Latest videos" description="Real metadata from the existing repository archive, captured at frontend build time." action={{ label: 'All videos', to: '/videos' }}>
+        {archivedVideos.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {archivedVideos.slice(0, 3).map((video) => <ArchiveTile key={video.id} video={video} />)}
+          </div>
+        ) : <PlannedPanel title="No video metadata available" description="The source archive was empty or invalid at build time. This is not a claim about the live channel." />}
+      </EditorialSection>
+
+      <div className="grid min-w-0 gap-5 lg:grid-cols-2">
+        <EditorialSection title="Useful tools" description="Tools planned for the platform." action={{ label: 'Browse tools', to: '/tools' }}>
+          <PlannedPanel title="Everyday and developer utilities" description="Calculators, timers, QR codes, unit converters and developer helpers are planned; no nonfunctional controls are presented as working." />
+        </EditorialSection>
+        <EditorialSection title="Upcoming events" description="Future streams and tournaments will appear when verified data is connected." action={{ label: 'Competitions', to: '/competitions' }}>
+          <PlannedPanel title="No schedule connected" description="There are no verified event dates in this preview. We will not invent a live stream timetable or tournament." />
+        </EditorialSection>
+      </div>
+
+      <footer className="app-content-footer">
+        <p className="font-semibold">B24DUL <span className="font-normal text-slate-300">— entertainment, community and more.</span></p>
+        <nav aria-label="Footer links" className="flex flex-wrap gap-4 text-sm">
+          <Link to="/explore">About the platform</Link>
+          <Link to="/profile">Guest and privacy information</Link>
+          <Link to="/settings">Settings</Link>
+          <a href="https://b24dul.github.io/b24dul-live/">Current website <ArrowUpRight size={14} className="inline" aria-hidden="true" /></a>
+        </nav>
+        <p className="text-xs text-slate-400">Privacy policy, terms and contact links are not shown until their destinations can be verified.</p>
       </footer>
-      <Modal open={modalOpen} title="Preview dialog" onClose={() => setModalOpen(false)}>
-        <p className="mb-6 text-slate-300">
-          This is a keyboard-accessible sample modal. No account or platform settings will change.
-        </p>
-        <PrimaryButton onClick={() => setModalOpen(false)}>
-          <Check size={18} aria-hidden="true" /> Close preview
-        </PrimaryButton>
-      </Modal>
-      {notice && (
-        <Toast
-          tone="success"
-          message="Example notification only"
-          onDismiss={() => setNotice(false)}
-        />
-      )}
     </div>
   );
 }
