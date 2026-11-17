@@ -1,7 +1,7 @@
 import { before, after, test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { ref, get, set, remove, serverTimestamp } from 'firebase/database';
+import { ref, get, set, update, remove, serverTimestamp } from 'firebase/database';
 
 const path = process.env.RTDB_RULES_PATH;
 if (!path) throw new Error('RTDB_RULES_PATH must point to the private owner-supplied rules snapshot');
@@ -73,6 +73,39 @@ test('a visitor cannot write another visitor\'s leaderboard entry', async () => 
     value: 4,
     ts: serverTimestamp(),
   }));
+});
+
+test('chat requires an atomic lastPost timestamp and blocks immediate reposting', async () => {
+  const makeMessage = (text) => ({
+    uid: 'visitor-a',
+    name: 'AlphaBravo12',
+    text,
+    ts: serverTimestamp(),
+  });
+  await assertFails(set(ref(db(user), 'messages/no-rate-stamp'), makeMessage('Hello everyone')));
+  await assertSucceeds(
+    update(ref(db(user)), {
+      'messages/first-chat-message': makeMessage('Hello everyone'),
+      'lastPost/visitor-a': serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    update(ref(db(user)), {
+      'messages/second-chat-message': makeMessage('Another message'),
+      'lastPost/visitor-a': serverTimestamp(),
+    }),
+  );
+});
+
+test('valid-looking client-reported gameplay scores are not independently attested', async () => {
+  // This demonstrates a trust risk, rather than claiming to prevent score forgery.
+  await assertSucceeds(
+    set(ref(db(user), 'leaderboard/g2048/visitor-a'), {
+      name: 'AlphaBravo12',
+      value: 999996,
+      ts: serverTimestamp(),
+    }),
+  );
 });
 
 test('current rules allow owners to delete their own viewer subtree', async () => {
