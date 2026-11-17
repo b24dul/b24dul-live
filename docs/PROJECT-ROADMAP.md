@@ -286,6 +286,18 @@ When a new chat begins, the assistant should:
 
 **Next:** Run Phase 6A acceptance testing and fix any regressions; then Phase 6B arcade/game experience, followed by video library, mobile refinement and admin style pass. The test register is `docs/QA-STATUS.md`.
 
+## 10.12 Phase 6A rejected/undone; Phase 6B arcade implementation (2026-11-17)
+
+**Owner-reported regression:** On mobile, Phase 6A Watch Stream had overlapping elements and the video disappeared while trying to keep it on screen. Owner explicitly instructed **cancel and undo Phase 6A, skip to 6B or 7**. Treat this as a **user-reported failure of 6A**, not a successful redesign. Do not resume the Watch-area redesign without renewed approval.
+
+**Rollback completed on `main`:** [`d677470c`](https://github.com/b24dul/b24dul-live/commit/d677470c0b2de8a97208dc1af829a2697526f366) restored `index.html` from owner-approved Phase 5B commit `61a7b81a`; [`03e58860`](https://github.com/b24dul/b24dul-live/commit/03e58860f23bdcd8cd40763458eade11dbcdd5ce) restored `styles.css` from pre-6A Phase 5B commit `84d3f166`. This removes both 6A Watch-specific markup/status code and layout CSS, without reverting the accepted Phase 5B home/chat composition. The reported disappearance may also be affected by original mobile section navigation; no root-cause fix is claimed beyond the explicit 6A rollback.
+
+**Phase 6B implemented:** [`1cd4ad82`](https://github.com/b24dul/b24dul-live/commit/1cd4ad82585ab0d808a4dd7d51dc863496831f1d) adds a **Games-only** arcade selection heading to `index.html`; [`46e67c0c`](https://github.com/b24dul/b24dul-live/commit/46e67c0ca15e9792a5f570945cb572cab41f995e) adds scoped CSS for the Games selection cards, Sudoku controls and 2048 scores/layout. No new JS, no gameplay state/data changes, no Watch, chat, Firebase or Worker modifications.
+
+**Exact preservation verification:** Removing just the new 6B arcade header from current HTML yields **byte-identical pre-6A HTML**. Removing just the appended 6B CSS yields **byte-identical pre-6A CSS**. All 112 original IDs remain in the same order; inline application JS is unchanged. CSS block delimiters/comments balanced. 6A `watch-hud-details` and its phase CSS are absent.
+
+**Acceptance:** Rollback and Phase 6B committed, but **user/browser verification of the rollback and arcade mobile interface remains outstanding**. Next: owner checks Watch on phone for the regression and tests Games→Sudoku/2048 on mobile and desktop; handle any actual remaining failures. After Phase 6B, continue to Phase 6C Videos or Phase 7 based on owner direction, **not** 6A.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested; Phase 6A Watch Stream view committed. Source checks passed; Phase 6A browser acceptance remains UNVERIFIED.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B arcade styling committed. Source checks passed; live/mobile re-test pending.
