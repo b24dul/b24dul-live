@@ -403,3 +403,7 @@ When a new chat begins, the assistant should:
 **Done in GitHub:** [PR #6](https://github.com/b24dul/b24dul-live/pull/6) merged at [`d39a3601`](https://github.com/b24dul/b24dul-live/commit/d39a3601423dd5ac48d1ee3c17d553e5b9713cb3) after both branch and PR Chromium workflows passed. 36/36 measured viewport checks passed, including admin slot relocation and the previously failing narrow header; snapshots for 390/1280px are recorded as CI artifacts. `main` source verified to retain 112 original unique IDs and Claude's crucial flex/height fix. No admin JS or Firebase permission changes.
 
 **Owner sign-off pending:** This is tested **CSS/DOM geometry**, not proof of real admin sign-in or moderation writes, stream detection, user data, YouTube player or iOS Safari. Separate production acceptance remains necessary. The legacy Phase 7 visual deliverable is merged; larger M1 React rebuild remains at Phase 0 and is not implicitly started.
+
+## 10.22 Phase 7 owner visual sign-off (2026-11-17)
+
+Owner confirmed the deployed admin dashboard **"It works and looks ok."** Mark the Phase 7 legacy admin **visual redesign accepted**, with 36/36 browser-layout checks and deployed Pages as previously recorded. Keep production backend/security actions and comprehensive cross-browser functional QA as separate outstanding gates; do not claim they passed merely from visual acceptance. Next major product work remains the separately planned React/TypeScript M1 foundation, subject to its original preservation and preview constraints. No site code change in this sign-off.
