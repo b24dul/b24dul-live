@@ -49,6 +49,18 @@ export function parseYouTubePage(url, status, html = "", location = "") {
   if (pageId && streaming) return { state: "live", videoId: pageId, method: "live-page-metadata" };
   // Only the explicit /live "not currently live" response confirms offline.
   if (/the channel is not currently live/i.test(html)) return { state: "offline", method: "youtube-explicit-offline" };
+  // YouTube currently serves the channel homepage at /live after a broadcast ends.
+  // This is only a *candidate* for offline: require the channel's own identity
+  // and absent live-player signals, then confirm on a later scheduled poll.
+  const channelIdentity = html.includes(CHANNEL_ID)
+    && /channelMetadataRenderer|WEB_PAGE_TYPE_CHANNEL/.test(html)
+    && /<title[^>]*>B24DUL - YouTube<\/title>/i.test(html);
+  const liveSignals = /"isLiveNow":true|"isLiveContent":true|BADGE_STYLE_TYPE_LIVE_NOW|THUMBNAIL_OVERLAY_TIME_STATUS_STYLE_LIVE/.test(html);
+  const hasWatchPlayer = /"videoDetails"\s*:\s*\{/.test(html);
+  const blocked = /consent\.youtube\.com|before you continue to youtube|unusual traffic|verify you are human/i.test(html);
+  if (channelIdentity && !liveSignals && !hasWatchPlayer && !blocked) {
+    return { state: "offline-candidate", method: "channel-homepage" };
+  }
   return { state: "unknown", reason: "unrecognised-youtube-response" };
 }
 
@@ -215,6 +227,29 @@ export async function checkAndPublish(env, detector = detectYouTube) {
     console.warn("YouTube status inconclusive:", result.reason);
     // No write: never label an inaccessible or throttled YouTube page as offline.
     return { checked: false, reason: result.reason };
+  }
+  // A channel homepage without live markers can be a temporary YouTube
+  // response. Require two polls, at least 45s apart, before publishing offline.
+  if (result.state === "offline-candidate") {
+    const token = await googleToken(env);
+    const now = Date.now();
+    const previous = await databaseRequest(token, "settings/liveOfflineCandidate");
+    if (Number(previous?.firstSeen) > now - 10 * 60 * 1000
+        && Number(previous?.firstSeen) <= now - 45 * 1000) {
+      result.state = "offline";
+      result.method = "channel-homepage-confirmed-twice";
+      await databaseRequest(token, "settings/liveOfflineCandidate", "PUT", null);
+    } else {
+      if (!previous?.firstSeen || Number(previous.firstSeen) < now - 10 * 60 * 1000) {
+        await databaseRequest(token, "settings/liveOfflineCandidate", "PUT", { firstSeen: now });
+      }
+      console.log("Offline candidate: waiting for second scheduled confirmation");
+      return { checked: false, reason: "offline-awaiting-confirmation" };
+    }
+  } else if (result.state === "live") {
+    // Any confirmed LIVE observation clears an earlier offline candidate.
+    const token = await googleToken(env);
+    await databaseRequest(token, "settings/liveOfflineCandidate", "PUT", null);
   }
   const live = result.state === "live";
   const videoId = live ? result.videoId : "";
