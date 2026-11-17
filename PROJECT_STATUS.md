@@ -345,3 +345,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 
 - The Node 26 test failures were caused by its global `localStorage` masking Vitest's jsdom storage. The test setup now explicitly uses the backing jsdom window's real storage. No application code or production storage was changed.
 - With the Vitest upgrade on the parent branch, the unmodified `npm test` command passed all 40 tests on both Node 22.23.5 and Node 26.13.1. Typecheck, lint (five pre-existing warnings) and formatting passed. The additional identity-branch tests still require a combined-branch run.
+
+## 2026-11-17 — Disposable Firebase Auth emulator foundation
+
+- Added the modular Firebase SDK as a development dependency and a strictly local Auth emulator fixture using the fixed `demo-b24dul-auth` project and in-memory persistence. It is not mounted in React, has no production configuration, and makes no production Firebase requests. Guest creation and test-only Google linking are explicit operations.
+- Six actual Auth emulator tests passed locally: no automatic identity creation; repeated/concurrent guest entry retains its UID; Google linking retains the UID; credential collision leaves both identities intact; a stale UID is rejected; and a new guest is created only after explicit sign-out. Synthetic Google tokens and all identities exist only in the disposable emulator. A dedicated workflow runs the same test with no production credentials.
+- This is a test foundation, not production Firebase integration or proof of real-browser persistence, multi-tab race safety, account migration or recovery UX. Complete rules/deployment alignment and sufficient security coverage remain required; all production gates remain unchanged. No data migration or account switching is implemented.

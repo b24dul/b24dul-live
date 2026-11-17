@@ -1,0 +1,33 @@
+name: Firebase Auth emulator identity verification
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/scripts/auth-emulator/**'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - '.github/workflows/auth-emulator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth-emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test disposable identities in local Auth emulator
+        run: >-
+          npx --yes firebase-tools@15.36.0 emulators:exec
+          --project demo-b24dul-auth --config scripts/auth-emulator/firebase.json --only auth
+          'node --experimental-strip-types --test scripts/auth-emulator/identity.emulator.test.ts'
