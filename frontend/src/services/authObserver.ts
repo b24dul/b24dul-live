@@ -40,7 +40,7 @@ export function subscribeToAuthSession(
   try {
     unsubscribe = observer(onUser, onError);
   } catch {
-    onError(null);
+    onError();
     unsubscribe = () => {};
   }
 
