@@ -57,7 +57,11 @@ describe('versioned local preferences', () => {
         </>
       );
     }
-    render(<PreferencesProvider><Fixture /></PreferencesProvider>);
+    render(
+      <PreferencesProvider>
+        <Fixture />
+      </PreferencesProvider>,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Change preferences' }));
     expect(screen.getByText('cyan')).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem(PREFERENCES_KEY) || '{}')).toMatchObject({
@@ -76,10 +80,16 @@ describe('versioned local preferences', () => {
     });
     function Fixture() {
       const { preferences, updatePreferences } = usePreferences();
-      return <button onClick={() => updatePreferences({ accent: 'cyan' })}>{preferences.accent}</button>;
+      return (
+        <button onClick={() => updatePreferences({ accent: 'cyan' })}>{preferences.accent}</button>
+      );
     }
     try {
-      render(<PreferencesProvider><Fixture /></PreferencesProvider>);
+      render(
+        <PreferencesProvider>
+          <Fixture />
+        </PreferencesProvider>,
+      );
       act(() => fireEvent.click(screen.getByRole('button', { name: 'violet' })));
       expect(screen.getByRole('button', { name: 'cyan' })).toBeInTheDocument();
     } finally {

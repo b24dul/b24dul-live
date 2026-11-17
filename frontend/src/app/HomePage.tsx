@@ -101,50 +101,50 @@ export function HomePage() {
       </EditorialSection>
 
       <div className="home-feature-order" data-layout={preferences.homeLayout}>
-      <div className="home-feature-discover"><EditorialSection
-        title="Discover B24DUL"
-        description="Everything in one place. Explore the sections, games and community spaces."
-        action={{ label: 'Explore all', to: '/explore' }}
-      >
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {features.map((item) => (
-            <FeatureTile key={item.title} {...item} />
-          ))}
+        <div className="home-feature-discover">
+          <EditorialSection
+            title="Discover B24DUL"
+            description="Everything in one place. Explore the sections, games and community spaces."
+            action={{ label: 'Explore all', to: '/explore' }}
+          >
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {features.map((item) => (
+                <FeatureTile key={item.title} {...item} />
+              ))}
+            </div>
+          </EditorialSection>
         </div>
-      </EditorialSection>
-
-      </div>
-      <div className="home-feature-games"><EditorialSection
-        title="Featured games"
-        description="Sudoku and 2048 exist on the current site; additional games are planned."
-        action={{ label: 'Game Centre', to: '/games' }}
-      >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureTile
-            title="Sudoku"
-            description="Number puzzles on the current website."
-            to="/games"
-            icon={<Gamepad2 size={25} />}
-            note="Available on current site"
-          />
-          <FeatureTile
-            title="2048"
-            description="Classic tile-merging on the current website."
-            to="/games"
-            icon={<Gamepad2 size={25} />}
-            note="Available on current site"
-          />
-          <FeatureTile
-            title="More games"
-            description="Arcade, strategy and casual games are planned."
-            to="/games"
-            icon={<Sparkles size={25} />}
-            note="Coming soon"
-          />
+        <div className="home-feature-games">
+          <EditorialSection
+            title="Featured games"
+            description="Sudoku and 2048 exist on the current site; additional games are planned."
+            action={{ label: 'Game Centre', to: '/games' }}
+          >
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <FeatureTile
+                title="Sudoku"
+                description="Number puzzles on the current website."
+                to="/games"
+                icon={<Gamepad2 size={25} />}
+                note="Available on current site"
+              />
+              <FeatureTile
+                title="2048"
+                description="Classic tile-merging on the current website."
+                to="/games"
+                icon={<Gamepad2 size={25} />}
+                note="Available on current site"
+              />
+              <FeatureTile
+                title="More games"
+                description="Arcade, strategy and casual games are planned."
+                to="/games"
+                icon={<Sparkles size={25} />}
+                note="Coming soon"
+              />
+            </div>
+          </EditorialSection>
         </div>
-      </EditorialSection>
-
-      </div>
       </div>
       <EditorialSection
         title="Community"

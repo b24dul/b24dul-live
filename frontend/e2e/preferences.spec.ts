@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('settings controls update live UI and survive refresh and direct hash navigation', async ({ page }) => {
+test('settings controls update live UI and survive refresh and direct hash navigation', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('./#/settings');
   const layout = page.locator('.app-layout');
@@ -24,7 +26,9 @@ test('settings controls update live UI and survive refresh and direct hash navig
   const ordering = await page.evaluate(() => {
     const first = document.querySelector<HTMLElement>('.home-feature-games');
     const second = document.querySelector<HTMLElement>('.home-feature-discover');
-    return first && second ? first.getBoundingClientRect().top < second.getBoundingClientRect().top : false;
+    return first && second
+      ? first.getBoundingClientRect().top < second.getBoundingClientRect().top
+      : false;
   });
   expect(ordering).toBe(true);
 });
@@ -36,7 +40,9 @@ test('reset preferences restores defaults and real keyboard options', async ({ p
   await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
   await page.getByRole('button', { name: 'Reset appearance settings' }).click();
   await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'violet');
-  await expect(page.getByRole('status', { name: '' }).filter({ hasText: /Appearance settings restored/ })).toBeVisible();
+  await expect(
+    page.getByRole('status', { name: '' }).filter({ hasText: /Appearance settings restored/ }),
+  ).toBeVisible();
   await page.reload();
   await expect(page.getByRole('radio', { name: /Violet/ })).toBeChecked();
 });

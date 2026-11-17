@@ -29,12 +29,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function parsePreferences(value: unknown): Preferences | null {
   if (!isRecord(value) || value.version !== 1) return null;
   if (
-    value.accent !== 'violet' && value.accent !== 'cyan' ||
-    value.density !== 'comfortable' && value.density !== 'compact' ||
-    value.motion !== 'system' && value.motion !== 'reduce' ||
-    value.homeLayout !== 'standard' && value.homeLayout !== 'games-first' ||
+    (value.accent !== 'violet' && value.accent !== 'cyan') ||
+    (value.density !== 'comfortable' && value.density !== 'compact') ||
+    (value.motion !== 'system' && value.motion !== 'reduce') ||
+    (value.homeLayout !== 'standard' && value.homeLayout !== 'games-first') ||
     typeof value.sidebarCollapsed !== 'boolean'
-  ) return null;
+  )
+    return null;
   return {
     version: 1,
     accent: value.accent,

@@ -350,13 +350,16 @@ function SettingsPage() {
         <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
         <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          Use the navigation rail or the controls below. Your choices are saved only in this browser;
-          no Firebase account or cloud record is changed.
+          Use the navigation rail or the controls below. Your choices are saved only in this
+          browser; no Firebase account or cloud record is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
       <PreferenceControls />
-      <PlannedPanel title="Theme" description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested." />
+      <PlannedPanel
+        title="Theme"
+        description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested."
+      />
       <RelatedLinks paths={['/profile', '/explore']} />
     </PageFrame>
   );

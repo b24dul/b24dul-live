@@ -21,7 +21,11 @@ function PreferenceField<T extends string>({
       <legend className="text-base font-semibold">{legend}</legend>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {options.map((option) => (
-          <label className="preference-option" key={option.value} data-selected={value === option.value}>
+          <label
+            className="preference-option"
+            key={option.value}
+            data-selected={value === option.value}
+          >
             <input
               type="radio"
               name={legend}
@@ -33,7 +37,9 @@ function PreferenceField<T extends string>({
               <span className="block font-semibold">{option.label}</span>
               <span className="mt-1 block text-sm text-slate-300">{option.detail}</span>
             </span>
-            {value === option.value && <Check aria-hidden="true" size={19} className="text-brand-cyan" />}
+            {value === option.value && (
+              <Check aria-hidden="true" size={19} className="text-brand-cyan" />
+            )}
           </label>
         ))}
       </div>
@@ -78,8 +84,16 @@ export function PreferenceControls() {
             legend="Motion"
             value={preferences.motion}
             options={[
-              { value: 'system', label: 'Follow device', detail: 'Respect reduced-motion settings' },
-              { value: 'reduce', label: 'Reduce motion', detail: 'Minimise animation in this preview' },
+              {
+                value: 'system',
+                label: 'Follow device',
+                detail: 'Respect reduced-motion settings',
+              },
+              {
+                value: 'reduce',
+                label: 'Reduce motion',
+                detail: 'Minimise animation in this preview',
+              },
             ]}
             onChange={(motion) => updatePreferences({ motion })}
           />
@@ -87,8 +101,16 @@ export function PreferenceControls() {
             legend="Homepage layout"
             value={preferences.homeLayout}
             options={[
-              { value: 'standard', label: 'Discover first', detail: 'Explore the platform before featured games' },
-              { value: 'games-first', label: 'Games first', detail: 'Move featured games above discovery' },
+              {
+                value: 'standard',
+                label: 'Discover first',
+                detail: 'Explore the platform before featured games',
+              },
+              {
+                value: 'games-first',
+                label: 'Games first',
+                detail: 'Move featured games above discovery',
+              },
             ]}
             onChange={(homeLayout) => updatePreferences({ homeLayout })}
           />
@@ -103,13 +125,24 @@ export function PreferenceControls() {
           />
         </div>
         <div className="mt-8 border-t border-white/15 pt-6">
-          <SecondaryButton onClick={() => { resetPreferences(); setNotice(true); }}>
+          <SecondaryButton
+            onClick={() => {
+              resetPreferences();
+              setNotice(true);
+            }}
+          >
             <RotateCcw size={16} aria-hidden="true" />
             Reset appearance settings
           </SecondaryButton>
         </div>
       </GlassPanel>
-      {notice && <Toast message="Appearance settings restored to defaults" tone="success" onDismiss={() => setNotice(false)} />}
+      {notice && (
+        <Toast
+          message="Appearance settings restored to defaults"
+          tone="success"
+          onDismiss={() => setNotice(false)}
+        />
+      )}
     </>
   );
 }

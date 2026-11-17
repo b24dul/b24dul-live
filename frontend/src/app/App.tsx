@@ -11,20 +11,20 @@ export function App() {
     <ErrorBoundary>
       <PreferencesProvider>
         <AppShell>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          {routes
-            .filter((route) => route.path !== '/' && route.path !== '/explore')
-            .map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={<DestinationPage path={route.path} />}
-              />
-            ))}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            {routes
+              .filter((route) => route.path !== '/' && route.path !== '/explore')
+              .map((route) => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={<DestinationPage path={route.path} />}
+                />
+              ))}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
         </AppShell>
       </PreferencesProvider>
     </ErrorBoundary>
