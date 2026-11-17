@@ -1,0 +1,25 @@
+name: Temporary M2 format inspection
+on:
+  push:
+    paths:
+      - .github/workflows/m2-prettier-inspect.yml
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Print exact formatting diff
+        working-directory: frontend
+        run: |
+          npx prettier --write src/services/authObserver.test.ts
+          git diff -- src/services/authObserver.test.ts
