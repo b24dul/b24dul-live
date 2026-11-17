@@ -1,60 +1,70 @@
-# B24DUL Live — Coastal After Dark Design System
+# B24DUL Live — Tactical HUD Design System
 
-**Version:** 2.0 (2026-11-17)  
-**Status:** Implemented as a CSS colour-system refactor on `main`; visual/browser acceptance QA pending.  
-**Inspiration:** Original reinterpretation of the sun-drenched coastal atmosphere of GTA VI and the pink sunset/nightlife aesthetic of GTA: Vice City. Do not copy or use Rockstar artwork, logos, typefaces, named locations, fictional brands, or identifiable proprietary layouts.
+**Version:** 3.0 — 17 November 2026  
+**Status:** Implemented on `main`; browser and deployment acceptance tests still required.  
+**Primary visual references:** The owner's two uploaded B24DUL Live concept sheets showing original logo treatment, ON AIR badge, outlined and cash-green buttons, alert banner, live-chat switch, HUD cards and menu controls. Use these references whenever making future visual changes.
 
-## Core palette (source of truth)
+## Creative direction
 
-| Role | Variable | Value | Usage |
-|---|---|---|---|
-| Midnight plum | `--color-night` | `#17131E` | Background / dark foreground on coral buttons |
-| Main surface | `--color-panel` | `#211B2A` | App panels |
-| Raised surface | `--color-raised` | `#282032` | Cards and controls |
-| Divider | `--color-stroke` | `#493E51` | Subtle borders, separators |
-| Main text | `--color-text` | `#FFF4EA` | Primary body and headings |
-| Muted text | `--color-muted` | `#C7B9C9` | Secondary content |
-| Brand coral | `--color-coral` | `#F28B74` | Active navigation, buttons, card accents |
-| Coral hover | `--color-coral-hover` | `#FFC0A0` | Hover and subtle bright headings |
-| Neon rose | `--color-rose` | `#FF78A8` | 'Live' script wordmark, occasional sunset art only |
-| Ocean teal | `--color-teal` | `#64BBC0` | Focus indicators / restrained monitor guides |
-| Status live | `--color-live` | `#FF4A55` | Confirmed broadcast outline, urgent iconography |
-| Live button fill | `--color-live-fill` | `#AE293F` | Urgent controls with legible light text |
-| Status success | `--color-success` | `#66C7A0` | Actual verified success/connection only |
+High-contrast, gritty, original neo-noir open-world action / livestream broadcast interface. The design borrows general tactical game-menu principles but **does not** embed, trace, or reproduce commercial game logos, imagery, typefaces or proprietary layouts. Do not put the reference sheets themselves into the public site: rebuild individual concepts with licensed Google Fonts, CSS and original SVG/icons.
 
-The old `--bg`, `--panel`, `--panel-2`, `--line`, `--text`, `--muted`, `--plate`, `--plate-text`, `--live`, `--ok` variables remain as compatibility aliases. Legacy `--hud-*` names also remain mapped to this palette to protect existing selectors while we continue CSS consolidation.
+**Use the reference designs for:** heavy condensed white B24DUL block lettering, cyan-script Live accent, red confirmed ON AIR status, charcoal HUD backgrounds, white-bordered rectangular buttons, green inverted selected/hover controls, bold mono information, crisp separators, green chat labels, streamlined stream notifications, dark game and video cards.
 
-## Hierarchy and composition
+**Do not invent:** live status, viewer counts, cash, hype levels, donation totals, ratings, wanted levels, store/clip/schedule pages, or user profiles not present in the application.
 
-1. **Neutrals dominate:** Midnight plum base, raised violet panels, warm ivory type, muted lavender-gray supporting copy.
-2. **One brand accent per component:** Coral is the normal active/CTA colour; do not assign different competing accents to Sudoku, 2048, and videos.
-3. **Rose is atmospheric, not a second button colour:** Reserve it for the scripted Live wordmark and selective sunset decoration.
-4. **Teal is technical:** Keyboard focus rings and restrained frame bracket guides, not large blocks of electric cyan.
-5. **Semantic colours are literal:** Red only for fresh confirmed LIVE and destructive actions; mint only for success and verified connected/active statuses. Uncertain/old livestream state must not be red.
-6. **Artwork is original:** The hero continues using CSS sun/horizon/grid illustration, but its scenery uses a limited plum → dusty mauve → coral/peach range. No downloaded proprietary game visuals or font files.
-7. **Typography remains:** Anton (display), Yellowtail (script), Barlow Condensed (UI), Inter (content); preserve accessible fallbacks.
-8. **Preserve actual functionality:** YouTube playback/direct player fallback, Firebase chat/auth, admin workspace, games and keyboard/touch, videos and privacy flows.
+## Canonical colour tokens
 
-## CSS maintenance instructions
+The tokens live at the start of `styles.css`:
 
-- The canonical colour tokens are defined near the top of `index.html` inside the first `:root` block.
-- Prefer new component styling referencing `--color-*` variables rather than adding more near-duplicate raw hex shades.
-- Refactor old compatibility aliases only after reviewing selectors and maintaining runtime QA.
-- Background gradients may use related tonal stops; avoid gradients containing unrelated neon accent colours.
-- For new components: default card = raised surface, stroke border, ivory text and **at most one coral accent**.
-- Keep focus visible using teal and do not obstruct iframe pointer input.
-- Check contrast and render in real browsers at 320, 375, 768 and 1280 px before considering this release fully verified.
+| Role | Token | Value |
+|---|---|---|
+| Obsidian | `--hud-black` | `#0B0C10` |
+| Translucent card base | direct surface | `rgba(20,24,34,.88)` |
+| Panel | `--hud-panel` | `#141822` |
+| Elevated surface | `--hud-raised` | `#1E242F` |
+| Text | `--hud-white` | `#F7F7F7` |
+| Secondary text | `--hud-muted` | `#C8CDD7` |
+| Interactive cash green | `--hud-green` | `#2ECC71` |
+| Active/hover green | `--hud-green-hover` | `#55E99B` |
+| Confirmed live / danger red | `--hud-red` | `#FF1E1E` |
+| Very selective magenta | `--hud-pink` | `#FF2A85` |
+| Script / focus cyan | `--hud-cyan` | `#00E8EE` |
 
-## Implementation record
+**Hierarchy:** Black/charcoal and white dominate. Green is the single normal interaction accent. Red is reserved for live/danger. Cyan is mainly logo/focus. Magenta is optional, not a mandatory accent for every section. Legacy `--color-*`, `--plate`, `--panel` and similar variables are compatibility aliases for existing controls.
 
-- [`959e6ae9`](https://github.com/b24dul/b24dul-live/commit/959e6ae9d19c59e8c36bb9a7c7125d13bad8f34b): CSS palette consolidation and replacement of prior saturated blues, greens, yellow, magenta and bright cyan across visitor/admin styling, hero, cards and game UI.
-- [`164ce439`](https://github.com/b24dul/b24dul-live/commit/164ce439fa9fd197e108de9ad686bc25be23d03d): CTA border and live alert fill refinement.
-- **Static checks:** Full inline application module preserved unchanged; same 112 HTML IDs in the same order. Visual/functional browser checks **not performed**.
-- **Known limitation:** The single-file CSS includes existing historical overrides. Token migration reduces colour conflict, but future dedicated CSS cleanup is desirable after browser QA.
+## Typography
 
-## Next acceptance tasks
+- **Bebas Neue**: brand block text, navigation, section headings, CTA/buttons.
+- **Cutive Mono**: real status/data labels; no invented counters.
+- **Inter**: body/chat, input help and readable content.
+- **Yellowtail**: the `Live` script wordmark, with its open-source Google Fonts license; deliberate exception to the requested three functional fonts.
+- Use fallbacks, `display=swap`, and no downloaded proprietary fonts.
 
-- Check offline hero/background and text readability in Safari/Chrome/Firefox/mobile; confirm no unexpected CSS fallbacks.
-- Confirm Home, Watch, Games, Videos, Chat; verify live/offline, stale player fallback, anonymous chat + gate, moderator controls, Sudoku/2048 touch and keyboard, and privacy requests.
-- Check administrator sign-in and dashboard separately: global tokens also update admin colours.
-- Record issues and fixes in `docs/PROJECT-ROADMAP.md`.
+## Structural and technical choices
+
+- `index.html` remains the single-page vanilla HTML/JavaScript application.
+- Styles were **extracted from its inline style block into `styles.css`**. The historical Phase 1–3 cosmetic override blocks were removed, leaving the original functional component CSS and this new coherent tactical HUD layer.
+- The reference-sheet treatment is applied to the header, status indicator, existing five nav destinations, stream player frame, offline community hero, video/game destinations, community chat, notifications and selected admin typography.
+- No actual donation/store/map/schedule systems were built.
+- Existing JavaScript module and 112 element IDs were preserved without modification in this first release.
+- Stream detection still uses Firebase/Cloudflare freshness checks; visitors can still open the stream player when detection is stale/offline.
+- Admin, privacy tools, chat, video browsing, Sudoku and 2048 remain existing functional subsystems; they require live regression QA before marking this redesign complete.
+
+## Commits / progress
+
+- [`b3a77263`](https://github.com/b24dul/b24dul-live/commit/b3a772638b03841a3b3989d74c7c5439227d1cf2): extracted stylesheet, replaced legacy palette with new HUD variables and core component design.
+- [`a51e8856`](https://github.com/b24dul/b24dul-live/commit/a51e8856c017453b8feca32bbd9e0bc8a1294bb5): switched the live HTML to `styles.css`, replaced font loading and favicon, changed community hero copy; existing JavaScript/IDs preserved.
+- [`8c10960f`](https://github.com/b24dul/b24dul-live/commit/8c10960fe52e78ef7e282f168e65a43e194b11bf): corrected offline hero positioning for decorative HUD labels.
+
+## Acceptance plan — not yet completed
+
+1. Confirm GitHub Pages serves `styles.css` with no 404/cache issue.
+2. Check visual fit and horizontal scrolling at 320px, 375px, 768px, 1280px and wide desktop sizes.
+3. Test Home, Watch, Games, Videos, Chat, stream notification, live/offline transition and detection-stale fallback.
+4. Test anonymous visitor gate, message posting/listening, chat on/off, moderation and administrator controls.
+5. Test Sudoku/2048 keyboard/touch, leaderboard view, privacy request flows, video playback and accessibility focus.
+6. Check contrast, reduced-motion preferences, focus rings and console errors. Record pass/fail evidence in the roadmap.
+
+## Historical decisions
+
+The earlier `Coastal After Dark` plum/coral palette was implemented but superseded when the owner provided two explicit tactical HUD reference sheets. The former decisions and commits remain documented in `docs/PROJECT-ROADMAP.md`.
