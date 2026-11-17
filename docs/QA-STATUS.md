@@ -109,3 +109,11 @@ The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **b
 **Deployment evidence:** One GitHub Pages Actions run for head `613f8d47` completed successfully at 09:03:29Z, but that run predates the new B.3 commit and cannot verify B.3 publishing. Published HTTP content is inaccessible from the current execution environment.
 
 **User-visible test UNVERIFIED:** On iPhone in Home, Games, Videos, the `MAIN DISPLAY` strip must be ABSENT. If it remains, diagnose publication/caching before editing the CSS again. If absent, assess card containment, nav overlap and 2048 board. Do not call fixed without an actual observation.
+
+## Phase 6B.4 — iOS Safari floating navigation (2026-11-17)
+
+**Owner FAIL + screenshot:** On Videos, the horizontal Home / Watch Stream / Games / Videos navigation appears in the middle of the video card list, overlapping content. Previous mobile shell changes did not provide a satisfactory result.
+
+**Applied code:** `f084c125` removes mobile sticky nav via final `position:static!important` selectors and resets scroll offsets. `07dca232` versions the stylesheet link to avoid cached CSS. All 112 IDs intact, original JS unchanged, CSS syntax checked.
+
+**Browser UNVERIFIED:** After Pages publishes latest commit, verify the nav starts in normal flow under header and disappears naturally when scrolling into the Videos list; verify Home/Games and Chat navigation and Watch iframe continue to work. If still floating, capture exact URL served, loaded stylesheet URL, and viewport mechanics rather than layering further guesses.
