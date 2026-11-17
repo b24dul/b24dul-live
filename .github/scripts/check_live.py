@@ -1,8 +1,7 @@
-"""Detect B24DUL's public YouTube broadcast and sync transitions to Firebase.
+"""Detect the YouTube broadcast and reconcile the public Firebase live flag.
 
-This never re-applies the same live state every poll. That is intentional:
-the administrator can switch the website off manually during an ongoing
-broadcast, and the next *new broadcast* will automatically switch it on again.
+YouTube is authoritative: every successful poll corrects stale Firebase state.
+An inconclusive YouTube result fails without changing the published status.
 """
 import json
 import os
@@ -68,23 +67,26 @@ def main():
         old.update(json.loads(STATE_FILE.read_text(encoding="utf-8")))
 
     live, video_id = detect_live()
-    # No write on repeated checks. Manual admin changes therefore stay in
-    # effect for the rest of this broadcast, until the next stream transition.
-    changed = live != old["live"] or (live and video_id != old["video_id"])
     print("YouTube detection: " + ("LIVE " + video_id if live else "offline"))
-    if not changed:
-        print("No new broadcast transition; existing Firebase value left untouched.")
-        return
-
     firebase_admin.initialize_app(credentials.Certificate(account), {"databaseURL": DATABASE_URL})
     live_setting = db.reference("settings/live")
-    live_setting.set(live)
-    print("Firebase settings/live set to " + str(live).lower())
-    STATE_FILE.write_text(json.dumps({
-        "live": live,
-        "video_id": video_id,
-        "last_transition": datetime.now(timezone.utc).isoformat(),
-    }, indent=2) + "\n", encoding="utf-8")
+    current = live_setting.get()
+    # Read the actual published state, not only the workflow's saved history.
+    # This fixes stale LIVE badges if the previously manual switch was left on.
+    if current is not live:
+        live_setting.set(live)
+        print("Corrected Firebase settings/live from " + repr(current) + " to " + repr(live))
+    else:
+        print("Firebase settings/live already agrees with YouTube.")
+
+    changed = live != old["live"] or (live and video_id != old["video_id"])
+    if changed:
+        STATE_FILE.write_text(json.dumps({
+            "live": live,
+            "video_id": video_id,
+            "last_transition": datetime.now(timezone.utc).isoformat(),
+        }, indent=2) + "\n", encoding="utf-8")
+        print("Recorded YouTube broadcast transition.")
 
 
 if __name__ == "__main__":
