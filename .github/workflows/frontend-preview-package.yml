@@ -1,0 +1,68 @@
+name: M2 isolated React preview package - no deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-preview-package.yml'
+
+# This packages a staging build for later upload to a separately approved
+# preview location. It never publishes to GitHub Pages or modifies main.
+permissions:
+  contents: read
+
+concurrency:
+  group: b24dul-preview-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked packages
+        run: npm ci --no-audit --no-fund
+      - name: Static checks
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run format:check
+      - name: Build isolated preview under a separate URL path
+        run: npx vite build --base /b24dul-live/preview/
+      - name: Verify preview asset references
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, readdirSync } from 'node:fs';
+          const html = readFileSync('dist/index.html', 'utf8');
+          if (!html.includes('/b24dul-live/preview/assets/')) {
+            throw new Error('Preview output does not use /b24dul-live/preview/ asset paths');
+          }
+          if (html.includes('src="/b24dul-live/assets/')) {
+            throw new Error('A root release asset path leaked into the isolated preview');
+          }
+          const assets = readdirSync('dist/assets');
+          if (!assets.some((file) => file.endsWith('.js')) ||
+              !assets.some((file) => file.endsWith('.css'))) {
+            throw new Error('Compiled preview JS/CSS is missing');
+          }
+          console.log('Isolated preview asset/base-path checks passed');
+          NODE
+      - name: Upload staging artifact only
+        uses: actions/upload-artifact@v5
+        with:
+          name: b24dul-react-preview-subpath
+          path: frontend/dist/
+          if-no-files-found: error
+          retention-days: 30
