@@ -24,4 +24,12 @@ if (!scripts.length) throw new Error('No compiled JavaScript assets found.');
 if (html.includes('/src/main.tsx')) {
   throw new Error('Development entrypoint leaked into production HTML.');
 }
-process.stdout.write('Release static integrity PASS: ' + links.length + ' referenced assets, ' + scripts.length + ' JS bundles, base ' + base + '\n');
+process.stdout.write(
+  'Release static integrity PASS: ' +
+    links.length +
+    ' referenced assets, ' +
+    scripts.length +
+    ' JS bundles, base ' +
+    base +
+    '\n',
+);

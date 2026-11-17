@@ -23,9 +23,13 @@ test('static Vite production release candidate loads assets and every hash route
     const response = await page.goto('./#' + path);
     expect(response?.status()).toBe(200);
     await expect(page.locator('#route-content h1')).toHaveText(title);
-    expect(await page.locator('img').evaluateAll((images) =>
-      images.filter((img) => img.complete && img.naturalWidth === 0).length,
-    )).toBe(0);
+    expect(
+      await page
+        .locator('img')
+        .evaluateAll(
+          (images) => images.filter((img) => img.complete && img.naturalWidth === 0).length,
+        ),
+    ).toBe(0);
   }
   await page.goto('./#/games');
   await page.reload();
