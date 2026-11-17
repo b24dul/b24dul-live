@@ -1693,3 +1693,181 @@ body:not(.admin) #of2048 .g2-help {
   body:not(.admin) #ofGame,#of2048 {padding:10px;}
   body:not(.admin) #ofGame .sd-stats {font-size:10px;padding:9px;}
 }
+
+
+/* ============================================================
+   PHASE 6B.1 — CONSISTENT SIZING / OWNER-REPORTED OVERFLOW FIX
+   Applies to game/arcade/text containers, never the Watch iframe.
+   ============================================================ */
+/* The title panel, game surface and controls must follow the
+   *same available width*, rather than sizing from 440–520px
+   viewport-derived values in independent flex children. */
+body:not(.admin) #visitorContent,
+body:not(.admin) .visitor-content-head,
+body:not(.admin) .visitor-content-head > div:first-child,
+body:not(.admin) #offline,
+body:not(.admin) #ofChoose,
+body:not(.admin) #ofGame,
+body:not(.admin) #of2048,
+body:not(.admin) #ofVideos,
+body:not(.admin) .of-choices,
+body:not(.admin) .of-card,
+body:not(.admin) .sd-wrap,
+body:not(.admin) .g2-wrap,
+body:not(.admin) .g2-board-shell,
+body:not(.admin) .sd-side,
+body:not(.admin) .g2-side {
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+body:not(.admin) .visitor-content-head,
+body:not(.admin) .hud-feed-heading,
+body:not(.admin) .arcade-hud-heading,
+body:not(.admin) .of-bar {
+  width:100%;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+body:not(.admin) .visitor-content-head h1,
+body:not(.admin) .visitor-content-head p,
+body:not(.admin) .of-title,
+body:not(.admin) .arcade-hud-heading h2,
+body:not(.admin) .arcade-hud-heading p {
+  max-width:100%;
+  overflow-wrap:break-word;
+}
+body:not(.admin) #ofGame,
+body:not(.admin) #of2048 {
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+/* The board's outer shell owns the square dimensions.
+   Controls never dictate a wider min-content size. */
+body:not(.admin) #of2048 .g2-wrap,
+body:not(.admin) #ofGame .sd-wrap {
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  flex-wrap:wrap;
+  width:100%;
+  max-width:100%;
+}
+body:not(.admin) #of2048 .g2-board-shell {
+  flex:0 1 440px;
+  width:100%;
+  max-width:min(440px,100%);
+  min-width:0;
+  aspect-ratio:1;
+}
+body:not(.admin) #of2048 .g2-board {
+  width:100%;
+  max-width:100%;
+  height:100%;
+  aspect-ratio:1;
+  min-width:0;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:repeat(4,minmax(0,1fr));
+}
+body:not(.admin) #of2048 .g2-cell {
+  min-width:0;
+  overflow:hidden;
+  font-size:clamp(15px,4.2vw,32px);
+}
+body:not(.admin) #ofGame .sd-board {
+  flex:0 1 440px;
+  width:100%;
+  max-width:min(440px,100%);
+  min-width:0;
+  aspect-ratio:1;
+}
+body:not(.admin) #of2048 .g2-side,
+body:not(.admin) #ofGame .sd-side {
+  flex:1 1 225px;
+  min-width:0;
+  max-width:440px;
+}
+body:not(.admin) #of2048 .g2-scores,
+body:not(.admin) #ofGame .sd-levels,
+body:not(.admin) #ofGame .sd-pad,
+body:not(.admin) #ofGame .sd-tools {
+  width:100%;
+  min-width:0;
+}
+body:not(.admin) #of2048 .g2-scores {grid-template-columns:repeat(2,minmax(0,1fr));}
+body:not(.admin) #of2048 .g2-scores > div {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+body:not(.admin) #ofGame .sd-tools {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+body:not(.admin) #ofGame .sd-tools button,
+body:not(.admin) #ofGame .sd-levels button {
+  min-width:0;
+  padding-inline:3px;
+}
+/* On laptop/tablet or when the site's chat rail narrows the
+   visitor content, stack the games rather than letting the
+   2048 grid visually extend beyond its heading panel. */
+@media (max-width:1350px) {
+  body:not(.admin) #of2048 .g2-wrap,
+  body:not(.admin) #ofGame .sd-wrap {
+    flex-direction:column;
+    align-items:center;
+  }
+  body:not(.admin) #of2048 .g2-board-shell,
+  body:not(.admin) #ofGame .sd-board {
+    flex:0 0 auto;
+    width:min(100%,440px);
+  }
+  body:not(.admin) #of2048 .g2-side,
+  body:not(.admin) #ofGame .sd-side {
+    flex:0 0 auto;
+    width:min(100%,440px);
+    max-width:100%;
+  }
+}
+@media (max-width:760px) {
+  body:not(.admin) #visitorContent {
+    width:100%;
+    padding-inline:clamp(9px,3vw,14px);
+  }
+  body:not(.admin) #ofGame,
+  body:not(.admin) #of2048 {
+    padding:clamp(9px,3vw,16px);
+  }
+  body:not(.admin) #of2048 .g2-board-shell,
+  body:not(.admin) #ofGame .sd-board {
+    width:min(100%,440px);
+    max-width:100%;
+    flex:0 0 auto;
+  }
+  body:not(.admin) #of2048 .g2-board {width:100%;height:100%;}
+  body:not(.admin) #of2048 .g2-side,
+  body:not(.admin) #ofGame .sd-side {
+    width:100%;
+    max-width:440px;
+  }
+  body:not(.admin) .visitor-content-head h1 {
+    font-size:clamp(30px,9vw,47px);
+    line-height:1.04;
+  }
+  body:not(.admin) .of-bar {gap:10px;flex-wrap:wrap;}
+  body:not(.admin) .of-title {font-size:clamp(29px,8vw,42px);}
+  body:not(.admin) #ofGame .sd-stats {justify-content:flex-start;}
+}
+/* Narrow phones must retain real square game boards with no
+   negative margins, min-content growth or clipped control rows. */
+@media (max-width:390px) {
+  body:not(.admin) #of2048 .g2-board,
+  body:not(.admin) #ofGame .sd-board {
+    max-width:100%;
+  }
+  body:not(.admin) #ofGame .sd-tools {gap:3px;}
+  body:not(.admin) #ofGame .sd-tools button {
+    font-size:clamp(13px,3.6vw,17px);
+    padding-inline:1px;
+  }
+}
