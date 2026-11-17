@@ -13,15 +13,15 @@
 
 ## Current state
 - Current milestone: M1 — frontend foundation and visual application shell
-- Current phase: **Phase 3 complete — Phase 4 homepage and page-specific layouts are next**
-- Overall status: **Phases 1–3 complete. Phase 3 GitHub Actions run 44071740422 passed 13 unit tests, 6 Playwright browser tests, install, lint, typecheck, build and formatting. Production remains unchanged.**
+- Current phase: **Phase 4 complete — Phase 5 local settings and interaction polish are next**
+- Overall status: **Phases 1–4 complete. Phase 4 GitHub Actions run 44074648860 passed npm ci, ESLint, strict TypeScript, 16 Vitest tests, production build, Prettier and 10 Chromium Playwright tests. Production remains unchanged.**
 - Last updated (UTC): 2026-11-17
 - Active branch: `main` (**owner-authorised exception to PDF development-branch requirement**)
 - Production branch: `main`
 - Production baseline commit SHA: **`18410c536caee8085b4edc23b960cc30677a5997`**
 - Latest development commit SHA: **see the live `main` HEAD / `git log -1 --format=%H`**. The Phase 0 audit documentation checkpoint before this status-file commit is `413d08fc88b171e7d2b5def7d6eab59fd3698ac2`. The final status-file commit SHA is not knowable from within its own contents without generating a subsequent commit; GitHub commit history is authoritative.
 - Starting production Pages run: **44041794411** (successful, starting SHA, GitHub Actions `pages build and deployment`). No runtime browser verification claimed.
-- No frontend rebuild started. No production Firebase records/rules, stream monitor, game scripts, live source or site styles changed by Phase 0.
+- The isolated `frontend/` React rebuild has completed Phases 1–4, but the published root site remains the legacy implementation. Production Firebase records/rules, stream monitor, games and legacy styles have not been migrated.
 
 ## Decisions that must not change without approval
 - Public browsing; registered users gain additional features; no mandatory real name for ordinary browsing in rebuilt UI
@@ -42,7 +42,7 @@
 | 1 Frontend foundation | **Complete — CI gate passed** | `f991293a1907c731a0eec336ef5d21cd7e1889bb` (lockfile + formatted files); `1ec13733060724858f27b9510fcef796247618cd` (read-only verification workflow) | [GitHub Actions run 44068641885](https://github.com/b24dul/b24dul-live/actions/runs/44068641885): npm ci, lint, typecheck, Vitest (1 test), Vite build, formatting, Chromium Playwright **passed** | Isolated `frontend/`; `package-lock.json` committed; no Firebase or production cutover |
 | 2 Design system | **Complete — CI gate passed** | `78db0f2356ebd02e956d4325bb3bfc8cb577b357` (formatted components); `6c150bc852a6e92830165bf327273698c788cd23` (passing CI source revision) | [Run 44069800672](https://github.com/b24dul/b24dul-live/actions/runs/44069800672): npm ci, ESLint, strict TypeScript, Vitest (5 tests), Vite build, Prettier and Chromium Playwright **passed** | Fifteen components, semantic glass tokens, responsive showcase, documentation; root production UI preserved |
 | 3 App shell and routes | **Complete — CI gate passed** | `8b8ec3ced72b9c5c4ecee1aeee2090e11024f845` (initial shell), `04826923232a9e1ec5cf3c5b5cef10d5c19976bb` (wired routes), `945f8ef48f81a826c621fb927370c98cc9c0f615` (formatted), `9083420b52a6d6d4948ca89924d00d7fd3be3c13` (temporary formatter removed) | [Run 44071740422](https://github.com/b24dul/b24dul-live/actions/runs/44071740422): 13 unit + 6 browser tests, all seven CI steps passed | Desktop/collapsed sidebar, mobile navigation, eleven HashRouter destinations, search, guest/notifications shell, 404 and error boundary |
-| 4 Homepage and page shells | Not started | | Not run | Real/demo states labelled |
+| 4 Homepage and page shells | **Complete — CI gate passed** | `9465a204c0621ea2a6e2e6af7f6c883ac1ef38ac` (homepage, typed archive), `fdd500a0c3b77e9089599572da62bb98f4aad6af` (page layouts), `fa5e24c5971d1d7a2d6ae1b5fa565fbb8963694d` (formatted), `b5607a1d6d21b775a3cedff1abe2c74a9d3724b0` (browser regression fixes) | [Run 44074648860](https://github.com/b24dul/b24dul-live/actions/runs/44074648860): npm ci, ESLint, TypeScript, 16 unit tests, build, Prettier, 10 Playwright tests all passed | Complete isolated homepage, ten distinct destination layouts; real `videos.json` read-only build snapshot; unavailable services honestly labelled |
 | 5 Local settings | Not started | | Not run | Versioned local preferences |
 | 6 QA/accessibility/performance | Not started | | Not run | Validate all responsive/browser gates |
 | 7 Deployment candidate | Not started | | Not run | Explicit approval before production cutover |
@@ -57,8 +57,8 @@
 - Tests and results: GitHub API access and source review: **passed**. GitHub Actions Pages run for original baseline: **success**. No local Node/browser/Firebase/Cloudflare test executed; do not represent these as passing.
 
 ## Current work
-- In progress: Phase 3 completion/handoff after successful automated gate. Next stage is Phase 4 homepage and page-specific shells; no production cutover authorisation.
-- Exact next task: Phase 4 homepage and page layouts, typed read-only existing videos.json adapter, honest disconnected/demo states; retain all checks. Do not connect Firebase or replace production Pages entrypoint without explicit approval.
+- In progress: Phase 4 completed and tested; Phase 5 local settings and interaction polish is next, subject to owner authorisation. No production cutover authorisation.
+- Exact next task: Phase 5 versioned `b24dul.preferences.v1` appearance, density, motion and homepage preferences, with storage validation/recovery and accessible interactions. Reconcile/migrate Phase 3 `b24dul.sidebar.collapsed.v1` without losing existing preference. Retain tests and do not connect Firebase or replace the root Pages entrypoint.
 - Files/areas involved: isolated `frontend/` project, `PROJECT_STATUS.md`; no legacy index/styles/Worker/Firebase/automations edits.
 - Last verified state: production baseline `18410c536caee8085b4edc23b960cc30677a5997` exists; `main` had old `index.html`, `styles.css`, Firebase inline module, Worker and scheduled videos workflow. Confirm current head before implementation since `videos.yml` commits periodically.
 
@@ -92,14 +92,13 @@
 - Admin: `#adminWorkspace` and auth-dependent controls; unchanged
 
 ## Deferred scope
-All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Firebase reconnection in M2, accounts M3, community M4, gaming/competition M5, streaming improvements M6, tools M7, admin/security/optimisation M8. No early database migration, fabricated real data, paid services or unapproved public launch.
+Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/backend integration are deferred until separately implemented and accepted. Firebase reconnection in M2, accounts M3, community M4, gaming/competition M5, streaming improvements M6, tools M7, admin/security/optimisation M8. No early database migration, fabricated real data, paid services or unapproved public launch.
 
 ## Next session instructions
-1. **Read this file first**, then the complete master PDF, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md`. Do not assume previous chat context is available.
-2. Fetch latest `main` HEAD, compare with starting SHA `18410c536caee8085b4edc23b960cc30677a5997`, check recent bot-updated `videos.json` and CI. Status file may lag an automatic video refresh; never reset it.
-3. Confirm Phase 0 docs and review the preservation plan; Phase 1 is **not yet authorised by this file**. Future frontend implementation must be isolated from GitHub Pages published root until approved.
-4. When Phase 1 is authorised: establish non-destructive Vite + React/TypeScript scaffolding, tests and preview strategy. Run relevant test commands only once tooling exists (`npm ci`, lint, typecheck, Vitest, Playwright, `npm run build`), recording actual output. Do **not** edit existing Firebase database rules/records or move production HTML prematurely.
-5. On every phase increment update this history, tracker, files changed, actual tests/results, exact next action and commit SHA references, and commit them together. A self-referential latest-commit SHA cannot be embedded reliably in that same commit; rely on Git's HEAD/commit URL for the file's own commit.
+1. Read this file, the master PDF, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md` and `docs/page-shells.md`; check the latest main HEAD before editing. Historical earlier status entries are not instructions to revert completed phases.
+2. Phase 4 is completed and accepted by automated gate [44074648860](https://github.com/b24dul/b24dul-live/actions/runs/44074648860) with 16 passing Vitest tests, 10 Chromium browser tests, plus install/lint/typecheck/build/format success.
+3. Next approved scope after owner instruction is Phase 5 local preferences and interaction polish in isolated `frontend/`, starting from the actual main HEAD. Continue to preserve original root index, Firebase, YouTube/archive JSON, games, worker and production operations.
+4. Commit coherent changes, run and inspect GitHub CI, update this file with actual SHAs and evidence. No Phase 7 cutover or production Firebase integration without explicit approval.
 
 ## 2026-11-17 — Legacy Videos screen (separate from planned React M1 rebuild)
 - Owner asked to follow Claude's measured-browser workflow and proceed with the next remaining legacy visual step, Phase 6C Videos. This is a maintenance change to the existing site, **not** authorisation to start the React/TypeScript rebuild. The Phase 0/M1 modern app tracker above remains unchanged.
@@ -184,3 +183,16 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - GitHub compare from Phase 2 handoff to temporary formatter removal showed changes only in `frontend/**`; root production HTML/CSS, stream worker, Firebase, games, video data, credentials and legacy workflows unchanged.
 - NEXT: Phase 4 homepage and comprehensive page layouts; use a read-only typed adapter for existing videos.json and label demo data; do not start Firebase M2 or production cutover.
 - Status-file commit SHA is the new GitHub HEAD and cannot self-reference.
+
+## 2026-11-17 — M1 Phase 4 complete: homepage, all page shells and video archive
+- **Owner authorisation:** "ok lets do it" after Phase 3 complete. Scope is Phase 4 only, not production cutover or Firebase M2.
+- **Before Phase 4:** `main` HEAD `49dbdb939dd3cc7ef629697cdb1def265983481a`; use Git history for rollback. All Phase 4 source changes are confined to `frontend/**`; the original `videos.json`, published HTML/CSS, existing Firebase, games, worker and production data remain untouched.
+- **Homepage:** redesigned complete editorial hero, streaming preview with status *unavailable*, Watch/Games navigation, six entertainment destination cards, featured Sudoku/2048 with current-site links, future games clearly Coming Soon, honest community/announcement preview, real latest video metadata, useful tools, unscheduled events state and footer with verified internal/existing site links. Never claims a live viewer count or schedule.
+- **Page shells:** complete distinct layouts for Explore, Watch, Videos, Game Centre, Community, Tools, Competitions, Guest Profile, Settings and restricted Admin. All functional links point to existing HashRouter routes, verified current site or valid YouTube URLs. No inert pretend control and no fictional scores, chats, auth or admin access.
+- **Typed read-only video adapter:** `frontend/src/services/videoArchive.ts` imports original root `videos.json` during Vite build and validates ID (eleven YouTube-safe chars), title, published ISO-ish parseable date, rejects duplicate or malformed records, sorts newest and constructs safe YouTube outbound links. No changes to source schema/data, no API key, no runtime Firebase fetch. **The archive is a build-time snapshot**, NOT live-synchronised; scheduled updates to root `videos.json` will not automatically refresh this isolated frontend build. Design deliberately labels the distinction.
+- **Additional source files:** `frontend/src/components/SectionBlocks.tsx` reusable editorial/stream/archive tiles; `frontend/src/data/directory.ts` explicitly marked real-legacy vs future game/tool availability; new CSS scopes editorial layouts inside `frontend/src/styles/index.css`.
+- **Tests:** added `videoArchive.test.ts` (3 adapter validation/sorting tests) and `e2e/phase4-pages.spec.ts` (full 11-route content on 375/430/768/1366/1920 viewports, horizontal overflow, zero broken image assets, homepage sections, video link integrity and honest preview messages). Updated older browser selectors to exact homepage title and current notification dialog. **Final GitHub Actions run [44074648860](https://github.com/b24dul/b24dul-live/actions/runs/44074648860) on commit `b5607a1d6d21b775a3cedff1abe2c74a9d3724b0` completed SUCCESS:** `npm ci`, ESLint, strict TypeScript, Vitest (16/16), Vite production build, Prettier and Chromium Playwright (10/10) all passed; job ID `134009432803`.
+- **Repair history:** first run exposed stale homepage link expectation; second run found the two old Playwright tests' ambiguous 'B24DUL' heading selector after adding 'Discover B24DUL'; fixed selectors and updated dialog test before final green run. One-time formatter succeeded and wrote bot commit `fa5e24c5971d1d7a2d6ae1b5fa565fbb8963694d`; temporary write-enabled workflow removed in `2d093f1401ed44cc7982f7f64f538eda34a01799`. No standing increased CI permissions.
+- **Git preservation check:** compare `49dbdb939dd3cc7ef629697cdb1def265983481a...b5607a1d6d21b775a3cedff1abe2c74a9d3724b0` changes **only** `frontend/**` (including README/tests). No production entrypoint, existing YouTube source, Firebase identity/rules/database, legacy games, chat, moderation or worker modifications. Existing GitHub Pages still publishes legacy root.
+- **Next phase:** Phase 5 local preferences and interaction polish, with versioned key `b24dul.preferences.v1`, recovery from invalid storage, motion/density controls and sidebar preference migration from Phase 3 local key. Then Phase 6 QA/performance and explicit Phase 7 deployment review. Do not mark either done until tested.
+- The SHA of this status update is the new `main` HEAD and cannot be embedded in itself; Git history is canonical.
