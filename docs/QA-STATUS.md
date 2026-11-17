@@ -165,3 +165,15 @@ Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS�
 **Merged after tests:** [PR #5](https://github.com/b24dul/b24dul-live/pull/5) merged to `main` at `a63bf0e2738fa7727ec89a5055bdff4534057f5d`. The branch layout-run and PR verification completed successfully on Ubuntu 24.04; 30 browser geometry cases passed. GitHub source now contains 112 unique IDs, Claude's critical 4 flex/height rules verbatim, versioned Videos stylesheet, new archive UI and its specific CSS. Application JavaScript remains unchanged from base.
 
 **Production browser/iPhone owner acceptance:** Still UNVERIFIED. Live YouTube, Firebase and authenticated controls were not exercised by this static geometry suite. No further Videos/Watch styling changes until real-device feedback.
+
+## Phase 7 — Admin browser layout and functional preservation (2026-11-17)
+
+**Before fix FAIL:** Admin viewport geometry reproduced 472px document scroll width at 320/390px. Browser element inspection named header `#subLink` (left 385px, right 472px) as actual overflow; not admin card borders. Adjusted only `body.admin > header` to wrap within viewport.
+
+**After root-cause fix PASS:** [Run 44060272540](https://github.com/b24dul/b24dul-live/actions/runs/44060272540) passed **6/6 admin widths** plus **30/30 visitor view/width combinations**. Admin test verifies workspace present, slots populated with mock-moved existing content, key panels within viewport, no document horizontal overspill and unique DOM IDs. Screenshots at 390 and 1280 added to later CI revision for reproducible comparison.
+
+**Preservation:** No original HTML IDs deleted or renamed; inline Firebase authentication/admin logic and stream controls untouched. Existing Claude CSS flex/height fix untouched, 6C Videos untouched.
+
+**Explicitly not tested:** Real account authentication/privilege verification, live database content or moderation writes, YouTube iframe playback, real stream state, actual iPhone Safari, screen-reader end-to-end behaviour and network-dependent admin flows. Do not claim these passed solely from the mock-geometry checks.
+
+**Acceptance still OPEN:** Final branch/PR CI, publication and admin-device owner check. Regressions should be diagnosed by rendered element geometry before code changes.

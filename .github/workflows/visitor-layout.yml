@@ -1,7 +1,7 @@
 name: Visitor viewport layout verification
 on:
   push:
-    branches: [phase-6c-videos-browser-qa]
+    branches: [main, phase-7-admin-browser-qa]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -17,6 +17,7 @@ jobs:
       - run: npm install --no-save playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - run: node .github/scripts/visitor-layout-smoke.mjs
+      - run: node .github/scripts/admin-layout-smoke.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -380,6 +380,20 @@ When a new chat begins, the assistant should:
 
 **Remaining:** Branch and PR CI passed; merged to `main` via [PR #5](https://github.com/b24dul/b24dul-live/pull/5) with merge commit [`a63bf0e2`](https://github.com/b24dul/b24dul-live/commit/a63bf0e2738fa7727ec89a5055bdff4534057f5d). Check GitHub Pages deploy and owner iPhone Safari, especially Videos listing and real player clicks. Maintain `PROJECT_STATUS.md`, this file and `docs/QA-STATUS.md`.
 
+## 10.20 Phase 7 — Admin Command Centre and measured regressions (2026-11-17)
+
+**Scope:** Owner requested Phase 7 on the existing tactical HUD website, using Claude's test-before-merge workflow. This does not start or supersede the independent M1 React rebuild in `PROJECT_STATUS.md`. Phase 6A Watch redesign remains rejected.
+
+**Implementation:** On branch `phase-7-admin-browser-qa`, reshape existing admin header text and add CSS **scoped exclusively to `body.admin`**: tactical command-centre masthead, management and chat cards, stream-control grouping, preview fit, accessible focus outlines, mobile grid stacking and improved minimum touch targets. All original 112 element IDs and the inline Firebase/stream/game JS preserved. Uses existing current values only; no invented analytics. Claude's visitor body/main/player height rules and Videos design unchanged.
+
+**Measured regression found and fixed:** Initial headless Chromium admin baseline failed at 320px and 390px because page document width was **472px**. Inspecting failing element rectangles identified `#subLink` in the admin header ending at x=472; the panels were within viewport. A scoped <=760px wrapping rule for `body.admin > header` and responsive brand image corrected it. GitHub Actions run [44060272540](https://github.com/b24dul/b24dul-live/actions/runs/44060272540) passed all 6 admin widths (320,390,768,1024,1280,1600) and 30 pre-existing visitor layout combinations after the fix.
+
+**Permanent tests:** Add `.github/scripts/admin-layout-smoke.mjs` with actual browser DOM geometry and mock relocation of admin controls, analytics, inspector, chat and stream preview. Extend the visitor GitHub Actions test workflow to include admin checks on `main` and PRs. Save admin full-page screenshots for phone 390px and desktop 1280px as CI artifacts; CSS version bumped for delivery.
+
+**Caveats:** Browser test fixture deliberately strips external Firebase module and simulates verified admin DOM relocation. Therefore these tests **DO NOT** certify authentication, moderation permissions, production RTDB operations, actual YouTube, real admin workflow, iPhone Safari or accessibility audit. Backend interaction remains unmodified. Owner's actual admin verification is necessary to complete acceptance.
+
+**Status:** Browser layouts pass, final branch/PR CI and live deployment/owner acceptance still pending. Track merge SHA and sign-off when actually available.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 5B owner-tested files restored after further breakage; Phase 6B and mobile overrides undone. Published-site recheck pending.

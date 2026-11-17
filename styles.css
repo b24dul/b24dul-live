@@ -1732,3 +1732,261 @@ body:not(.admin) #ofVideos .vid-now {
 @media (prefers-reduced-motion:reduce) {
   body:not(.admin) #ofVideos .vid-card {transition:none}
 }
+
+
+/* PHASE 7 — ADMIN-ONLY COMMAND CENTRE. Never apply to visitor pages.
+   Keep all original controls, DOM IDs, streams, auth and privileges intact. */
+body.admin {
+  background:#0B1017;
+}
+body.admin #adminWorkspace,
+body.admin #adminWorkspace * {
+  box-sizing:border-box;
+}
+body.admin #adminWorkspace {
+  width:100%;
+  max-width:1600px;
+  min-width:0;
+  padding:clamp(12px,2.4vw,34px);
+  margin:0 auto;
+}
+body.admin .adm-intro {
+  position:relative;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  min-width:0;
+  gap:20px;
+  margin:0 0 18px;
+  padding:clamp(18px,2.6vw,34px);
+  border:1px solid #718391;
+  background:linear-gradient(113deg,#1E2A36,#101720 72%);
+  overflow:hidden;
+}
+body.admin .adm-intro::after {
+  content:"";
+  position:absolute;
+  right:-85px;top:-110px;
+  width:340px;height:340px;
+  border:48px solid rgba(46,204,113,.06);
+  border-radius:50%;
+  pointer-events:none;
+}
+body.admin .adm-intro-copy {
+  position:relative;z-index:1;
+  min-width:0;max-width:650px;
+}
+body.admin .adm-overline {
+  font:400 11px/1.5 'Cutive Mono',monospace;
+  color:#72E5A0;
+  letter-spacing:.075em;
+  margin-bottom:12px;
+}
+body.admin .adm-intro h1 {
+  font:400 clamp(36px,4.7vw,76px)/.99 Anton,Impact,sans-serif;
+  color:#F7FAFC;
+  letter-spacing:.012em;
+  margin:0 0 12px;
+  overflow-wrap:break-word;
+}
+body.admin .adm-intro h1 span {color:#2ECC71}
+body.admin .adm-intro p {
+  color:#C7D2DE;
+  font:400 13px/1.65 Inter,sans-serif;
+  max-width:510px;
+  margin:0;
+}
+body.admin .adm-quick {
+  position:relative;z-index:1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+  min-width:0;
+}
+body.admin .adm-pill {
+  padding:10px 13px;
+  border:1px solid #7B8995;
+  border-radius:0;
+  color:#DCE6EC;
+  background:#111B25;
+  font:400 10px/1.5 'Cutive Mono',monospace;
+  letter-spacing:.025em;
+}
+body.admin .adm-pill strong {color:#71E9A3}
+body.admin .adm-controls,
+body.admin .adm-card {
+  min-width:0;
+  border:1px solid #687985;
+  border-radius:0;
+  background:#111921;
+  overflow:hidden;
+}
+body.admin .adm-controls {
+  padding:clamp(12px,1.7vw,22px);
+  margin-bottom:18px;
+}
+body.admin .adm-grid {
+  grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);
+  gap:18px;
+  align-items:start;
+}
+body.admin .adm-rail {
+  min-width:0;
+  grid-template-columns:1fr;
+  gap:18px;
+}
+body.admin .adm-work {min-width:0}
+body.admin .adm-card-head {
+  min-width:0;
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:8px 15px;
+  border-bottom:1px solid #586B78;
+  padding:15px 17px;
+  background:#080E15;
+}
+body.admin .adm-card-head h2 {
+  font:400 clamp(22px,2.2vw,31px)/1.1 'Bebas Neue',Impact,sans-serif;
+  letter-spacing:.055em;
+  color:#F5F8FB;
+  text-transform:uppercase;
+  margin:0;
+}
+body.admin .adm-card-head span {
+  margin-left:auto;
+  align-self:center;
+  font:400 11px/1.5 'Cutive Mono',monospace;
+  color:#B4C4D0;
+}
+body.admin .sc-compact-head {
+  gap:11px;
+  border-bottom:1px solid #536470;
+  padding-bottom:13px;
+  margin-bottom:14px;
+}
+body.admin .sc-compact-head h2 {
+  color:#F7F9FC;
+  font:400 clamp(23px,2.1vw,31px)/1 'Bebas Neue',Impact,sans-serif;
+  letter-spacing:.07em;
+}
+body.admin .sc-compact-head span {
+  color:#C3D0D9;
+  line-height:1.5;
+}
+body.admin .sc-compact-links {flex-wrap:wrap}
+body.admin .sc-compact-links a {
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:7px 10px;
+  border:1px solid #637684;
+  color:#E0E9F0;
+  text-decoration:none;
+}
+body.admin .sc-compact-links a:focus-visible,
+body.admin #adminWorkspace button:focus-visible,
+body.admin #adminWorkspace input:focus-visible,
+body.admin #adminWorkspace a:focus-visible {
+  outline:2px solid #76EBAA;
+  outline-offset:3px;
+}
+body.admin #adminBar,
+body.admin #statsModal,
+body.admin #viewersBox,
+body.admin #adminInspectorSlot,
+body.admin #adminChatSlot,
+body.admin #adminPreviewSlot {
+  min-width:0;
+  max-width:100%;
+}
+body.admin #adminBar .sc-actions-line,
+body.admin #adminBar .sc-pin-line {
+  min-width:0;
+  max-width:100%;
+}
+body.admin #adminBar input,
+body.admin #adminWorkspace select,
+body.admin #adminWorkspace textarea {
+  max-width:100%;
+}
+body.admin #statsModal .sm-card {
+  min-width:0;
+  width:100%;
+}
+body.admin #statsModal #viewersBox {
+  min-width:0;
+  padding:clamp(12px,1.5vw,20px);
+}
+body.admin #statsModal #viewersBox .cards {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+body.admin .adm-chat-wrap .chat {
+  min-width:0;
+  max-width:100%;
+}
+body.admin .adm-preview-wrap .player {
+  width:100%;
+  min-width:0;
+}
+@media (max-width:1100px) {
+  body.admin .adm-grid {grid-template-columns:minmax(0,1fr)}
+  body.admin .adm-rail {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
+@media (max-width:760px) {
+  body.admin #adminWorkspace {padding:12px}
+  body.admin .adm-intro {
+    flex-direction:column;
+    align-items:stretch;
+    padding:20px 16px;
+    gap:14px;
+  }
+  body.admin .adm-intro h1 {
+    font-size:clamp(35px,10vw,51px);
+  }
+  body.admin .adm-quick {justify-content:flex-start}
+  body.admin .adm-grid,.adm-rail {gap:13px}
+  body.admin .adm-rail {grid-template-columns:minmax(0,1fr)}
+  body.admin .adm-card-head {padding:12px}
+  body.admin .adm-card-head span {margin-left:0;width:100%}
+  body.admin .sc-compact-head {align-items:flex-start}
+  body.admin #statsModal #viewersBox .cards {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body.admin #adminBar .sc-actions-line > button {
+    min-height:40px;
+  }
+  body.admin .sc-compact-links a {min-height:40px}
+}
+@media (max-width:390px) {
+  body.admin #statsModal #viewersBox .cards {grid-template-columns:minmax(0,1fr)}
+  body.admin .adm-pill {padding:9px 10px}
+}
+@media (prefers-reduced-motion:reduce) {
+  body.admin #adminWorkspace * {scroll-behavior:auto}
+}
+
+
+/* Phase 7 measured admin-only header fix: at 320/390px, #subLink
+   previously ended at x=472 while the viewport was narrower. */
+@media (max-width:760px) {
+  body.admin > header {
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    min-width:0;
+    width:100%;
+  }
+  body.admin > header .brand-wordmark {
+    min-width:0;
+    max-width:100%;
+  }
+  body.admin > header .brand-wordmark img {
+    display:block;
+    width:min(220px,100%);
+    max-width:100%;
+    height:auto;
+  }
+  body.admin > header .spacer {flex:1 1 0;min-width:0}
+  body.admin > header #subLink {margin-left:auto;flex:0 0 auto}
+}
