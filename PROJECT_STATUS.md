@@ -335,3 +335,8 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Preserve the legacy tactical and React glassmorphism design documents under distinct names: the legacy document is renamed to `docs/legacy-tactical-design-system.md`, byte-for-byte, and references are updated. `docs/design-system.md` retains its original blob. This avoids their case-only filename collision on Windows; no existing local file was overwritten.
 - Git attributes select LF for text in future checkouts; Prettier accepts the existing checkout's line endings without rewriting files. A Windows checkout passed `npm run format:check` after this change. Existing working trees are not automatically rewritten.
 - This change does not constitute production release approval or modify Firebase rules, data or credentials.
+
+## 2026-11-17 — Test dependency security candidate
+
+- Upgraded the isolated frontend's Vitest development dependency from 3.2 to 4.1.12. A fresh Node 22 lockfile install, all 40 unit tests on this branch, lint (five existing warnings), typecheck, build, formatting and 24 Chromium tests passed locally. The identity-branch tests are separate and must also pass when the branches are combined.
+- npm audit after installation reported 11 high findings and no critical findings, compared with the earlier 13 findings including two critical; remaining findings require separate remediation. Node 26 still fails 12 existing jsdom/localStorage tests without a workaround; Node 22 remains the tested CI baseline. No production cutover or Firebase integration is implied.
