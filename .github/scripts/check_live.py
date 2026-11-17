@@ -6,6 +6,7 @@ An inconclusive YouTube result fails without changing the published status.
 import json
 import os
 import sys
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -86,6 +87,17 @@ def main():
         "checkedAt": checked_at_ms,
     })
     print("Published live detection heartbeat at " + str(checked_at_ms))
+    # Verify an ordinary visitor can read the new status without an admin key.
+    # A successful admin write is not proof that Firebase rules allow public read.
+    try:
+        with urllib.request.urlopen(DATABASE_URL + "/settings/liveDetection.json", timeout=8) as response:
+            public_status = json.load(response)
+        if not isinstance(public_status, dict) or public_status.get("checkedAt") != checked_at_ms:
+            raise ValueError("public status did not match the last successful check")
+        print("Anonymous Firebase liveDetection read: OK")
+    except Exception as error:
+        print("WARNING: Anonymous visitors may not be able to read liveDetection: "
+              + str(error), file=sys.stderr)
     live_setting = db.reference("settings/live")
     current = live_setting.get()
     # Read the actual published state, not only the workflow's saved history.
