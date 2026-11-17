@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpRight, Bell, Check, Layers3, PlayCircle } from 'lucide-react';
+import { ArrowUpRight, Bell, Check, Layers3 } from 'lucide-react';
 import { Link, Route, Routes } from 'react-router-dom';
 import { FeatureCard, GameCard, VideoCard } from '../components/content-cards';
 import {
