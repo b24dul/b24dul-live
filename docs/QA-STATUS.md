@@ -67,3 +67,13 @@ After the Phase 5B redesign, the owner reported: **"It works I tested it."** Thi
 **Browser UNVERIFIED:** YouTube iframe loads when Watch is opened offline, when detection is pending, and when live is confirmed; live label properly changes; fullscreen and player controls respond; desktop player and chat remain side-by-side; Watch→Chat works on mobile; switching back to Watch keeps the player usable; external YouTube link opens; admin workspace, games, videos and visitor gate remain unaffected; 320/375/768/1280px layouts have no overflow or clipped buttons.
 
 The owner's earlier "It works I tested it" confirmation applied to Phase 5B, **before** the Phase 6A changes.
+
+## Owner-reported Phase 6A regression and rollback — 2026-11-17
+
+**FAIL — owner report:** Phase 6A Watch mobile UI had overlapping components and the video disappeared when trying to keep it on screen. **Owner rejected Phase 6A and requested full reversal.** Prior Phase 6A acceptance rows are historical only; the feature is cancelled, not pending approval.
+
+**Rollback source PASS:** HTML reverted via `d677470c` to Phase 5B and CSS via `03e58860` to Phase 5B; Phase 6A-specific markup/status/CSS removed. Exact pre-6A file equivalence was confirmed before applying Phase 6B. Browser Watch/mobile playback **requires user re-test**; absence of 6A code alone does not prove root cause resolved.
+
+**Phase 6B source PASS:** Games-only arcade heading and scoped Sudoku/2048 layout styles added via `1cd4ad82` and `46e67c0c`. Current HTML differs from approved Phase 5B only by the new 6B arcade heading. Current CSS differs from Phase 5B only by appended 6B arcade rules. Inline JS byte-identical, original 112 IDs unchanged/unique, CSS brace/comment balance passes. No player modifications.
+
+**Phase 6B browser UNVERIFIED:** Desktop and mobile Games selection, both game openings and Back actions, Sudoku difficulty/pad/touch/keyboard, 2048 swipe/keys and leaderboard, narrow-screen overflow/overlap, and Watch mobile playback after rollback. Seek actual browser/user feedback before recording PASS.
