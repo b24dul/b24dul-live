@@ -108,7 +108,7 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - Added reusable Chromium viewport smoke tests `.github/scripts/visitor-layout-smoke.mjs` and GitHub Actions `.github/workflows/visitor-layout.yml` (Ubuntu 24.04, Playwright 1.57).
 - **Headless Chromium check PASS** on test run [44057705008](https://github.com/b24dul/b24dul-live/actions/runs/44057705008): 5 views (Home, Games, Videos, Watch, Chat) x 6 viewport widths (320/390/768/1024/1280/1600) = 30 configurations; no horizontal scroll, no offline frame cut-off, Watch player 16:9 in test. Static Firebase module is deliberately excluded from these **layout-only** tests; live Firebase behaviour is NOT verified by this pass.
 - Preserve Claude's critical layout fix: `body:not(.admin){height:auto;min-height:100%}`, visitor `main{flex:0 0 auto}`, `main > .player > *{flex-shrink:0}`, and `#playerFrame.offline{height:auto}`. Avoid speculative CSS overrides.
-- Status: **Merged into `main` through PR #5 at `a63bf0e2738fa7727ec89a5055bdff4534057f5d` after clean branch + PR Chromium checks**; GitHub Pages publication and owner iPhone Safari acceptance still pending. Do not equate layout smoke tests with Firebase/YouTube E2E verification.
+- Status: **Merged into `main` through PR #5 at `a63bf0e2738fa7727ec89a5055bdff4534057f5d` after clean branch + PR Chromium checks**; owner later confirmed Videos fixed. Do not equate layout smoke tests with Firebase/YouTube E2E verification.
 
 ## 2026-11-17 — Legacy Phase 7 admin command-centre redesign (not M1 React rebuild)
 - Owner explicitly asked to implement Phase 7 following Claude's measured browser workflow. This is a **legacy-site admin styling + regression test** stage, not M1 React/TypeScript Phase 1. Do not alter M1 tracker states.
@@ -118,3 +118,10 @@ All frontend implementation Phases 1–7 deferred until the Phase 0 handoff. Fir
 - The initial admin test uncovered real mobile horizontal document overflow **472px** at 320/390px, traced with computed DOM rectangles to **header `#subLink`**, not admin cards. Scoped `body.admin > header` wrapping/image sizing fixes the root cause.
 - Browser run [44060272540](https://github.com/b24dul/b24dul-live/actions/runs/44060272540): **PASS** 30/30 visitor layouts and 6/6 admin layouts including 320/390px no horizontal overflow. Following screenshot and CSS-version updates require final passing CI before merge.
 - Security scope: Browser harness strips Firebase module and simulates admin DOM relocation for geometry only. Real login, permissions, chat actions, database reads/writes, stream toggles, YouTube playback and Safari have NOT been end-to-end tested and must remain marked UNVERIFIED. User-facing site stays on current `main` until reviewed test branch passes and merges.
+
+## 2026-11-17 — Phase 7 merge record
+- Tested admin Command Centre merged to `main` via [PR #6](https://github.com/b24dul/b24dul-live/pull/6), merge commit `d39a3601423dd5ac48d1ee3c17d553e5b9713cb3`.
+- Final branch and PR browser jobs passed; **36/36 geometry checks** (30 existing visitor views/widths plus 6 admin widths). The originally failing 320/390px admin header measured 472px document width; after fix, scrollWidth equalled viewport width in both cases.
+- Source verified on merged `main`: 112 original IDs unique, Claude's 4 visitor flex/height rules still present, admin Command Centre classes/markup applied and stylesheet URL updated to `?v=admin-phase7-20261117`.
+- Permanent Chromium GitHub Actions test now targets `main` and PRs, includes screenshots at 390 and 1280px and JSON geometry artifact.
+- **Remaining gates:** iPhone Safari and owner admin interface acceptance; production Firebase authentication/permissions, moderator controls, stream actions and embedded YouTube playback require real account / end-to-end exercise and are **unverified** by mock-geometry tests. Do not claim backend/privilege security validated. Do not undo Claude's height fix.
