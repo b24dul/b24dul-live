@@ -19,7 +19,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <GlassPanel className="w-full p-8">
           <h1 className="text-2xl font-bold">Something went wrong</h1>
           <p className="mt-3 text-slate-300">
-            The development preview could not display this section. No production account or data was changed.
+            The development preview could not display this section. No production account or data
+            was changed.
           </p>
           <PrimaryButton className="mt-6" onClick={() => window.location.reload()}>
             Reload preview

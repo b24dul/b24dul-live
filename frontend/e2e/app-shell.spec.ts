@@ -27,7 +27,9 @@ test('all eleven HashRouter destinations and unknown-route recovery', async ({ p
   await expect(page).toHaveURL(/#\/$/);
 });
 
-test('direct hash links survive refresh and keyboard sidebar collapse persists', async ({ page }) => {
+test('direct hash links survive refresh and keyboard sidebar collapse persists', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('./#/games');
   await page.reload();
@@ -47,7 +49,9 @@ test('direct hash links survive refresh and keyboard sidebar collapse persists',
   await expect(page.getByRole('heading', { name: 'Videos' })).toBeVisible();
 });
 
-test('mobile bottom navigation stays usable without overflow on required widths', async ({ page }) => {
+test('mobile bottom navigation stays usable without overflow on required widths', async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 320, height: 640 },
     { width: 375, height: 812 },
@@ -69,7 +73,9 @@ test('mobile bottom navigation stays usable without overflow on required widths'
   }
 });
 
-test('desktop navigation and not-connected notifications are keyboard operable', async ({ page }) => {
+test('desktop navigation and not-connected notifications are keyboard operable', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('./#/');
   const mainNav = page.getByRole('navigation', { name: 'Main navigation' });

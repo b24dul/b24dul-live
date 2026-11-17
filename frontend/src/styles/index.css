@@ -222,7 +222,6 @@ input {
   }
 }
 
-
 /* M1 Phase 3 application layout (isolated frontend only). */
 .app-layout {
   --sidebar-width: 248px;

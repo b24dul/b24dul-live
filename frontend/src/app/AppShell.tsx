@@ -58,10 +58,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-layout" data-sidebar={collapsed ? 'collapsed' : 'expanded'}>
-      <a href="#route-content" className="skip-link">Skip to content</a>
+      <a href="#route-content" className="skip-link">
+        Skip to content
+      </a>
       <aside className="app-sidebar glass-panel" aria-label="Desktop navigation">
         <div className="app-sidebar-brand">
-          <Link to="/" aria-label="B24DUL preview home" className="brand-mark">B</Link>
+          <Link to="/" aria-label="B24DUL preview home" className="brand-mark">
+            B
+          </Link>
           {!collapsed && <span className="min-w-0 font-extrabold tracking-widest">B24DUL</span>}
         </div>
         <nav aria-label="Main navigation" className="app-sidebar-nav">
@@ -94,14 +98,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="app-main-area">
         <header className="app-global-header">
           <div className="app-header-intro">
-            <Link to="/" className="mobile-brand" aria-label="B24DUL preview home">B24DUL</Link>
+            <Link to="/" className="mobile-brand" aria-label="B24DUL preview home">
+              B24DUL
+            </Link>
             <div className="header-section-name" aria-live="polite">
               <span className="text-xs text-slate-300">DEVELOPMENT PREVIEW</span>
               <span className="font-semibold">{current?.label ?? 'Not found'}</span>
             </div>
           </div>
           <form role="search" className="header-search" onSubmit={goToKnownSection}>
-            <label className="sr-only" htmlFor="section-search">Find a section</label>
+            <label className="sr-only" htmlFor="section-search">
+              Find a section
+            </label>
             <Search aria-hidden="true" size={17} />
             <input
               id="section-search"
@@ -113,7 +121,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 if (searchError) setSearchError('');
               }}
             />
-            <button type="submit" aria-label="Go to section" title="Go to section">Go</button>
+            <button type="submit" aria-label="Go to section" title="Go to section">
+              Go
+            </button>
           </form>
           <div className="app-header-actions">
             <IconButton
@@ -126,10 +136,16 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span>Guest</span>
             </Link>
           </div>
-          {searchError && <p role="status" className="header-search-error">{searchError}</p>}
+          {searchError && (
+            <p role="status" className="header-search-error">
+              {searchError}
+            </p>
+          )}
         </header>
         <div className="app-preview-banner">
-          <StatusIndicator status="neutral">Prototype only — no authentication, streaming or Firebase connection</StatusIndicator>
+          <StatusIndicator status="neutral">
+            Prototype only — no authentication, streaming or Firebase connection
+          </StatusIndicator>
           <a
             href="https://b24dul.github.io/b24dul-live/"
             className="inline-flex items-center gap-1 font-semibold underline underline-offset-4"
@@ -170,7 +186,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         onClose={() => setNotificationsOpen(false)}
       >
         <p className="text-slate-300">
-          Notifications are not connected in this development preview. Nothing has been fetched from your account.
+          Notifications are not connected in this development preview. Nothing has been fetched from
+          your account.
         </p>
         <SecondaryButton className="mt-5" onClick={() => setNotificationsOpen(false)}>
           Close

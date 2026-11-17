@@ -63,12 +63,10 @@ describe('isolated application shell', () => {
   it('makes all five mobile destinations available', () => {
     renderRoute();
     const nav = screen.getByRole('navigation', { name: 'Mobile navigation' });
-    expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Home',
-      'Watch',
-      'Games',
-      'Community',
-      'Explore',
-    ]);
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Home', 'Watch', 'Games', 'Community', 'Explore']);
   });
 });

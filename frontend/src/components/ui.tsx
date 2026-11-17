@@ -70,7 +70,9 @@ type HeadingProps = HTMLAttributes<HTMLElement> & {
 export function PageHeader({ title, description, className = '', ...props }: HeadingProps) {
   return (
     <header className={className} {...props}>
-      <h1 tabIndex={-1} className="text-3xl font-bold tracking-tight sm:text-5xl">{title}</h1>
+      <h1 tabIndex={-1} className="text-3xl font-bold tracking-tight sm:text-5xl">
+        {title}
+      </h1>
       {description && <p className="mt-3 max-w-2xl text-slate-300">{description}</p>}
     </header>
   );
