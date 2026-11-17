@@ -177,3 +177,9 @@ Owner identified the border surrounding the “CATCH UP / PAST VIDEOS & STREAMS�
 **Explicitly not tested:** Real account authentication/privilege verification, live database content or moderation writes, YouTube iframe playback, real stream state, actual iPhone Safari, screen-reader end-to-end behaviour and network-dependent admin flows. Do not claim these passed solely from the mock-geometry checks.
 
 **Acceptance still OPEN:** Final branch/PR CI, publication and admin-device owner check. Regressions should be diagnosed by rendered element geometry before code changes.
+
+## Phase 7 PR/merge evidence — 2026-11-17
+
+**Source/geometry PASS:** Phase 7 admin redesign merged through [PR #6](https://github.com/b24dul/b24dul-live/pull/6), commit `d39a3601423dd5ac48d1ee3c17d553e5b9713cb3`. Branch and PR checks passed with 30 visitor + 6 admin rendered viewport configurations; no document overflow or admin panel clipping at tested widths, admin controls/analytics/inspector/chat/preview slots populated in isolated fixture. Two layout screenshots generated in CI at 390/1280px. `main` retained Claude's flex/height fix and all 112 unique HTML IDs.
+
+**Unverified/owner pending:** Real admin credentials and Firebase RTDB rules, chat moderation effects, stream state actions, YouTube embeds, device Safari, and real user data. The isolated test intentionally strips Firebase module; never infer permission correctness or production backend success from its green status. Owner real-admin walkthrough required for full Phase 7 acceptance.
