@@ -50,3 +50,9 @@ Latest passing React implementation revision: `b1af534c8466d20e2216ef40c3208e2fc
 8. **Explicit owner cutover approval only after full functionality acceptance**, current Pages/Worker/Firebase backup and rollback evidence. Never overwrite root `index.html` before approval.
 
 **Conclusion:** This audit closes only the *inventory/verification* step; **feature parity itself is not achieved**. 
+
+## Follow-on progress: gated livestream playback (2026-11-17)
+
+A new read-only `PublishedStreamStatus` player option loads `youtube-nocookie.com/embed/{videoId}` **only after** a currently verified LIVE monitor response and an explicit viewer click. It uses the validated 11-character video ID already supplied by `liveStatus.ts`, preserves the direct channel/broadcast links, avoids loading third-party iframe content before consent, and removes the iframe when an offline, stale or unavailable state is confirmed. Watch copy now reflects this conditional capability; the Home hero remains a disconnected preview.
+
+Dedicated Playwright cases assert live playback is initially absent, clicking enables the exact verified embed, and offline/stale states never expose a player. This is **partial playback migration, not full stream parity**: archived stream fallback, user preferences, full player choice, accessibility/real-hosted YouTube tests and existing live controls still need comparison with the legacy website. The `streamPlayback` production gate remains **false** until comprehensive acceptance passes. No Firebase reads or writes were added.
