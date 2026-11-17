@@ -82,7 +82,7 @@ test('desktop navigation and not-connected notifications are keyboard operable',
   await expect(mainNav).toBeVisible();
   await mainNav.getByRole('link', { name: 'Community' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Community' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Community', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Notifications' }).click();
   await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
   await page.keyboard.press('Escape');

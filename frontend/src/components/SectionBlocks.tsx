@@ -66,7 +66,9 @@ export function StreamPresentation({ compact = false }: { compact?: boolean }) {
   return (
     <GlassPanel className="stream-presentation p-5 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <StatusIndicator status="neutral">Live status unavailable in this preview</StatusIndicator>
+        <StatusIndicator status="neutral">
+          {compact ? 'Live status unavailable in this preview' : 'Player integration pending'}
+        </StatusIndicator>
         <span className="text-xs font-semibold tracking-widest text-slate-300 uppercase">
           Stream placeholder
         </span>
@@ -78,8 +80,9 @@ export function StreamPresentation({ compact = false }: { compact?: boolean }) {
           </span>
           <h3 className="text-xl font-bold sm:text-2xl">Your next broadcast starts here</h3>
           <p className="text-sm text-slate-300">
-            A preview of the future player. No video is playing and no live/offline result has been
-            fetched.
+            {compact
+              ? 'A preview of the future player. No video is playing and no live/offline result has been fetched.'
+              : 'The embedded player has not been migrated. A separate read-only status panel below reports verified monitor results.'}
           </p>
         </div>
       </div>
