@@ -3,8 +3,6 @@ import type {
   ButtonHTMLAttributes,
   HTMLAttributes,
   ReactNode,
-  Ref,
-  SVGProps,
 } from 'react';
 import { X } from 'lucide-react';
 
@@ -38,13 +36,16 @@ export const SecondaryButton = forwardRef<HTMLButtonElement, ActionProps>(functi
 
 type IconButtonProps = ActionProps & { label: string; icon: ReactNode };
 
-export function IconButton({ label, icon, className = '', ...props }: IconButtonProps) {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  { label, icon, className = '', ...props },
+  ref,
+) {
   return (
-    <SecondaryButton aria-label={label} className={`ui-icon-button ${className}`} {...props}>
+    <SecondaryButton ref={ref} aria-label={label} className={`ui-icon-button ${className}`} {...props}>
       <span aria-hidden="true">{icon}</span>
     </SecondaryButton>
   );
-}
+});
 
 type HeadingProps = HTMLAttributes<HTMLElement> & {
   title: string;
@@ -170,7 +171,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-xl font-bold">{title}</h2>
-          <IconButton ref={closeRef as Ref<HTMLButtonElement>} label="Close dialog" icon={<X size={18} />} onClick={onClose} />
+          <IconButton ref={closeRef} label="Close dialog" icon={<X size={18} />} onClick={onClose} />
         </div>
         {children}
       </GlassPanel>
