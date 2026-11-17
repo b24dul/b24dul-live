@@ -34,9 +34,9 @@ export function parseYouTubePage(url, status, html = "", location = "") {
   // Never use pageType/channelMetadataRenderer as evidence of being offline.
   // Prefer the selected page's own video ID rather than an unrelated video in
   // recommendation/sidebar metadata.
-  const pageId = html.match(/<meta[^>]+itemprop=["']videoId["'][^>]+content=["']([\\w-]{11})["']/i)?.[1]
-    || html.match(/"canonicalBaseUrl":"\\/watch\\?v=([\\w-]{11})"/)?.[1]
-    || html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["'][^"']*[?&]v=([\\w-]{11})/i)?.[1];
+  const pageId = html.match(/<meta[^>]+itemprop=["']videoId["'][^>]+content=["']([\w-]{11})["']/i)?.[1]
+    || html.match(/"canonicalBaseUrl":"\/watch\?v=([\w-]{11})"/)?.[1]
+    || html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["'][^"']*[?&]v=([\w-]{11})/i)?.[1];
   const streaming = /"isLiveNow":true|"isLiveContent":true|"isLive":true/.test(html);
   if (pageId && streaming) return { state: "live", videoId: pageId, method: "live-page-metadata" };
   // Only the explicit /live "not currently live" response confirms offline.
