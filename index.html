@@ -347,7 +347,6 @@
   @media (max-width: 900px) { .g2-side { width: min(420px, 88vw); } }
   @media (max-width: 700px) { .of-choices { grid-template-columns: 1fr; } .of-card { padding: 18px 16px; } }
   #adminBar .toggles { gap: 14px; }
-  #liveToggleLabel.off { color: #c9ccd3; }
   #gate .card { max-width: 440px; max-height: 92vh; overflow-y: auto; }
   #gate .track { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 14px; font-size: 12px; color: var(--muted); }
   #gate .track b { color: var(--text); font-size: 13px; }
@@ -625,7 +624,7 @@
 </div>
 <header>
   <span class="plate">B24DUL</span>
-  <span class="badge" id="liveBadge">LIVE ON PS5</span>
+  <span class="badge off" id="liveBadge">OFFLINE</span>
   <span class="spacer"></span>
   <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
 </header>
@@ -662,7 +661,7 @@
     </div>
     <section class="adm-controls" aria-label="Stream controls">
       <div class="sc-compact-head">
-        <div><h2>Stream controls</h2><span>Broadcast <strong id="streamStatusSummary">Checking…</strong> · Chat <strong id="chatStatusSummary">Checking…</strong></span></div>
+        <div><h2>Stream controls</h2><span>YouTube detected: <strong id="streamStatusSummary">Checking…</strong> · Chat <strong id="chatStatusSummary">Checking…</strong></span></div>
         <div class="sc-compact-links">
           <a href="https://b24dul.github.io/b24dul-live/" target="_blank" rel="noopener noreferrer">Visitor site ↗</a>
           <a href="https://www.youtube.com/@B24DUL" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
@@ -729,7 +728,6 @@
               <span class="visitor-card-cta">Browse videos <span aria-hidden="true">↗</span></span>
             </button>
           </div>
-          <div class="sd-watch">Stream started? <button class="of-live">Show live video</button></div>
         </div>
         <div id="ofVideos" hidden>
           <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Old videos</span></div>
@@ -783,8 +781,7 @@
               <button id="sdLbBtn">Top times</button>
             </div>
             <button id="sdNew">New game</button>
-            <div class="sd-watch">Stream started? <button class="of-live">Show live video</button></div>
-          </div>
+            </div>
         </div>
         </div>
         <div class="sd-overlay" id="sdOverlay" hidden><div class="sd-ov-card" id="sdOvCard"></div></div>
@@ -800,7 +797,6 @@
     </div>
     <div id="adminBar">
       <div class="sc-actions-line">
-        <label class="sc-mini-toggle" id="liveToggleLabel"><span id="liveToggleText">Stream offline</span><input type="checkbox" id="liveToggle" role="switch" aria-label="Mark broadcast live"></label>
         <label class="sc-mini-toggle" id="chatToggleLabel"><span id="chatToggleText">Chat on</span><input type="checkbox" id="chatToggle" role="switch" aria-label="Enable visitor chat" checked></label>
         <button id="viewersBtn" type="button">Manage viewers</button>
         <button id="clearBtn" type="button" class="danger">Clear chat</button>
@@ -1390,7 +1386,6 @@
   // ===================================================================
   const YT_URL = "https://www.youtube.com/embed/live_stream?channel=UCnXAfqk5I7QE3frLhHHyImQ&autoplay=1&mute=1";
   let streamLive = false;
-  let forceVideo = false;
   let visitorView = "home";
   let activeVisitorTab = "home";
   let hasLiveSnapshot = false;
@@ -1425,7 +1420,7 @@
     }
   }
   function applyLive() {
-    const showVideo = (streamLive || forceVideo) && (isAdmin || visitorView === "watch");
+    const showVideo = streamLive && (isAdmin || visitorView === "watch");
     const yt = $("ytFrame");
     $("playerFrame").classList.toggle("offline", !showVideo);
     yt.hidden = !showVideo;
@@ -1434,9 +1429,6 @@
     if (!showVideo && yt.getAttribute("src")) yt.removeAttribute("src");
     $("liveBadge").textContent = streamLive ? "LIVE ON PS5" : "OFFLINE";
     $("liveBadge").classList.toggle("off", !streamLive);
-    $("liveToggle").checked = streamLive;
-    $("liveToggleText").textContent = streamLive ? "Stream live" : "Stream offline";
-    $("liveToggleLabel").classList.toggle("off", !streamLive);
     $("streamStatusSummary").textContent = streamLive ? "Live" : "Offline";
     $("streamStatusSummary").classList.toggle("state-live", streamLive);
     $("streamStatusSummary").classList.toggle("state-off", !streamLive);
@@ -1647,7 +1639,6 @@
   onValue(ref(db, "settings/live"), (snap) => {
     const wasLive = streamLive;
     streamLive = snap.val() === true;
-    if (streamLive) forceVideo = false;
     // The first snapshot represents the current state, not a new broadcast.
     // Never pull an existing visitor out of a game when live begins.
     if (!hasLiveSnapshot) {
@@ -1662,7 +1653,7 @@
     if (!streamLive) {
       streamNotice.hidden = true;
     }
-    if (!isAdmin && !streamLive && visitorView === "watch" && !forceVideo) {
+    if (!isAdmin && !streamLive && visitorView === "watch") {
       visitorView = "home";
       activeVisitorTab = "home";
       ofView = "choose";
@@ -1673,19 +1664,6 @@
     }
     applyLive();
   }, () => applyLive());
-  $("liveToggle").addEventListener("change", (e) => {
-    const want = e.target.checked;
-    set(ref(db, "settings/live"), want).catch(() => {
-      e.target.checked = streamLive;
-      flash("Couldn't change the stream setting.");
-    });
-  });
-  document.querySelectorAll(".of-live").forEach((b) => b.addEventListener("click", () => {
-    forceVideo = true;
-    if (!isAdmin) { visitorView = "watch"; activeVisitorTab = "watch"; }
-    applyLive();
-    track("live/show", "Opened live video while offline");
-  }));
 
   // ----- Sudoku engine -----
   const SD_CLUES = { easy: 42, medium: 33, hard: 27 };
