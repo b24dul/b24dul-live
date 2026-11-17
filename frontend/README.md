@@ -24,3 +24,7 @@ a real successful run is recorded. In particular, the package lock is still miss
 Phase 2 design tokens and components, Phase 3 the full 11 routes, and
 Phase 7 production cutover remain separate approved gates.
 No Firebase SDK is installed here; no credentials, mock auth or live stream data exist.
+
+## Phase 2 showcase
+
+The isolated preview now demonstrates the reusable glassmorphism design system and its keyboard-accessible UI components. See `../docs/design-system.md` for semantic tokens, component APIs and accessibility guidance. This is still not a production UI or Firebase integration. The GitHub verification workflow tests the responsive showcase; no new frontend is deployed to the existing Pages root.
