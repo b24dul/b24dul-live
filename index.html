@@ -121,6 +121,14 @@
       </div>
       <a class="visitor-yt-link" href="https://www.youtube.com/@B24DUL" target="_blank" rel="noopener noreferrer">Visit YouTube ↗</a>
     </div>
+    <div class="hud-feed-heading" aria-label="Content area">
+      <div class="hud-feed-heading-main">
+        <span class="hud-feed-indicator" aria-hidden="true"></span>
+        <span class="hud-feed-kicker">B24DUL / OPERATIONS</span>
+        <strong class="hud-feed-title">MAIN DISPLAY</strong>
+      </div>
+      <span class="hud-feed-index">FEED 01 <span aria-hidden="true">/</span> COMMUNITY NETWORK</span>
+    </div>
     <div class="frame" id="playerFrame">
       <!-- Shows whatever B24DUL is streaming when the host marks the stream as live -->
       <iframe id="ytFrame" hidden
@@ -135,6 +143,10 @@
               <span class="visitor-kicker">B24DUL LIVE <span aria-hidden="true">/</span> COMMUNITY HUB</span>
               <h2>YOUR COMMUNITY.<br><em>YOUR GAME.</em></h2>
               <p>Stream, chat, compete and catch up. Select a destination to get started — even while the broadcast is offline.</p>
+              <div class="hud-hero-actions">
+                <button type="button" class="hud-hero-play" data-hud-jump="watch"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 3 21 12 6 21Z" fill="currentColor"/></svg> WATCH STREAM</button>
+                <button type="button" class="hud-hero-chat" data-hud-jump="chat">OPEN COMMUNITY CHAT <span aria-hidden="true">↗</span></button>
+              </div>
               <span class="hero-footnote">SELECT YOUR NEXT MOVE <span aria-hidden="true">↘</span></span>
             </div>
           </div>
@@ -225,8 +237,10 @@
 
   <aside class="chat">
     <div class="chat-head">
+      <span class="hud-chat-signal" aria-hidden="true"><i></i><i></i><i></i></span>
       <div class="visitor-chat-heading"><strong>Community chat</strong><small>Keep it friendly and anonymous</small></div>
       <span class="spacer"></span>
+      <span class="hud-chat-channel" aria-hidden="true">CH / 01</span>
       <button id="adminBtn" hidden>Admin sign in</button>
     </div>
     <div id="adminBar">
@@ -908,6 +922,10 @@
   }
   $("visitorNav").querySelectorAll("button[data-visitor-view]").forEach((button) => {
     button.addEventListener("click", () => navigateVisitor(button.dataset.visitorView));
+  });
+  // Hero commands reuse the existing navigation function; no new routing or data.
+  document.querySelectorAll("[data-hud-jump]").forEach((button) => {
+    button.addEventListener("click", () => navigateVisitor(button.dataset.hudJump));
   });
   $("tryLivePlayer").addEventListener("click", () => navigateVisitor("watch"));
   const streamNotice = $("streamStartedNotice");
