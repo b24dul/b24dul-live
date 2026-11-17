@@ -348,6 +348,18 @@ When a new chat begins, the assistant should:
 
 **Acceptance still open:** Owner should check on iPhone after latest GitHub Pages successful deployment, scroll through Videos and ensure nav never floats over video cards; check Home/Games/Chat routing and Watch player. No direct device/browser verification has occurred. Avoid claiming this fixes the issue until visually confirmed. Continue to hold unrelated new UI features.
 
+## 10.17 Emergency rollback to last owner-tested Phase 5B (2026-11-17)
+
+**Owner escalation:** After multiple attempted mobile repairs, including 6B.4 non-sticky nav, owner reported **"It's broken again now."** Repeated CSS overrides and owner screenshots demonstrate that the 6B/6B.1/6B.2/6B.3/6B.4 mobile and arcade passes are not stable. **Stop incremental speculative fixes.**
+
+**Action (approved baseline restored):** The previously owner-tested Phase 5B website files have been restored verbatim on `main`: `index.html` from commit [`61a7b81a`](https://github.com/b24dul/b24dul-live/commit/61a7b81a5a878161df20860289909268c7ee5bd2) through rollback commit [`48151782`](https://github.com/b24dul/b24dul-live/commit/48151782e1cf337a19c69d36c9e850f9bbe64cda); `styles.css` from [`84d3f166`](https://github.com/b24dul/b24dul-live/commit/84d3f1662747373872ee5b400f64a9eb0a1201c4) through rollback commit [`26b56830`](https://github.com/b24dul/b24dul-live/commit/26b568300d8b4f8d5b8c637c5db73990785aea41). Restoring the earlier HTML removes the versioned CSS URL as well as the Phase 6B arcade heading; no Phase 6A panel persists.
+
+**Verified in GitHub source:** Both resulting files are byte-for-byte identical to those approved checkpoint files; 112 HTML IDs intact. Existing original YouTube player, Firebase/chat, Sudoku/2048 logic, videos and Phase 5B hero/chat layout are preserved. Docs retain complete history rather than being reverted.
+
+**Current risk/status:** Rollback committed, **not independently verified on the published mobile site**. This restores the previously tested website rather than resolving or reproducing every underlying mobile defect. GitHub Pages publication may lag. Ask for user confirmation that baseline is restored; before any more UI work, establish actual viewport/browser visual testing against user screenshots (320/375/390/768 etc.) and use isolated test branches/preview instead of untested CSS-on-main experiments.
+
+**Development decision:** Phase 6A rejected; Phase 6B and its successive mobile patches rolled back. Freeze redesign until stable browser QA. Do not claim completed Phase 6B or mobile bugfix.
+
 ## 10. Progress snapshots
 
-**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B.2 screenshot-driven mobile shell repair committed after owner reported 6B.1 did not fix the layout. Source checks passed; iPhone visual confirmation pending.
+**2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 5B owner-tested files restored after further breakage; Phase 6B and mobile overrides undone. Published-site recheck pending.
