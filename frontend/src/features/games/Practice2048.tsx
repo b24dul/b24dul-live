@@ -1,0 +1,162 @@
+import { useRef, useState, type KeyboardEvent, type TouchEvent } from 'react';
+import { GlassPanel } from '../../components/ui';
+import {
+  LEGACY_2048_STORAGE_KEY,
+  move2048,
+  new2048,
+  readLegacy2048,
+  type Direction,
+  type Game2048,
+} from './game2048';
+
+const directions: { label: string; direction: Direction }[] = [
+  { label: 'Up', direction: 'up' },
+  { label: 'Left', direction: 'left' },
+  { label: 'Down', direction: 'down' },
+  { label: 'Right', direction: 'right' },
+];
+const keys: Record<string, Direction> = {
+  ArrowUp: 'up',
+  ArrowLeft: 'left',
+  ArrowDown: 'down',
+  ArrowRight: 'right',
+};
+
+export function Practice2048() {
+  const [game, setGame] = useState<Game2048 | null>(null);
+  const [message, setMessage] = useState('');
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  function move(direction: Direction) {
+    setGame((current) => {
+      if (!current) return current;
+      return move2048(current, direction).game;
+    });
+  }
+
+  function loadLegacy() {
+    try {
+      const saved = readLegacy2048(window.localStorage.getItem(LEGACY_2048_STORAGE_KEY));
+      if (saved.status === 'ready') {
+        setGame(saved.game);
+        setMessage('Loaded a copy of your saved game for practice.');
+      } else {
+        setMessage(
+          saved.status === 'missing'
+            ? 'No saved 2048 game was found in this browser.'
+            : 'This saved game could not be read. It has been left unchanged.',
+        );
+      }
+    } catch {
+      setMessage('Browser storage is unavailable. Your saved game has not been changed.');
+    }
+  }
+
+  function handleKey(event: KeyboardEvent<HTMLDivElement>) {
+    const direction = keys[event.key];
+    if (direction) {
+      event.preventDefault();
+      move(direction);
+    }
+  }
+
+  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
+    const touch = event.touches[0];
+    touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+  }
+
+  function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
+    const start = touchStart.current;
+    const touch = event.changedTouches[0];
+    touchStart.current = null;
+    if (!start || !touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
+    move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up');
+  }
+
+  return (
+    <GlassPanel className="p-5 sm:p-7">
+      <h2 className="text-xl font-semibold">2048 practice</h2>
+      <p className="mt-2 text-sm text-slate-300">
+        Play in this preview, or load a copy of a save from this browser. Practice changes and
+        scores are not saved or sent to the leaderboard.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          className="ui-button ui-button--primary"
+          type="button"
+          onClick={() => {
+            setGame(new2048());
+            setMessage('New practice game started.');
+          }}
+        >
+          {game ? 'New practice game' : 'Start 2048 practice'}
+        </button>
+        <button className="ui-button ui-button--secondary" type="button" onClick={loadLegacy}>
+          Load saved game copy
+        </button>
+      </div>
+      <p className="mt-3 text-sm text-slate-300" role="status">
+        {message}
+      </p>
+      {game && (
+        <div className="mt-4 max-w-sm">
+          <p className="mb-3 text-sm text-slate-200">
+            Score: {game.score} · Best: {game.best}
+          </p>
+          <p className="mb-3 text-sm text-slate-300">
+            Focus the board and use arrow keys, swipe, or use the direction buttons.
+          </p>
+          <div
+            aria-label="2048 board"
+            className="grid gap-2 rounded-xl bg-slate-950/60 p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            onKeyDown={handleKey}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            role="grid"
+            style={{ touchAction: 'none' }}
+            tabIndex={0}
+          >
+            {[0, 1, 2, 3].map((row) => (
+              <div className="grid grid-cols-4 gap-2" key={row} role="row">
+                {game.grid.slice(row * 4, row * 4 + 4).map((value, column) => (
+                  <div
+                    aria-label={value ? String(value) : 'Empty'}
+                    className="flex aspect-square items-center justify-center rounded-lg bg-slate-700 text-lg font-bold text-white sm:text-2xl"
+                    key={column}
+                    role="gridcell"
+                  >
+                    {value || ''}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2" aria-label="2048 direction controls">
+            {directions.map(({ label, direction }) => (
+              <button
+                className="ui-button ui-button--secondary"
+                key={direction}
+                onClick={() => move(direction)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {game.over ? (
+            <p className="mt-3" role="status">
+              Game over. Start a new practice game to play again.
+            </p>
+          ) : game.won ? (
+            <p className="mt-3" role="status">
+              You reached 2048. Keep playing!
+            </p>
+          ) : null}
+        </div>
+      )}
+    </GlassPanel>
+  );
+}

@@ -24,6 +24,7 @@ import { games, utilities } from '../data/directory';
 import { archivedVideos } from '../services/videoArchive';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
+import { Practice2048 } from '../features/games/Practice2048';
 import { routes } from './navigation';
 
 const website = 'https://b24dul.github.io/b24dul-live/';
@@ -173,16 +174,17 @@ function GamesPage() {
     >
       <GlassPanel className="p-5 sm:p-7">
         <StatusIndicator status="neutral">
-          Existing games preserved — not migrated into this preview
+          Existing games remain on the published site
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Sudoku and 2048 still run on the published site. The React preview does not modify their
-          scores, saves, leaderboard records or game logic.
+          Sudoku and 2048 remain available on the published site. The 2048 practice below does not
+          change existing saves or leaderboard records.
         </p>
         <a className="ui-button ui-button--primary mt-4" href={website}>
           Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </GlassPanel>
+      <Practice2048 />
       <EditorialSection title="Browse games" description="Availability is labelled for every game.">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {games.map((game) => (

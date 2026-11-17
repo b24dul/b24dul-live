@@ -356,3 +356,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 
 - Added Chromium tests using the legacy site's exact Firebase SDK 10.12.2 and the new SDK with a synthetic demo project, fake credentials and the same browser origin. The tests passed locally: a legacy anonymous UID survives a new-SDK reload; two tabs share it; linking a synthetic Google account preserves the UID and propagates the change; guest entry does not replace the linked account; and a collision in separate browser contexts leaves both identities intact after reload. Both versions are used only in test fixtures.
 - Linking can change the token without changing the UID; the fixture uses `onIdTokenChanged` to observe this. These tests do not prove migration of real production sessions, real Google accounts, other browsers, or deployed rules alignment. No production gate is changed.
+
+## 2026-11-17 — 2048 practice preview and save-preserving foundation
+
+- Added an isolated 2048 engine with legacy-compatible movement, scoring and a read-only parser for the `b24dul_2048` save format. Invalid or unavailable saves are not changed or deleted. The React Games page now offers an in-memory 2048 practice game, with keyboard, direction-button and swipe controls, and an explicit option to load a copy of a valid local save.
+- The practice game does not persist its changes or submit scores; the legacy save and Firebase leaderboard remain untouched. The legacy published game remains available. This is partial migration, not full game/save/leaderboard parity; production gates remain false.
+- Local verification: 47 unit tests, typecheck, build, formatting, lint (five existing warnings), and 26 existing/new Chromium regressions passed; the three targeted 2048 browser tests also passed after adding swipe coverage. Physical-device, cross-browser and actual legacy data compatibility remain to be verified.
