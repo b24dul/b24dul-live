@@ -49,28 +49,28 @@
   </div>
 </div>
 <header>
-  <span class="brand-wordmark"><img src="assets/b24dul-live-logo.svg" alt="B24DUL Live" width="252" height="126"></span>
-  <span class="badge off" id="liveBadge" role="status" aria-live="polite">OFFLINE</span>
+  <a class="brand-wordmark b24dul-logo" href="./" aria-label="B24DUL Live — home"><img src="assets/b24dul-live-logo.svg" alt="B24DUL Live" width="252" height="126"></a>
+  <span class="badge off hud-on-air" id="liveBadge" role="status" aria-live="polite">OFFLINE</span>
   <span class="spacer"></span>
-  <a class="sub" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
+  <a class="sub gta-btn secondary" id="subLink" href="https://www.youtube.com/@B24DUL?sub_confirmation=1" target="_blank" rel="noopener">Subscribe</a>
 </header>
-<nav id="visitorNav" aria-label="Explore B24DUL Live">
-  <button type="button" data-visitor-view="home" class="active" aria-current="page">Home</button>
-  <button type="button" data-visitor-view="watch" title="Open the YouTube livestream player">Watch stream</button>
-  <button type="button" data-visitor-view="games">Games</button>
-  <button type="button" data-visitor-view="videos">Videos</button>
-  <button type="button" data-visitor-view="chat">Chat</button>
+<nav id="visitorNav" class="hud-nav" aria-label="Explore B24DUL Live">
+  <button type="button" class="hud-tab active" data-visitor-view="home" aria-current="page">Home</button>
+  <button type="button" class="hud-tab" data-visitor-view="watch" title="Open the YouTube livestream player">Watch stream</button>
+  <button type="button" class="hud-tab" data-visitor-view="games">Games</button>
+  <button type="button" class="hud-tab" data-visitor-view="videos">Videos</button>
+  <button type="button" class="hud-tab" data-visitor-view="chat">Chat</button>
   <span class="visitor-nav-spacer"></span>
   <span id="visitorNavStatus" class="visitor-nav-status">Connecting…</span>
 </nav>
-<div id="streamStartedNotice" role="status" aria-live="polite" hidden>
+<div id="streamStartedNotice" class="mission-banner" role="status" aria-live="polite" hidden>
   <div class="stream-notice-copy">
     <span class="stream-notice-live">● LIVE NOW</span>
     <strong>B24DUL has started streaming!</strong>
     <span>Jump into the broadcast, or carry on where you are.</span>
   </div>
   <div class="stream-notice-actions">
-    <button type="button" id="streamNoticeWatch" class="primary">Watch stream</button>
+    <button type="button" id="streamNoticeWatch" class="gta-btn primary">Watch stream</button>
     <button type="button" id="streamNoticeDismiss">Not now</button>
   </div>
 </div>
@@ -162,7 +162,7 @@
         <div id="ofVideos" hidden>
           <div class="visitor-stream-fallback">
             <div><strong>Want to check the livestream?</strong><p>Automatic status detection can be delayed. You can open the player anytime, even if the website still says offline.</p></div>
-            <button type="button" id="tryLivePlayer" class="primary">Try live player ↗</button>
+            <button type="button" id="tryLivePlayer" class="gta-btn primary"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="m6 3 15 9-15 9z"/></svg> Try live player</button>
           </div>
           <div class="of-bar"><button class="of-back">← Back</button><span class="of-title">Old videos</span></div>
           <div class="vid-player" id="vidPlayer" hidden>
@@ -251,7 +251,7 @@
       <div class="visitor-composer-info"><span class="visitor-composer-dot" aria-hidden="true"></span><span id="visitorChatIdentity">Your anonymous nickname is shown in chat</span></div>
       <form id="sendForm">
         <input id="msgInput" maxlength="200" placeholder="Say something..." autocomplete="off" required>
-        <button class="primary" id="sendBtn" type="submit">Send</button>
+        <button class="primary gta-btn" id="sendBtn" type="submit">Send</button>
       </form>
       <p id="note"></p>
       <p class="privacy-request"><button type="button" class="privacyOpen">Request data deletion</button></p>
