@@ -35,7 +35,9 @@ export const routes: readonly AppRoute[] = [
   { path: '/admin', label: 'Admin', icon: Shield, description: 'Restricted administration' },
 ];
 
-export const mobileRoutes = routes.filter((route) => route.mobile);
+export const mobileRoutes = ['/', '/watch', '/games', '/community', '/explore'].map(
+  (path) => routes.find((route) => route.path === path)!,
+);
 
 export function findDestination(term: string): AppRoute | undefined {
   const normalized = term.trim().toLowerCase();

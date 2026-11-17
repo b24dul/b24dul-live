@@ -21,7 +21,6 @@ export function App() {
                 element={<DestinationPage path={route.path} />}
               />
             ))}
-          <Route path="/about-preview" element={<DestinationPage path="/explore" />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AppShell>

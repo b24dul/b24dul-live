@@ -3,7 +3,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { ArrowUpRight, Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { GlassPanel, IconButton, Modal, SecondaryButton, StatusIndicator } from '../components/ui';
+import { IconButton, Modal, SecondaryButton, StatusIndicator } from '../components/ui';
 import { findDestination, mobileRoutes, routes } from './navigation';
 
 const preferenceKey = 'b24dul.sidebar.collapsed.v1';
@@ -134,7 +134,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             href="https://b24dul.github.io/b24dul-live/"
             className="inline-flex items-center gap-1 font-semibold underline underline-offset-4"
           >
-            Visit current site <ArrowUpRight size={15} aria-hidden="true" />
+            Production website <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         </div>
         <motion.div

@@ -103,8 +103,8 @@ export function HomePage() {
 
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-6 text-sm text-slate-300">
         <span>New frontend is isolated. Existing live website remains unchanged.</span>
-        <Link className="underline underline-offset-4" to="/about-preview">
-          About this preview
+        <Link className="underline underline-offset-4" to="/explore">
+          Explore destinations
         </Link>
       </footer>
       <Modal open={modalOpen} title="Preview dialog" onClose={() => setModalOpen(false)}>

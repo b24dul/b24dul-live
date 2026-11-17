@@ -1,19 +1,74 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
 
-describe('isolated frontend foundation', () => {
-  it('identifies the page as a preview and links to the live site', () => {
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
-    );
+function renderRoute(path = '/') {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <App />
+    </MemoryRouter>,
+  );
+}
+
+describe('isolated application shell', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('identifies the home page as a preview and links to the live site', () => {
+    renderRoute();
     expect(screen.getByText('Isolated development preview')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /visit current site/i })).toHaveAttribute(
       'href',
       'https://b24dul.github.io/b24dul-live/',
     );
+  });
+
+  it('provides complete section shells and no simulated sign-in', () => {
+    renderRoute('/profile');
+    expect(screen.getByRole('heading', { name: 'Guest profile' })).toBeVisible();
+    expect(screen.getByText(/No account has been created or authenticated/)).toBeVisible();
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
+  });
+
+  it('renders a useful page for unknown paths', () => {
+    renderRoute('/not-real');
+    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
+  });
+
+  it('collapses the sidebar and persists its local preference', () => {
+    renderRoute();
+    expect(screen.getByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
+    expect(window.localStorage.getItem('b24dul.sidebar.collapsed.v1')).toBe('true');
+  });
+
+  it('navigates only to named sections using the header search', () => {
+    renderRoute();
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a section' }), {
+      target: { value: 'not-real' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('No matching section');
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a section' }), {
+      target: { value: 'tools' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
+    expect(screen.getByRole('heading', { name: 'Tools' })).toBeVisible();
+  });
+
+  it('makes all five mobile destinations available', () => {
+    renderRoute();
+    const nav = screen.getByRole('navigation', { name: 'Mobile navigation' });
+    expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Home',
+      'Watch',
+      'Games',
+      'Community',
+      'Explore',
+    ]);
   });
 });
