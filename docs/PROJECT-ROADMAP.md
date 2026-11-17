@@ -322,6 +322,20 @@ When a new chat begins, the assistant should:
 
 **Next:** Receive owner visual check; fix any remaining screenshot-matched bug before Phase 6C/7. Do not reintroduce Phase 6A Watch redesign.
 
+## 10.15 Phase 6B.3 — Flat mobile offline shell and CSS cache-bust (2026-11-17)
+
+**Owner feedback:** After the screenshot-driven Phase 6B.2 repair, owner reported **"Not fixed at all not even changed one bit."** The earlier patches must not be marked resolved. This may reflect either layout override issues, stylesheet caching, or publication lag; browser evidence is not yet available to determine which.
+
+**GitHub Pages signal:** GitHub's Actions API exposed a **successful** `pages build and deployment` run (run `44051944081`, head `613f8d47`, completed 2026-11-17 09:03:29Z), showing Pages is wired to `main`, but this is not evidence that the user's phone loaded the stylesheet from that run. Direct retrieval of the public site from the available execution environment failed due to network restrictions.
+
+**Changed on `main`:** [`a789b692`](https://github.com/b24dul/b24dul-live/commit/a789b69294704273966b7fd0f315726ca4fb9b31) appends a mobile-only `PHASE 6B.3` rule group that explicitly **hides the redundant MAIN DISPLAY heading on offline Home/Games/Sudoku/2048/Videos**, removes its outer offline frame border/shadow and makes that frame auto-height, while letting each activity panel size itself. The visible change is intentional and avoids further nested-frame appearance. The selector is bounded to non-Watch offline visitor sections; live player iframe styling is left untouched. [`b9a34e89`](https://github.com/b24dul/b24dul-live/commit/b9a34e89e2b516b0226906d24d857a967bfe2faf) versions the `styles.css` link to `styles.css?v=6b3-mobile-frame-20261117`, forcing a fresh stylesheet URL after GitHub Pages publishes the HTML.
+
+**Preservation checks:** No functional JS changes; all 112 unique HTML IDs retained; CSS braces/comments balanced; original player and chat elements intact. No Phase 6A Watch redesign restored.
+
+**Critical acceptance criterion:** On iPhone, Home/Games/Videos should **no longer show the outer MAIN DISPLAY strip at all**, and should not show its detached border. If the MAIN DISPLAY strip remains, the updated site or CSS has **not** been delivered to that browser; investigate GitHub Pages publish status, cached HTML/CSS, service worker (if any), and the actual served stylesheet URL rather than adding CSS blindly. If the strip disappears but cards still overlap, measure the actual rendered viewport and layout bounds before changing rules again.
+
+**Status:** Committed but user-device validation pending; do not mark fixed. Pause further aesthetic redesign until delivery and mobile rendering are confirmed.
+
 ## 10. Progress snapshots
 
 **2026-11-17:** Cloudflare stream detector verified. Reference-sheet Tactical HUD and original SVG assets committed to `main`. Phase 5B owner-tested. Phase 6A Watch Stream changes **reverted after owner-reported mobile regressions**; Phase 6B.2 screenshot-driven mobile shell repair committed after owner reported 6B.1 did not fix the layout. Source checks passed; iPhone visual confirmation pending.
