@@ -1007,96 +1007,124 @@ body.admin .adm-card-head h2 {font-size:24px;}
 }
 
 
-/* Reference-sheet component API — HTML classes supplied by site owner.
-   The *existing* Firebase/YouTube script remains authoritative for all states. */
-body:not(.admin) .b24dul-logo {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  flex:none;
-  line-height:1;
-  text-decoration:none;
-  min-width:0;
-  padding:0;
-  border:0;
+/* B24DUL owner-provided component CSS / implementation revision.
+   Adapted to the existing IDs and working behaviours; see docs/DESIGN-SYSTEM.md. */
+:root {
+  --bg-dark:#0B0C10;
+  --hud-surface:rgba(20,24,34,.9);
+  --cash-green:#2ECC71;
+  --alert-red:#FF1E1E;
+  --neon-pink:#FF2A85;
+  --neon-cyan:#00F0FF;
+  --gold:#F1C40F;
 }
-body:not(.admin) .b24dul-logo img {
-  display:block;
-  width:clamp(145px,17vw,238px);
-  height:auto;
-  aspect-ratio:2/1;
-  object-fit:contain;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));
-}
-body:not(.admin) .hud-on-air:not(.off) {
-  border-color:#FF4149;
-  background:linear-gradient(180deg,#C41620,#830A11);
-  box-shadow:0 0 14px rgba(255,30,30,.47),inset 0 0 10px rgba(255,255,255,.1);
+/* 1. Existing SVG logo remains a real image from the reference-sheet adaptation.
+   These styles are also available for a future CSS-text version. */
+.b24dul-logo {display:inline-flex;align-items:baseline;text-decoration:none;position:relative}
+.logo-main {font-family:Anton,Impact,sans-serif;font-size:2.5rem;color:#fff;letter-spacing:-.02em;text-shadow:3px 3px 0 #000,-1px -1px 0 #000}
+.logo-sub {font-family:Yellowtail,cursive;font-size:1.8rem;color:var(--neon-cyan);margin-left:-6px;transform:rotate(-6deg);text-shadow:0 0 10px rgba(0,240,255,.7),2px 2px 0 #000}
+body:not(.admin) .b24dul-logo {display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:0;line-height:1;padding:0;border:0}
+body:not(.admin) .b24dul-logo img {display:block;width:clamp(145px,17vw,238px);height:auto;aspect-ratio:2/1;object-fit:contain;filter:drop-shadow(0 2px 3px #0009)}
+/* 2. Live-only pulse. The Firebase detector toggles .off; never animate offline. */
+body:not(.admin) .hud-on-air {
+  display:inline-flex;align-items:center;gap:8px;padding:6px 12px;
+  background:rgba(255,30,30,.15);border:1px solid var(--alert-red);
+  border-radius:2px;color:#fff;font:700 clamp(18px,2vw,27px)/1 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:1.5px;box-shadow:none;
 }
 body:not(.admin) .hud-on-air:not(.off)::before {
-  background:#FF2424;
-  box-shadow:0 0 9px rgba(255,30,30,.8);
-  animation:hud-signal 1.8s ease-in-out infinite;
+  content:"";width:8px;height:8px;flex:none;border-radius:50%;
+  background:var(--alert-red);box-shadow:0 0 8px var(--alert-red);
+  animation:hud-pulse 1.2s infinite;
 }
-@keyframes hud-signal {
-  0%,100% {opacity:1;box-shadow:0 0 6px rgba(255,30,30,.8);}
-  50% {opacity:.58;box-shadow:0 0 13px rgba(255,30,30,.9);}
+body:not(.admin) .hud-on-air.off {
+  background:#1E242F;border-color:#67717C;color:#CED2D9;box-shadow:none;
 }
-body:not(.admin) .hud-on-air.off {box-shadow:none;}
+body:not(.admin) .hud-on-air.off::before {background:#8A949F;box-shadow:none;animation:none}
+@keyframes hud-pulse {
+  0%,100% {opacity:1;transform:scale(1)}
+  50% {opacity:.4;transform:scale(.8)}
+}
+/* 3, 4 and 7. Prepared HUD displays are not populated with fabricated data. */
+.hud-cash-counter {font:400 1.75rem Anton,Impact,sans-serif;color:var(--cash-green);text-shadow:2px 2px 0 #000;letter-spacing:1px}
+.hud-wanted-stars {display:inline-flex;gap:4px}
+.hud-wanted-stars .star {width:20px;height:20px;fill:rgba(255,255,255,.2);transition:transform .15s,fill .15s}
+.hud-wanted-stars .star.active {fill:#fff;filter:drop-shadow(2px 2px 0 #000)}
+.hud-wanted-stars:hover .star.active {fill:var(--alert-red)}
+.hud-stat-group {display:inline-flex;align-items:center;gap:12px;background:rgba(0,0,0,.7);padding:8px 14px}
+.stat-label {font:700 1rem 'Barlow Condensed',Impact,sans-serif;color:#fff;letter-spacing:1px}
+.stat-segments {display:flex;gap:4px}
+.seg {width:24px;height:10px;background:rgba(255,255,255,.2)}
+.seg.filled {background:var(--neon-cyan);box-shadow:0 0 6px rgba(0,240,255,.5)}
+/* 5. Preserve the real home/watch/games/videos/chat navigation. */
+body:not(.admin) .hud-nav {
+  display:flex;align-items:stretch;gap:4px;background:#000;padding:7px clamp(12px,2.5vw,44px);
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:#67717C transparent;
+}
 body:not(.admin) .hud-nav .hud-tab {
-  border:2px solid #E6E9ED;
-  background:#141820;
-  color:#F7F7F7;
+  flex:none;min-height:44px;padding:10px 24px;border:0;border-radius:0;
+  background:var(--hud-surface);color:#fff;
+  font:700 1.1rem/1 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:1.5px;cursor:pointer;
+  transition:background .12s,color .12s;
 }
-body:not(.admin) .hud-nav .hud-tab:is(:hover,.active,[aria-current="page"]) {
-  border-color:var(--hud-green);
-  background:var(--hud-green);
-  color:#0B0C10;
+body:not(.admin) .hud-nav .hud-tab:hover,
+body:not(.admin) .hud-nav .hud-tab.active,
+body:not(.admin) .hud-nav .hud-tab[aria-current="page"] {background:#fff;color:#000}
+body:not(.admin) .hud-nav .hud-tab[data-visitor-view="watch"].is-live:not(.active) {
+  color:#FF8A90;background:#231216;box-shadow:inset 0 -2px var(--alert-red);
 }
+body:not(.admin) .hud-nav .hud-tab[data-visitor-view="watch"].is-live.active {color:#000;background:#fff}
+/* 6. White inversion is the default; green outline is the secondary variant.
+   Existing .primary buttons remain green where tied to important actions. */
 body:not(.admin) .gta-btn {
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  font-family:'Bebas Neue',Impact,sans-serif;
-  font-weight:400;font-size:21px;line-height:1.1;
-  letter-spacing:.04em;text-transform:uppercase;
-  min-height:44px;padding:9px 16px;border-radius:4px;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:44px;padding:10px 21px;
+  font:700 1.15rem/1.1 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:1.5px;text-transform:uppercase;
+  border:2px solid #fff;border-radius:0;
+  background:transparent;color:#fff;cursor:pointer;
+  transition:background .12s cubic-bezier(.2,0,0,1),color .12s,transform .12s;
 }
-body:not(.admin) .gta-btn svg {flex:none;}
-body:not(.admin) .gta-btn.primary {
-  background:var(--hud-green);
-  border:2px solid var(--hud-green);
-  color:#0B0C10;
-}
-body:not(.admin) .gta-btn.primary:hover {
-  background:#58EAA0;border-color:#58EAA0;color:#0B0C10;
-}
+body:not(.admin) .gta-btn:hover {background:#fff;border-color:#fff;color:#000;transform:translateY(-2px)}
 body:not(.admin) .gta-btn.secondary {
-  background:transparent;border:2px solid #F7F7F7;color:#F7F7F7;
+  border-color:var(--cash-green);background:transparent;color:var(--cash-green);
 }
 body:not(.admin) .gta-btn.secondary:hover {
-  background:var(--hud-green);border-color:var(--hud-green);color:#0B0C10;
+  background:var(--cash-green);border-color:var(--cash-green);color:#000;
 }
-body:not(.admin) .mission-banner {
-  border:1px solid #FF4149;
-  border-left:5px solid #FF4149;
-  background:linear-gradient(105deg,#251316,#141820);
-  border-radius:3px;
+body:not(.admin) .gta-btn.primary {
+  border-color:var(--cash-green);background:var(--cash-green);color:#07130D;
 }
+body:not(.admin) .gta-btn.primary:hover {background:#fff;border-color:#fff;color:#000}
+body:not(.admin) .gta-btn svg {flex:none;pointer-events:none}
+/* 8. Only actual detected stream-start events may show this notification. */
+body:not(.admin) #streamStartedNotice.mission-banner {
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+  background:linear-gradient(90deg,rgba(0,0,0,.92),rgba(12,14,19,.98));
+  border:1px solid rgba(255,255,255,.22);border-block-color:rgba(255,255,255,.45);
+  border-radius:0;padding:19px;box-shadow:0 18px 50px #000A;text-align:left;
+}
+body:not(.admin) #streamStartedNotice[hidden] {display:none!important}
 body:not(.admin) .mission-banner .stream-notice-live {
-  font:400 21px/1 'Bebas Neue',Impact,sans-serif;
-  letter-spacing:.08em;color:#FF535B;
+  font:700 1.2rem 'Barlow Condensed',Impact,sans-serif;
+  letter-spacing:1.5px;color:var(--alert-red);
 }
 body:not(.admin) .mission-banner .stream-notice-copy strong {
-  font:400 24px/1.1 'Bebas Neue',Impact,sans-serif;
-  letter-spacing:.035em;
+  font:400 clamp(23px,2.4vw,34px)/1.1 Anton,Impact,sans-serif;
+  letter-spacing:1px;color:var(--gold);
+  text-shadow:2px 2px #000;
 }
-body:not(.admin) .of-card .of-icon img {
-  display:block;width:100%;height:100%;
-  max-width:66px;max-height:66px;object-fit:contain;
+.mission-title {font:400 2.5rem Anton,Impact,sans-serif;color:var(--gold);letter-spacing:2px;text-shadow:3px 3px #000}
+.mission-sub {font:700 1.1rem 'Barlow Condensed',Impact,sans-serif;color:#fff;letter-spacing:2px}
+body:not(.admin) .of-card .of-icon img {display:block;width:100%;height:100%;max-width:66px;max-height:66px;object-fit:contain}
+@media(max-width:760px) {
+  body:not(.admin) .b24dul-logo img {width:clamp(130px,34vw,176px)}
+  body:not(.admin) .hud-nav {padding:6px 10px;position:sticky;top:0;z-index:12}
+  body:not(.admin) .hud-nav .hud-tab {padding:10px 15px}
 }
-body:not(.admin) #tryLivePlayer svg {pointer-events:none;}
-@media (max-width:760px) {
-  body:not(.admin) .b24dul-logo img {width:clamp(130px,34vw,176px);}
-}
-@media (prefers-reduced-motion: reduce) {
-  body:not(.admin) .hud-on-air:not(.off)::before {animation:none;}
+@media(prefers-reduced-motion:reduce) {
+  body:not(.admin) .hud-on-air:not(.off)::before {animation:none}
+  body:not(.admin) .gta-btn:hover {transform:none}
+  .hud-wanted-stars .star {transition:none}
 }
