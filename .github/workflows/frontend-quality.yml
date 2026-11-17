@@ -1,0 +1,83 @@
+name: M1 frontend Phase 6 quality measurements
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-quality.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build production preview (not deployed)
+        run: npm run build
+      - name: Install Chrome
+        run: npx playwright install --with-deps chromium
+      - name: Start built preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4174 --strictPort > /tmp/b24dul-preview.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:4174/b24dul-live/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/b24dul-preview.log
+          exit 1
+      - name: Lighthouse mobile, production build
+        run: >
+          npx --yes lighthouse http://127.0.0.1:4174/b24dul-live/#/
+          --only-categories=performance,accessibility,best-practices,seo
+          --preset=perf
+          --form-factor=mobile
+          --screenEmulation.mobile=true
+          --screenEmulation.width=390
+          --screenEmulation.height=844
+          --screenEmulation.deviceScaleFactor=2
+          --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+          --output=json
+          --output-path=lighthouse-mobile.json
+          --quiet
+      - name: Lighthouse desktop, production build
+        run: >
+          npx --yes lighthouse http://127.0.0.1:4174/b24dul-live/#/
+          --only-categories=performance,accessibility,best-practices,seo
+          --preset=desktop
+          --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+          --output=json
+          --output-path=lighthouse-desktop.json
+          --quiet
+      - name: Summarize measured metrics
+        if: always()
+        run: |
+          if [ -f lighthouse-mobile.json ] && [ -f lighthouse-desktop.json ]; then
+            node scripts/lighthouse-report.mjs lighthouse-mobile.json lighthouse-desktop.json
+          fi
+      - name: Upload Lighthouse evidence
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: phase6-lighthouse-reports
+          path: |
+            frontend/lighthouse-mobile.json
+            frontend/lighthouse-desktop.json
+            frontend/lighthouse-summary.json
+          if-no-files-found: warn
+          retention-days: 30

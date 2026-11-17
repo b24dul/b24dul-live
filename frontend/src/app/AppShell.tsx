@@ -49,7 +49,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       data-density={preferences.density}
       data-motion={reducedMotion ? 'reduce' : 'system'}
     >
-      <a href="#route-content" className="skip-link">
+      <a
+        href="#route-content"
+        className="skip-link"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById('route-content')?.focus();
+        }}
+      >
         Skip to content
       </a>
       <aside className="app-sidebar glass-panel" aria-label="Desktop navigation">
@@ -151,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           transition={{ duration: 0.16 }}
           className="app-page-transition"
         >
-          <div id="route-content" className="app-page-container">
+          <div id="route-content" tabIndex={-1} className="app-page-container">
             {children}
           </div>
         </motion.div>
