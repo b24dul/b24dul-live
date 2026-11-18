@@ -32,6 +32,9 @@ export function PrivacyNotice() {
             Other visitors will only ever see a nickname you choose, never your real name. Please
             don’t put your real name in your nickname or messages.
           </li>
+          <li>
+            Chat messages and nicknames are public. Online status is visible only to the site owner.
+          </li>
           <li>The new site does not use advertising or tracking cookies.</li>
         </ul>
       </Section>
@@ -80,15 +83,48 @@ export function PrivacyNotice() {
             then uses YouTube’s privacy-enhanced mode. Videos in the archive open on YouTube.
           </li>
           <li>
-            <strong>Firebase</strong> (Google) provides sign-in, and will store chat and other
-            features as they arrive.
+            <strong>Firebase</strong> (Google) provides sign-in. The chat is stored in its database
+            in Google’s European (Belgium) data centre.
           </li>
         </ul>
       </Section>
+      <Section title="Chat">
+        <p>To chat you continue as a guest or sign in, then choose a nickname. The chat stores:</p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <strong>Your nickname</strong>, linked to your random account ID. Anyone can see it.
+          </li>
+          <li>
+            <strong>Your messages</strong>: the text, the time and your account ID. Anyone can read
+            them. They stay until the site owner removes them or clears the chat.
+          </li>
+          <li>
+            <strong>Online status</strong>: while the chat is open, a record that you are connected
+            and since when. Only the site owner can see it, and it is removed when you leave.
+          </li>
+          <li>
+            <strong>The time of your last message</strong>, to enforce the 5-second slow mode. Only
+            you can see it.
+          </li>
+          <li>
+            <strong>Moderation</strong>: if the site owner mutes or bans an account, that is
+            recorded against the account ID. Only that person and the site owner can see it.
+          </li>
+        </ul>
+        <p>
+          Your account ID is a random code created by Firebase. It is not your Google account ID and
+          does not reveal who you are. The database only accepts a nickname on your public profile,
+          so your Google name, email and photo cannot be saved there.
+        </p>
+        <p>
+          The chat blocks swearing, links, email addresses, phone numbers and questions asking for
+          personal details. Please don’t share them in any form.
+        </p>
+      </Section>
       <Section title="Features still to come">
         <p>
-          Chat, leaderboards and visitor statistics are not on the new site yet. Before any of them
-          go live, this notice will be updated to say exactly what they store and who can see it.
+          Leaderboards and visitor statistics are not on the new site yet. Before either goes live,
+          this notice will be updated to say exactly what it stores and who can see it.
         </p>
       </Section>
       <Section title="Your choices">
