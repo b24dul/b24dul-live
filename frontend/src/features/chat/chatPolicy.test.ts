@@ -1,34 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { checkNickname, cleanMessage, prepareMessage, suggestNickname } from './chatPolicy';
+import { BLOCKED_WORDS, chatNameFor, cleanMessage, prepareMessage } from './chatPolicy';
 
-describe('nicknames', () => {
-  it.each([
-    'ab',
-    'a'.repeat(21),
-    'has space',
-    'Admin',
-    'ADM1N',
-    'B24DUL',
-    'b_24-dul',
-    'b24du1',
-    'Moderator7',
-    'Mod_Sam',
-    'chatmod',
-    'TheOwner',
-    'B24DUL_Support',
-    'Fuck_off',
-    'sh1thead',
-  ])('rejects %s', (nickname) => expect(checkNickname(nickname).ok).toBe(false));
+describe('generated chat names', () => {
+  it('are made from the account ID, the same every time, like SwiftOtter42', () => {
+    expect(chatNameFor('abc123')).toBe(chatNameFor('abc123'));
+    const names = new Set<string>();
+    for (let index = 0; index < 500; index++) {
+      const name = chatNameFor('uid-' + index + '-' + Math.random().toString(36).slice(2));
+      expect(name).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+[1-9][0-9]$/);
+      names.add(name);
+    }
+    expect(names.size).toBeGreaterThan(450);
+  });
 
-  it.each(['CalmHeron10', 'modern_art', 'Abdul_99', 'x-y-z'])('accepts %s', (nickname) =>
-    expect(checkNickname(nickname)).toEqual({ ok: true }),
-  );
-
-  it('suggests valid anonymous nicknames like SwiftOtter42', () => {
-    for (let index = 0; index < 50; index++) {
-      const nickname = suggestNickname();
-      expect(nickname).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+\d{2}$/);
-      expect(checkNickname(nickname)).toEqual({ ok: true });
+  it('can never spell a blocked word or look like staff', () => {
+    const name = chatNameFor('anything').toLowerCase();
+    expect(name).not.toMatch(/admin|b24dul|mod|owner|staff|official/);
+    for (let index = 0; index < 2000; index++) {
+      const generated = chatNameFor(String(index)).toLowerCase();
+      for (const word of BLOCKED_WORDS) expect(generated).not.toContain(word);
+      expect(generated).not.toMatch(/admin|b24dul|moderat|owner|staff|official/);
     }
   });
 });

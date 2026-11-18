@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Pin, Shield } from 'lucide-react';
-import { GlassPanel, PrimaryButton, SecondaryButton, StatusIndicator } from '../../components/ui';
+import { GlassPanel, PrimaryButton, StatusIndicator } from '../../components/ui';
 import { useAccount } from '../../contexts/AccountContext';
 import type {
   ChatMessage,
@@ -10,113 +10,16 @@ import type {
   OwnModeration,
 } from '../../services/chatService';
 import {
-  checkNickname,
+  ADMIN_CHAT_NAME,
+  chatNameFor,
   MAX_MESSAGE_LENGTH,
   prepareMessage,
   SLOW_MODE_MS,
-  suggestNickname,
 } from './chatPolicy';
 
 export type LoadChatService = () => Promise<ChatService>;
 const loadFirebaseChat: LoadChatService = () =>
   import('../../services/chatRuntime').then((module) => module.startChatRuntime());
-
-/** Subscribes to the nicknames of the people in view. Only nicknames are public. */
-function useNicknames(service: ChatService | null, uids: string[]) {
-  const [nicknames, setNicknames] = useState<Record<string, string | null>>({});
-  const subscriptions = useRef(new Map<string, () => void>());
-  const key = [...new Set(uids)].sort().join(',');
-  useEffect(() => {
-    if (!service) return;
-    const wanted = new Set(key ? key.split(',') : []);
-    for (const [uid, stop] of subscriptions.current) {
-      if (!wanted.has(uid)) {
-        stop();
-        subscriptions.current.delete(uid);
-      }
-    }
-    for (const uid of wanted) {
-      if (subscriptions.current.has(uid)) continue;
-      subscriptions.current.set(
-        uid,
-        service.watchNickname(uid, (nickname) =>
-          setNicknames((current) => ({ ...current, [uid]: nickname })),
-        ),
-      );
-    }
-  }, [service, key]);
-  useEffect(() => {
-    const current = subscriptions.current;
-    return () => {
-      current.forEach((stop) => stop());
-      current.clear();
-    };
-  }, [service]);
-  return nicknames;
-}
-
-function NicknameForm({
-  initial,
-  onSave,
-  onCancel,
-}: {
-  initial: string;
-  onSave: (nickname: string) => Promise<void>;
-  onCancel?: () => void;
-}) {
-  const [value, setValue] = useState(initial);
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const check = checkNickname(value);
-    if (!check.ok) return setError(check.reason);
-    setSaving(true);
-    try {
-      await onSave(value);
-    } catch {
-      setError('That nickname could not be saved. Try another.');
-    } finally {
-      setSaving(false);
-    }
-  }
-  return (
-    <form className="flex flex-col gap-2" onSubmit={submit} noValidate>
-      <label className="text-sm font-semibold" htmlFor="chat-nickname">
-        Choose a nickname
-      </label>
-      <p className="text-sm text-slate-300" id="chat-nickname-help">
-        Other people see only this nickname, never your Google name or email. Don’t use your real
-        name. 3–20 letters, numbers, _ or -.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        <input
-          id="chat-nickname"
-          aria-describedby="chat-nickname-help chat-nickname-error"
-          autoComplete="off"
-          className="min-w-0 flex-1 rounded-lg border border-slate-500 bg-slate-950 px-3 py-2 text-white"
-          maxLength={20}
-          value={value}
-          onChange={(event) => {
-            setValue(event.target.value);
-            setError('');
-          }}
-        />
-        <PrimaryButton type="submit" disabled={saving}>
-          Save nickname
-        </PrimaryButton>
-        {onCancel && (
-          <SecondaryButton type="button" onClick={onCancel}>
-            Cancel
-          </SecondaryButton>
-        )}
-      </div>
-      <p className="text-sm text-red-200" id="chat-nickname-error" role="alert">
-        {error}
-      </p>
-    </form>
-  );
-}
 
 function Composer({
   onSend,
@@ -201,10 +104,7 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
   const [messages, setMessages] = useState<ChatMessage[] | null>(null);
   const [settings, setSettings] = useState<ChatSettings>({ enabled: true, pinned: null });
   const [admins, setAdmins] = useState<Set<string>>(new Set());
-  const [ownNickname, setOwnNickname] = useState<string | null | undefined>(undefined);
   const [moderation, setModeration] = useState<OwnModeration>({ banned: false, mutedUntil: null });
-  const [editingNickname, setEditingNickname] = useState(false);
-  const [suggestion] = useState(() => suggestNickname());
 
   const identity = account.session.status === 'ready' ? account.session.identity : null;
   const uid = identity && 'uid' in identity ? identity.uid : null;
@@ -233,21 +133,14 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
   }, [service]);
 
   useEffect(() => {
-    setOwnNickname(undefined);
     setModeration({ banned: false, mutedUntil: null });
     if (!service || !uid) return;
-    const stops = [
-      service.watchNickname(uid, setOwnNickname),
-      service.watchOwnModeration(uid, setModeration),
-      service.startPresence(uid),
-    ];
+    const stops = [service.watchOwnModeration(uid, setModeration), service.startPresence(uid)];
     return () => stops.forEach((stop) => stop());
   }, [service, uid]);
 
-  const nicknames = useNicknames(
-    service,
-    (messages ?? []).map((message) => message.uid),
-  );
+  const nameFor = (who: string) => (admins.has(who) ? ADMIN_CHAT_NAME : chatNameFor(who));
+  const canTalk = identity?.kind === 'google';
 
   const log = useRef<HTMLOListElement>(null);
   useEffect(() => {
@@ -258,44 +151,29 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
   let composer: React.ReactNode;
   if (!service) composer = null;
   else if (!identity) composer = <p className="text-sm text-slate-300">Checking sign-in…</p>;
-  else if (!uid)
+  else if (!canTalk)
     composer = (
       <div className="flex flex-col gap-3">
         <p className="text-sm text-slate-300">
-          To chat, continue as a guest or sign in with Google. Other people only see the nickname
-          you choose.
+          Anyone can read the chat. To talk, sign in with Google — other people only see a name made
+          up for you, never your Google name or email.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <SecondaryButton disabled={account.pending} onClick={account.continueAsGuest}>
-            Continue as guest
-          </SecondaryButton>
+        <div>
           <PrimaryButton disabled={account.pending} onClick={account.signInWithGoogle}>
-            Sign in with Google
+            Sign in with Google to chat
           </PrimaryButton>
         </div>
       </div>
     );
-  else if (ownNickname === undefined) composer = null;
   else if (moderation.banned)
     composer = <p className="text-sm text-slate-300">You can’t post in this chat.</p>;
-  else if (ownNickname === null || editingNickname)
-    composer = (
-      <NicknameForm
-        initial={ownNickname ?? suggestion}
-        onSave={async (nickname) => {
-          await service.setNickname(uid, nickname);
-          setEditingNickname(false);
-        }}
-        onCancel={ownNickname ? () => setEditingNickname(false) : undefined}
-      />
-    );
   else {
     const muted = moderation.mutedUntil !== null && moderation.mutedUntil > Date.now();
     composer = (
       <div className="flex flex-col gap-2">
         <Composer
           onSend={async (text) => {
-            await service.send(uid, text);
+            await service.send(uid!, text);
           }}
           disabledReason={
             !settings.enabled
@@ -306,14 +184,8 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
           }
         />
         <p className="text-xs text-slate-300">
-          Chatting as <strong>{ownNickname}</strong> ·{' '}
-          <button
-            type="button"
-            className="underline underline-offset-4"
-            onClick={() => setEditingNickname(true)}
-          >
-            Change nickname
-          </button>
+          You appear as <strong>{nameFor(uid!)}</strong>. Names are made up automatically so nobody
+          can be identified.
         </p>
       </div>
     );
@@ -334,7 +206,7 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
         ) : !settings.enabled ? (
           <StatusIndicator status="warning">Chat is off</StatusIndicator>
         ) : (
-          <StatusIndicator status="neutral">Anonymous nicknames · slow mode 5s</StatusIndicator>
+          <StatusIndicator status="neutral">Anonymous names · slow mode 5s</StatusIndicator>
         )}
       </div>
       {settings.pinned && (
@@ -357,7 +229,7 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
                     <Shield size={12} aria-hidden="true" /> Admin
                   </span>
                 )}
-                {nicknames[message.uid] ?? 'Someone'}
+                {nameFor(message.uid)}
               </span>{' '}
               <span className="chat-text">{message.text}</span>
               {message.edited && <span className="text-xs text-slate-400"> (edited)</span>}{' '}

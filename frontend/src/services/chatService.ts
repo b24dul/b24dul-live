@@ -1,5 +1,6 @@
-// /v2/ chat, nicknames and presence. Public data holds only nicknames and UIDs; the database rules
-// (firebase/v2.rules.json) enforce that, the slow mode and the moderation checks.
+// /v2/ chat and presence. Public data holds only account IDs and message text; the database rules
+// (firebase/v2.rules.json) enforce that, Google-only posting, the slow mode, moderation and the
+// 100-message read limit.
 import {
   limitToLast,
   onDisconnect,
@@ -62,14 +63,6 @@ export function createChatService(database: Database) {
       );
     },
 
-    watchNickname(uid: string, onNickname: (nickname: string | null) => void): Unsubscribe {
-      return onValue(
-        at(`profiles/${uid}/nickname`),
-        (snapshot) => onNickname(typeof snapshot.val() === 'string' ? snapshot.val() : null),
-        ignore,
-      );
-    },
-
     /** A user's own ban and mute (only they and the admin can read them). */
     watchOwnModeration(uid: string, onModeration: (moderation: OwnModeration) => void) {
       const state: OwnModeration = { banned: false, mutedUntil: null };
@@ -92,11 +85,6 @@ export function createChatService(database: Database) {
         ),
       ];
       return () => stops.forEach((stop) => stop());
-    },
-
-    /** Only the nickname is stored: never a Google name, email or photo. */
-    setNickname(uid: string, nickname: string) {
-      return set(at(`profiles/${uid}`), { nickname });
     },
 
     /** Message and slow-mode stamp in one atomic write. */

@@ -11,6 +11,7 @@ import type {
   OwnModeration,
 } from '../../services/chatService';
 import { ChatPanel } from './ChatPanel';
+import { chatNameFor } from './chatPolicy';
 
 function account(identity: AuthIdentity, displayName: string | null = null): AccountRuntime {
   return {
@@ -32,7 +33,6 @@ function account(identity: AuthIdentity, displayName: string | null = null): Acc
 function fakeChat({
   messages = [] as ChatMessage[],
   settings = { enabled: true, pinned: null } as ChatSettings,
-  nicknames = {} as Record<string, string | null>,
   admins = [] as string[],
   moderation = { banned: false, mutedUntil: null } as OwnModeration,
 } = {}) {
@@ -40,9 +40,7 @@ function fakeChat({
     watchMessages: (onMessages) => (onMessages(messages), () => {}),
     watchSettings: (onSettings) => (onSettings(settings), () => {}),
     watchAdmins: (onAdmins) => (onAdmins(new Set(admins)), () => {}),
-    watchNickname: (uid, onNickname) => (onNickname(nicknames[uid] ?? null), () => {}),
     watchOwnModeration: (_uid, onModeration) => (onModeration(moderation), () => {}),
-    setNickname: vi.fn(async () => {}),
     send: vi.fn(async () => 'key'),
     startPresence: vi.fn(() => () => {}),
   };
@@ -68,44 +66,44 @@ const message = (id: string, uid: string, text: string): ChatMessage => ({
 });
 
 describe('ChatPanel', () => {
-  it('shows messages with nicknames, the pin and the admin badge to visitors who are not signed in', async () => {
+  it('lets anyone read: generated names, the pin and B24DUL for the admin', async () => {
     const service = fakeChat({
       messages: [message('1', 'owner', 'Welcome'), message('2', 'guest', 'hi all')],
-      nicknames: { owner: 'B24DUL', guest: 'CalmHeron10' },
       admins: ['owner'],
       settings: { enabled: true, pinned: { text: 'Be kind', ts: 1 } },
     });
     await renderChat(account({ kind: 'signed-out' }), service);
-    expect(await screen.findByText('CalmHeron10')).toBeInTheDocument();
+    expect(await screen.findByText(chatNameFor('guest'))).toBeInTheDocument();
     expect(screen.getByText('hi all')).toBeInTheDocument();
+    expect(screen.getByText('B24DUL')).toBeInTheDocument();
     expect(screen.getByText('Admin')).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent('Be kind');
-    expect(screen.getByRole('button', { name: 'Continue as guest' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Sign in with Google to chat' })).toBeEnabled();
+    expect(screen.queryByLabelText('Message')).not.toBeInTheDocument();
     expect(service.startPresence).not.toHaveBeenCalled();
   });
 
-  it('asks for a nickname first and saves only the nickname — never the Google name', async () => {
+  it('guests can read but are asked to sign in with Google to talk', async () => {
+    await renderChat(account({ kind: 'anonymous', uid: 'guest' }), fakeChat());
+    expect(
+      await screen.findByRole('button', { name: 'Sign in with Google to chat' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Message')).not.toBeInTheDocument();
+  });
+
+  it('Google users talk under a generated name, never their Google name', async () => {
     const service = fakeChat();
     await renderChat(account({ kind: 'google', uid: 'member' }, 'Sam Member'), service);
-    const input = await screen.findByLabelText('Choose a nickname');
+    await screen.findByLabelText('Message');
+    expect(screen.getByText(chatNameFor('member'))).toBeInTheDocument();
     expect(screen.queryByText(/Sam Member/)).not.toBeInTheDocument();
-    fireEvent.change(input, { target: { value: 'Admin' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save nickname' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/staff or B24DUL/);
-    expect(service.setNickname).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: 'QuietOwl12' } });
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save nickname' }));
-    });
-    expect(service.setNickname).toHaveBeenCalledWith('member', 'QuietOwl12');
     expect(service.startPresence).toHaveBeenCalledWith('member');
   });
 
   it('masks swearing, blocks links and personal details before sending', async () => {
-    const service = fakeChat({ nicknames: { guest: 'CalmHeron10' } });
-    await renderChat(account({ kind: 'anonymous', uid: 'guest' }), service);
+    const service = fakeChat();
+    await renderChat(account({ kind: 'google', uid: 'member' }), service);
     const input = await screen.findByLabelText('Message');
-    expect(screen.getByText('CalmHeron10')).toBeInTheDocument();
     fireEvent.change(input, { target: { value: 'go to www.example.org' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/Links aren/);
@@ -117,36 +115,30 @@ describe('ChatPanel', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Send' }));
     });
-    expect(service.send).toHaveBeenCalledWith('guest', 'that was ****');
+    expect(service.send).toHaveBeenCalledWith('member', 'that was ****');
     expect(screen.getByRole('button', { name: /Wait \ds/ })).toBeDisabled();
   });
 
-  it('explains bans, mutes and chat being switched off', async () => {
+  it('explains bans', async () => {
     await renderChat(
-      account({ kind: 'anonymous', uid: 'guest' }),
-      fakeChat({
-        nicknames: { guest: 'CalmHeron10' },
-        moderation: { banned: true, mutedUntil: null },
-      }),
+      account({ kind: 'google', uid: 'member' }),
+      fakeChat({ moderation: { banned: true, mutedUntil: null } }),
     );
     expect(await screen.findByText('You can’t post in this chat.')).toBeInTheDocument();
   });
 
-  it('shows when chat is off or the user is muted', async () => {
+  it('explains mutes', async () => {
     await renderChat(
-      account({ kind: 'anonymous', uid: 'guest' }),
-      fakeChat({
-        nicknames: { guest: 'CalmHeron10' },
-        moderation: { banned: false, mutedUntil: Date.now() + 60000 },
-      }),
+      account({ kind: 'google', uid: 'member' }),
+      fakeChat({ moderation: { banned: false, mutedUntil: Date.now() + 60000 } }),
     );
     expect(await screen.findByText(/You’re muted until/)).toBeInTheDocument();
   });
 
   it('shows when chat is switched off', async () => {
     await renderChat(
-      account({ kind: 'anonymous', uid: 'guest' }),
-      fakeChat({ nicknames: { guest: 'CalmHeron10' }, settings: { enabled: false, pinned: null } }),
+      account({ kind: 'google', uid: 'member' }),
+      fakeChat({ settings: { enabled: false, pinned: null } }),
     );
     expect(await screen.findByText('Chat is switched off right now.')).toBeInTheDocument();
   });

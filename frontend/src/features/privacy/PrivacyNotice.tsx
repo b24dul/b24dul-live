@@ -29,11 +29,12 @@ export function PrivacyNotice() {
             <strong>not copied into the site’s database</strong>.
           </li>
           <li>
-            Other visitors will only ever see a nickname you choose, never your real name. Please
-            don’t put your real name in your nickname or messages.
+            In chat, other visitors only see a name made up automatically from your random account
+            ID (such as SwiftOtter42). Nobody can choose a name, so a real name never appears.
           </li>
           <li>
-            Chat messages and nicknames are public. Online status is visible only to the site owner.
+            Anyone can read the chat; you need to sign in with Google to post. Online status is
+            visible only to the site owner.
           </li>
           <li>The new site does not use advertising or tracking cookies.</li>
         </ul>
@@ -89,11 +90,12 @@ export function PrivacyNotice() {
         </ul>
       </Section>
       <Section title="Chat">
-        <p>To chat you continue as a guest or sign in, then choose a nickname. The chat stores:</p>
+        <p>
+          Anyone can read the chat without signing in. To post, you sign in with Google. Your chat
+          name is made up from your random account ID each time it is shown; it is not stored, and
+          you cannot choose it. The chat stores:
+        </p>
         <ul className="list-disc space-y-2 pl-5">
-          <li>
-            <strong>Your nickname</strong>, linked to your random account ID. Anyone can see it.
-          </li>
           <li>
             <strong>Your messages</strong>: the text, the time and your account ID. Anyone can read
             them. They stay until the site owner removes them or clears the chat.
@@ -113,8 +115,8 @@ export function PrivacyNotice() {
         </ul>
         <p>
           Your account ID is a random code created by Firebase. It is not your Google account ID and
-          does not reveal who you are. The database only accepts a nickname on your public profile,
-          so your Google name, email and photo cannot be saved there.
+          does not reveal who you are. The database has no place for names, emails or photos: a
+          message can only hold the account ID, the text and the time.
         </p>
         <p>
           The chat blocks swearing, links, email addresses, phone numbers and questions asking for

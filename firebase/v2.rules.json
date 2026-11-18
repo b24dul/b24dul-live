@@ -9,19 +9,6 @@
           ".validate": "newData.val() === true"
         }
       },
-      "profiles": {
-        ".read": true,
-        "$uid": {
-          ".write": "auth != null && ((auth.uid === $uid && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists()) || root.child('v2').child('admins').child(auth.uid).val() === true)",
-          ".validate": "newData.hasChildren(['nickname'])",
-          "nickname": {
-            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{3,20}$/) && (root.child('v2').child('admins').child($uid).val() === true || (!newData.val().toLowerCase().replace('_', '').replace('-', '').replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('4', 'a').replace('5', 's').replace('7', 't').matches(/(adm[il]n|b2adu[il]|bzadu[il]|moderat|owner|offic[il]a[il]|staff|support|system)/) && !newData.val().toLowerCase().replace('_', '').replace('-', '').replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('4', 'a').replace('5', 's').replace('7', 't').matches(/^mods?$/) && !newData.val().toLowerCase().replace('_', '').replace('-', '').replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('4', 'a').replace('5', 's').replace('7', 't').matches(/^mod[a-df-z0-9]/) && !newData.val().toLowerCase().replace('_', '').replace('-', '').replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('4', 'a').replace('5', 's').replace('7', 't').matches(/mod$/) && !newData.val().toLowerCase().replace('_', '').replace('-', '').replace('0', 'o').replace('1', 'i').replace('3', 'e').replace('4', 'a').replace('5', 's').replace('7', 't').matches(/(fuck|shit|cunt|bitch|wanker|twat|dickhead|nigg|faggot|retard|whore|slut|pussy)/)))"
-          },
-          "$other": {
-            ".validate": false
-          }
-        }
-      },
       "chat": {
         "settings": {
           ".read": true,
@@ -46,11 +33,11 @@
           }
         },
         "messages": {
-          ".read": true,
+          ".read": "(query.limitToLast != null && query.limitToLast <= 100) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
           ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
           ".indexOn": ["uid"],
           "$id": {
-            ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && root.child('v2').child('profiles').child(auth.uid).child('nickname').exists() && root.child('v2').child('chat').child('settings').child('enabled').val() !== false && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!root.child('v2').child('moderation').child('mutes').child(auth.uid).exists() || root.child('v2').child('moderation').child('mutes').child(auth.uid).val() <= now) && newData.parent().parent().child('lastPost').child(auth.uid).val() === now",
+            ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && auth.token.firebase.sign_in_provider === 'google.com' && root.child('v2').child('chat').child('settings').child('enabled').val() !== false && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!root.child('v2').child('moderation').child('mutes').child(auth.uid).exists() || root.child('v2').child('moderation').child('mutes').child(auth.uid).val() <= now) && newData.parent().parent().child('lastPost').child(auth.uid).val() === now",
             ".validate": "newData.hasChildren(['uid', 'text', 'ts'])",
             "uid": {
               ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
@@ -72,7 +59,7 @@
         "lastPost": {
           "$uid": {
             ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && auth.uid === $uid && newData.exists()",
+            ".write": "auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()",
             ".validate": "newData.val() === now && (!data.exists() || now - data.val() >= 5000)"
           }
         }

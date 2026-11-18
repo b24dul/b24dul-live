@@ -1,4 +1,4 @@
-// Chat and nickname policy. The database rules (firebase/v2.rules.json) enforce the same word
+// Chat policy. The database rules (firebase/v2.rules.json) enforce the same word
 // lists, limits and patterns; the emulator tests check that both stay in step.
 
 export const MAX_MESSAGE_LENGTH = 200;
@@ -6,7 +6,7 @@ export const MAX_MESSAGES_SHOWN = 100;
 export const SLOW_MODE_MS = 5000;
 export const MUTE_MINUTES = [1, 5, 10, 30, 60] as const;
 
-/** Masked in messages and rejected in nicknames (also rejected by the database rules). */
+/** Masked in messages (and rejected by the database rules). */
 export const BLOCKED_WORDS = [
   'fuck',
   'shit',
@@ -22,45 +22,6 @@ export const BLOCKED_WORDS = [
   'slut',
   'pussy',
 ] as const;
-
-/** Nickname fragments that would impersonate the owner or staff, after normalising look-alikes. */
-export const RESERVED_NICKNAME = [
-  /(adm[il]n|b2adu[il]|bzadu[il]|moderat|owner|offic[il]a[il]|staff|support|system)/,
-  /^mods?$/,
-  /^mod[a-df-z0-9]/,
-  /mod$/,
-];
-
-export const NICKNAME_PATTERN = /^[A-Za-z0-9_-]{3,20}$/;
-
-/** Same normalisation as the rules: lower case, no _ or -, common digit look-alikes as letters. */
-export function normaliseNickname(nickname: string) {
-  return nickname
-    .toLowerCase()
-    .replaceAll('_', '')
-    .replaceAll('-', '')
-    .replaceAll('0', 'o')
-    .replaceAll('1', 'i')
-    .replaceAll('3', 'e')
-    .replaceAll('4', 'a')
-    .replaceAll('5', 's')
-    .replaceAll('7', 't');
-}
-
-export type NicknameCheck = { ok: true } | { ok: false; reason: string };
-
-export function checkNickname(nickname: string): NicknameCheck {
-  if (nickname.length < 3 || nickname.length > 20)
-    return { ok: false, reason: 'Use 3 to 20 characters.' };
-  if (!NICKNAME_PATTERN.test(nickname))
-    return { ok: false, reason: 'Use only letters, numbers, _ and -. No spaces.' };
-  const normalised = normaliseNickname(nickname);
-  if (RESERVED_NICKNAME.some((pattern) => pattern.test(normalised)))
-    return { ok: false, reason: 'That name looks like staff or B24DUL. Choose another.' };
-  if (BLOCKED_WORDS.some((word) => normalised.includes(word)))
-    return { ok: false, reason: 'That name is not allowed. Choose another.' };
-  return { ok: true };
-}
 
 const ADJECTIVES = [
   'Quiet',
@@ -107,10 +68,25 @@ const ANIMALS = [
   'Heron',
 ];
 
-/** A random suggestion such as SwiftOtter42, as on the old site. */
-export function suggestNickname(random: () => number = Math.random) {
-  const pick = <T>(items: readonly T[]) => items[Math.floor(random() * items.length)]!;
-  return pick(ADJECTIVES) + pick(ANIMALS) + String(Math.floor(random() * 90) + 10);
+/** Shown instead of a generated name for accounts on the admin list. */
+export const ADMIN_CHAT_NAME = 'B24DUL';
+
+/**
+ * Everyone's chat name is generated from their account ID (e.g. SwiftOtter42), the same on every
+ * device. Nobody chooses a name and nothing is stored, so a real name can never appear.
+ */
+export function chatNameFor(uid: string) {
+  // FNV-1a 32-bit hash of the account ID.
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < uid.length; index++) {
+    hash ^= uid.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return (
+    ADJECTIVES[hash % ADJECTIVES.length]! +
+    ANIMALS[(hash >>> 8) % ANIMALS.length]! +
+    String(10 + ((hash >>> 16) % 90))
+  );
 }
 
 /** Collapses whitespace and masks blocked words with asterisks, as on the old site. */
