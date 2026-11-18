@@ -87,6 +87,15 @@ export function PrivacyNotice() {
             and Subscribe take you to YouTube’s own site.
           </li>
           <li>
+            <strong>GoatCounter</strong> counts visits, without cookies and without tracking you
+            across other sites. Each time a page opens, or you press Subscribe, play a video, start
+            or finish a game, the site sends GoatCounter the page or action name, your screen width
+            and, once per visit, the website you came from. GoatCounter also sees your browser and
+            device type, and works out your country from your IP address without storing the
+            address. Nothing sent identifies you or your account. Only the site owner can see the
+            totals.
+          </li>
+          <li>
             <strong>Firebase</strong> (Google) provides sign-in. The chat is stored in its database
             in Google’s European (Belgium) data centre.
           </li>
@@ -138,12 +147,6 @@ export function PrivacyNotice() {
           browser window looked like developer tools were open during that game. Only the site owner
           can see it; it is a hint to review, not an accusation, and it never stops a score being
           saved. The site owner can remove any score.
-        </p>
-      </Section>
-      <Section title="Features still to come">
-        <p>
-          Visitor statistics are not on the new site yet. Before they go live, this notice will be
-          updated to say exactly what they store and who can see them.
         </p>
       </Section>
       <Section title="Your choices">

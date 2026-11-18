@@ -1,3 +1,4 @@
+import { countEvent } from '../../services/visitorCounts';
 import { useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { load2048, save2048 } from './gameSaves';
@@ -46,12 +47,14 @@ export function Play2048() {
   useEffect(() => {
     if (!won && !over) return;
     if (!session.claim(over ? 'over' : 'won')) return;
+    if (!over) countEvent('2048/won', 'Reached 2048');
     void submit('g2048', score, session.flagged()).then(setMessage);
     // Only the transitions matter; score is read at that moment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [won, over]);
 
   function newGame() {
+    countEvent('pick/2048', 'Picked 2048');
     setGame((current) => ({ ...new2048(), best: current?.best ?? 0 }));
     setKeepGoing(false);
     session.begin(true);
