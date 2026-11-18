@@ -1,496 +1,259 @@
-import { AdminStats } from './AdminStats';
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { LockKeyhole, Shield } from 'lucide-react';
 import { GlassPanel, PrimaryButton, SecondaryButton, StatusIndicator } from '../../components/ui';
-import { WatchStream } from '../stream/WatchStream';
 import { useAccount } from '../../contexts/AccountContext';
+import { useLiveStatus } from '../../contexts/LiveStatusContext';
 import type { AdminRuntime } from '../../services/adminRuntime';
-import type { Moderation, Presence, PrivacyRequest } from '../../services/adminService';
+import type {
+  Moderation,
+  ModerationLog,
+  Presence,
+  PrivacyRequest,
+  SeenUser,
+  StatsDay,
+  UserScores,
+} from '../../services/adminService';
 import type { ChatMessage, ChatSettings } from '../../services/chatService';
+import { statsDay } from '../../services/dailyTotals';
 import type { ScoreEntry, ScoreFlag } from '../../services/leaderboardService';
 import { BOARDS, boardFor, formatScore, type BoardId } from '../games/leaderboardBoards';
 import { ChatPanel } from '../chat/ChatPanel';
+import { ADMIN_CHAT_NAME, chatNameFor } from '../chat/chatPolicy';
+import { AdminAnalytics } from './AdminAnalytics';
 import {
-  ADMIN_CHAT_NAME,
-  chatNameFor,
-  cleanMessage,
-  MAX_MESSAGE_LENGTH,
-  MUTE_MINUTES,
-} from '../chat/chatPolicy';
+  ChatControls,
+  ConfirmButton,
+  dateTime,
+  MessageActions,
+  PersonActions,
+  type Run,
+} from './AdminShared';
+import { AdminUsers } from './AdminUsers';
 
 export type LoadAdminRuntime = () => Promise<AdminRuntime>;
 const loadFirebaseAdmin: LoadAdminRuntime = () =>
   import('../../services/adminRuntime').then((module) => module.startAdminRuntime());
 
-/** Runs an admin action, reports "done" or "failed", and resolves to whether it worked. */
-type Run = (label: string, action: () => Promise<unknown>) => Promise<boolean>;
-
-const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-const time = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
-
-/** A destructive action needs a second, explicit click. */
-function ConfirmButton({
-  label,
-  confirmLabel,
-  onConfirm,
-  small = false,
-}: {
-  label: string;
-  confirmLabel: string;
-  onConfirm: () => void;
-  small?: boolean;
-}) {
-  const [asking, setAsking] = useState(false);
-  const size = small ? 'admin-small-button' : '';
-  if (!asking)
-    return (
-      <SecondaryButton className={size} onClick={() => setAsking(true)}>
-        {label}
-      </SecondaryButton>
-    );
-  return (
-    <span className="inline-flex flex-wrap gap-2">
-      <PrimaryButton
-        className={`admin-danger ${size}`}
-        onClick={() => {
-          setAsking(false);
-          onConfirm();
-        }}
-      >
-        {confirmLabel}
-      </PrimaryButton>
-      <SecondaryButton className={size} onClick={() => setAsking(false)}>
-        Cancel
-      </SecondaryButton>
-    </span>
-  );
-}
-
-function PersonActions({
-  uid,
-  name,
+/** Right column: people with chat open right now, with quick timeout and ban. */
+function OnlineNow({
+  presence,
   moderation,
+  admins,
   runtime,
   run,
 }: {
-  uid: string;
-  name: string;
+  presence: Presence;
   moderation: Moderation;
+  admins: Set<string>;
   runtime: AdminRuntime;
   run: Run;
 }) {
-  const [minutes, setMinutes] = useState<number>(MUTE_MINUTES[1]);
-  const mutedUntil = moderation.mutes[uid];
-  const muted = mutedUntil !== undefined && mutedUntil > Date.now();
-  const banned = moderation.bans[uid] !== undefined;
-  const { admin } = runtime;
+  const online = Object.entries(presence).sort((a, b) => b[1] - a[1]);
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {muted ? (
-        <SecondaryButton
-          className="admin-small-button"
-          onClick={() => void run(`lifted ${name}’s timeout`, () => admin.unmute(uid))}
-        >
-          Lift timeout (until {time.format(mutedUntil)})
-        </SecondaryButton>
-      ) : (
-        <span className="inline-flex gap-2">
-          <label className="sr-only" htmlFor={`mute-${uid}`}>
-            Timeout length for {name}
-          </label>
-          <select
-            id={`mute-${uid}`}
-            className="admin-select"
-            value={minutes}
-            onChange={(event) => setMinutes(Number(event.target.value))}
-          >
-            {MUTE_MINUTES.map((option) => (
-              <option key={option} value={option}>
-                {option} min
-              </option>
-            ))}
-          </select>
-          <SecondaryButton
-            className="admin-small-button"
-            onClick={() =>
-              void run(`timed out ${name} for ${minutes} min`, () => admin.mute(uid, minutes))
-            }
-          >
-            Timeout
-          </SecondaryButton>
-        </span>
-      )}
-      {banned ? (
-        <SecondaryButton
-          className="admin-small-button"
-          onClick={() => void run(`unbanned ${name}`, () => admin.unban(uid))}
-        >
-          Unban
-        </SecondaryButton>
-      ) : (
-        <ConfirmButton
-          small
-          label="Ban"
-          confirmLabel={`Ban ${name}`}
-          onConfirm={() => void run(`banned ${name}`, () => admin.ban(uid))}
-        />
-      )}
-      <ConfirmButton
-        small
-        label="Delete all their messages"
-        confirmLabel={`Delete all from ${name}`}
-        onConfirm={() =>
-          void run(`deleted ${name}’s messages`, async () => {
-            const count = await admin.deleteAllMessagesFrom(uid);
-            return count;
-          })
-        }
-      />
-    </div>
-  );
-}
-
-function MessageActions({
-  message,
-  name,
-  isAdminAuthor,
-  moderation,
-  pinnedText,
-  runtime,
-  run,
-}: {
-  message: ChatMessage;
-  name: string;
-  isAdminAuthor: boolean;
-  moderation: Moderation;
-  pinnedText: string | null;
-  runtime: AdminRuntime;
-  run: Run;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(message.text);
-  function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const cleaned = cleanMessage(text);
-    if (!cleaned || cleaned.length > MAX_MESSAGE_LENGTH) return;
-    setEditing(false);
-    void run('message edited', () => runtime.admin.editMessage(message.id, cleaned));
-  }
-  return (
-    <details className="admin-message-actions">
-      <summary>Moderate</summary>
-      <div className="mt-2 flex flex-col gap-2">
-        {editing ? (
-          <form className="flex flex-wrap gap-2" onSubmit={save}>
-            <label className="sr-only" htmlFor={`edit-${message.id}`}>
-              Edit message
-            </label>
-            <input
-              id={`edit-${message.id}`}
-              className="admin-input min-w-0 flex-1"
-              maxLength={MAX_MESSAGE_LENGTH}
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-            />
-            <PrimaryButton className="admin-small-button" type="submit">
-              Save
-            </PrimaryButton>
-            <SecondaryButton className="admin-small-button" onClick={() => setEditing(false)}>
-              Cancel
-            </SecondaryButton>
-          </form>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <SecondaryButton className="admin-small-button" onClick={() => setEditing(true)}>
-              Edit
-            </SecondaryButton>
-            {pinnedText === message.text ? (
-              <SecondaryButton
-                className="admin-small-button"
-                onClick={() => void run('unpinned', () => runtime.admin.unpin())}
-              >
-                Unpin
-              </SecondaryButton>
-            ) : (
-              <SecondaryButton
-                className="admin-small-button"
-                onClick={() => void run('message pinned', () => runtime.admin.pin(message.text))}
-              >
-                Pin
-              </SecondaryButton>
-            )}
-            <ConfirmButton
-              small
-              label="Delete"
-              confirmLabel="Delete message"
-              onConfirm={() =>
-                void run('message deleted', () => runtime.admin.deleteMessage(message.id))
-              }
-            />
-          </div>
-        )}
-        {!isAdminAuthor && (
-          <PersonActions
-            uid={message.uid}
-            name={name}
-            moderation={moderation}
-            runtime={runtime}
-            run={run}
-          />
-        )}
-      </div>
-    </details>
-  );
-}
-
-function ChatControls({
-  runtime,
-  settings,
-  messageCount,
-  run,
-}: {
-  runtime: AdminRuntime;
-  settings: ChatSettings;
-  messageCount: number;
-  run: Run;
-}) {
-  const [pinText, setPinText] = useState('');
-  const [pinError, setPinError] = useState('');
-  const { admin } = runtime;
-  return (
-    <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="chat-controls">
-      <h2 id="chat-controls" className="text-lg font-semibold">
-        Chat controls
+    <GlassPanel as="section" className="admin-column p-4" aria-labelledby="online-now">
+      <h2 id="online-now" className="text-xl">
+        Online now <span className="admin-count">{online.length}</span>
       </h2>
-      <div className="flex flex-wrap items-center gap-3">
-        <StatusIndicator status={settings.enabled ? 'success' : 'warning'}>
-          Chat is {settings.enabled ? 'on' : 'off'}
-        </StatusIndicator>
-        <SecondaryButton
-          onClick={() =>
-            void run(settings.enabled ? 'Chat turned off' : 'Chat turned on', () =>
-              admin.setChatEnabled(!settings.enabled),
-            )
-          }
-        >
-          {settings.enabled ? 'Turn chat off' : 'Turn chat on'}
-        </SecondaryButton>
-      </div>
-      <form
-        className="flex flex-col gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const text = pinText.trim();
-          if (!text) return setPinError('Type the announcement in the box first.');
-          setPinError('');
-          void run('message pinned', () => admin.pin(text)).then((ok) => ok && setPinText(''));
-        }}
-      >
-        <label className="text-sm font-semibold" htmlFor="pin-text">
-          Pinned message
-        </label>
-        {settings.pinned && (
-          <p className="text-sm text-slate-300">Currently pinned: “{settings.pinned.text}”</p>
-        )}
-        <input
-          id="pin-text"
-          className="admin-input"
-          maxLength={MAX_MESSAGE_LENGTH}
-          aria-describedby="pin-help pin-error"
-          value={pinText}
-          onChange={(event) => {
-            setPinText(event.target.value);
-            setPinError('');
-          }}
-        />
-        <p id="pin-help" className="text-xs text-slate-300">
-          Type an announcement, or use “Pin” under Moderate on any chat message.
-        </p>
-        <p id="pin-error" role="alert" className="text-sm text-red-200">
-          {pinError}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <PrimaryButton type="submit">Pin announcement</PrimaryButton>
-          {settings.pinned && (
-            <SecondaryButton onClick={() => void run('unpinned', () => admin.unpin())}>
-              Unpin
-            </SecondaryButton>
-          )}
-        </div>
-      </form>
-      <div>
-        <ConfirmButton
-          label="Clear chat"
-          confirmLabel={`Delete every message (${messageCount} shown)`}
-          onConfirm={() => void run('chat cleared', () => admin.clearChat())}
-        />
-      </div>
+      <p className="text-xs text-slate-300">Signed-in people with the site open.</p>
+      <ul className="flex flex-col gap-3" aria-label="People online now">
+        {online.length === 0 && <li className="text-sm text-slate-300">Nobody right now.</li>}
+        {online.map(([uid]) => {
+          const name = admins.has(uid) ? ADMIN_CHAT_NAME : chatNameFor(uid);
+          return (
+            <li key={uid} className="admin-person">
+              <div className="flex flex-wrap items-center gap-2">
+                <strong>{name}</strong>
+                {(moderation.mutes[uid] ?? 0) > Date.now() && (
+                  <StatusIndicator status="warning">Timed out</StatusIndicator>
+                )}
+                {moderation.bans[uid] !== undefined && (
+                  <StatusIndicator status="danger">Banned</StatusIndicator>
+                )}
+              </div>
+              {!admins.has(uid) && (
+                <PersonActions
+                  uid={uid}
+                  name={name}
+                  moderation={moderation}
+                  runtime={runtime}
+                  run={run}
+                  compact
+                />
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </GlassPanel>
   );
 }
 
-type Person = {
-  uid: string;
-  name: string;
-  online: boolean;
-  lastMessage: number | null;
-  messages: number;
-  muted: boolean;
-  banned: boolean;
-};
-type Filter = 'all' | 'online' | 'recent' | 'muted' | 'banned';
-const PAGE_SIZE = 20;
-
-function People({
-  runtime,
-  messages,
-  presence,
-  moderation,
-  admins,
-  run,
-}: {
-  runtime: AdminRuntime;
-  messages: ChatMessage[];
-  presence: Presence;
-  moderation: Moderation;
-  admins: Set<string>;
-  run: Run;
-}) {
-  const [filter, setFilter] = useState<Filter>('all');
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const people = useMemo(() => {
-    const byUid = new Map<string, Person>();
-    const now = Date.now();
-    const person = (uid: string) => {
-      let found = byUid.get(uid);
-      if (!found) {
-        found = {
-          uid,
-          name: admins.has(uid) ? ADMIN_CHAT_NAME : chatNameFor(uid),
-          online: false,
-          lastMessage: null,
-          messages: 0,
-          muted: (moderation.mutes[uid] ?? 0) > now,
-          banned: moderation.bans[uid] !== undefined,
-        };
-        byUid.set(uid, found);
-      }
-      return found;
-    };
-    for (const message of messages) {
-      const found = person(message.uid);
-      found.messages += 1;
-      found.lastMessage = Math.max(found.lastMessage ?? 0, message.ts);
-    }
-    for (const uid of Object.keys(presence)) person(uid).online = true;
-    for (const uid of Object.keys(moderation.mutes)) person(uid);
-    for (const uid of Object.keys(moderation.bans)) person(uid);
-    return [...byUid.values()].sort(
-      (a, b) => Number(b.online) - Number(a.online) || (b.lastMessage ?? 0) - (a.lastMessage ?? 0),
-    );
-  }, [messages, presence, moderation, admins]);
-
-  const term = search.trim().toLowerCase();
-  const shown = people.filter(
-    (person) =>
-      (filter === 'all' ||
-        (filter === 'online' && person.online) ||
-        (filter === 'recent' && person.lastMessage !== null) ||
-        (filter === 'muted' && person.muted) ||
-        (filter === 'banned' && person.banned)) &&
-      (!term ||
-        person.name.toLowerCase().includes(term) ||
-        person.uid.toLowerCase().includes(term)),
-  );
-  const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
-  const current = Math.min(page, pages - 1);
-  const onlineCount = people.filter((person) => person.online).length;
-
+/** Left column: a small, muted preview just to confirm the stream is running. */
+function StreamPreview() {
+  const status = useLiveStatus();
   return (
-    <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="people-title">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="people-title" className="text-lg font-semibold">
-          People
-        </h2>
-        <StatusIndicator status="neutral">{onlineCount} online with chat open</StatusIndicator>
-      </div>
-      <p className="text-sm text-slate-300">
-        People who are online, posted in the last 100 messages, or are timed out or banned. Names
-        are generated from account IDs; no real names exist here.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Search name or account ID
-          <input
-            className="admin-input"
-            type="search"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(0);
-            }}
+    <GlassPanel as="section" className="admin-column p-4" aria-labelledby="stream-preview">
+      <h2 id="stream-preview" className="text-xl">
+        Stream
+      </h2>
+      {status.state === 'live' ? (
+        <div className="admin-preview">
+          <iframe
+            title="Stream preview (muted)"
+            src={`https://www.youtube-nocookie.com/embed/${status.videoId}?autoplay=1&mute=1&rel=0`}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Show
-          <select
-            className="admin-select"
-            value={filter}
-            onChange={(event) => {
-              setFilter(event.target.value as Filter);
-              setPage(0);
-            }}
-          >
-            <option value="all">Everyone</option>
-            <option value="online">Online now</option>
-            <option value="recent">Recently posted</option>
-            <option value="muted">Timed out</option>
-            <option value="banned">Banned</option>
-          </select>
-        </label>
-      </div>
-      <ul className="flex flex-col gap-3" aria-label="People">
-        {shown.length === 0 && <li className="text-sm text-slate-300">Nobody matches.</li>}
-        {shown.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map((person) => (
-          <li key={person.uid} className="admin-person">
-            <div className="flex flex-wrap items-center gap-2">
-              <strong>{person.name}</strong>
-              <code className="break-all text-xs text-slate-400">{person.uid}</code>
-              {person.online && <StatusIndicator status="success">Online</StatusIndicator>}
-              {person.muted && <StatusIndicator status="warning">Timed out</StatusIndicator>}
-              {person.banned && <StatusIndicator status="danger">Banned</StatusIndicator>}
-              {person.messages > 0 && (
-                <span className="text-xs text-slate-300">
-                  {person.messages} recent message{person.messages === 1 ? '' : 's'}
-                </span>
-              )}
-            </div>
-            {!admins.has(person.uid) && (
-              <PersonActions
-                uid={person.uid}
-                name={person.name}
-                moderation={moderation}
-                runtime={runtime}
-                run={run}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
-      {pages > 1 && (
-        <div className="flex items-center gap-3">
-          <SecondaryButton disabled={current === 0} onClick={() => setPage(current - 1)}>
-            Previous
-          </SecondaryButton>
-          <span className="text-sm">
-            Page {current + 1} of {pages}
-          </span>
-          <SecondaryButton disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>
-            Next
-          </SecondaryButton>
+        </div>
+      ) : (
+        <div className="admin-preview admin-preview--off">
+          {status.state === 'offline'
+            ? 'Offline'
+            : status.state === 'checking'
+              ? 'Checking…'
+              : 'Status unavailable'}
         </div>
       )}
+      <p className="text-xs text-slate-300">Muted preview, YouTube privacy-enhanced mode.</p>
+    </GlassPanel>
+  );
+}
+
+/** Top strip: live status, viewers, chat on/off and today's visits. */
+function TopStrip({
+  settings,
+  onlineCount,
+  visitsToday,
+  runtime,
+  run,
+}: {
+  settings: ChatSettings;
+  onlineCount: number;
+  visitsToday: number | null;
+  runtime: AdminRuntime;
+  run: Run;
+}) {
+  const status = useLiveStatus();
+  return (
+    <section className="admin-strip" aria-label="Status">
+      <div className="admin-stat">
+        <span className="admin-stat-label">Stream</span>
+        {status.state === 'live' ? (
+          <span className="live-pill">
+            <span className="live-dot" aria-hidden="true" /> LIVE
+          </span>
+        ) : (
+          <span className="offline-pill">
+            {status.state === 'offline'
+              ? 'Offline'
+              : status.state === 'checking'
+                ? 'Checking…'
+                : 'Unknown'}
+          </span>
+        )}
+      </div>
+      <div className="admin-stat">
+        <span className="admin-stat-label">Viewers watching</span>
+        <span
+          className="admin-stat-value admin-stat-value--muted"
+          title="YouTube does not share the live viewer count with the site"
+        >
+          Not available
+        </span>
+        <span className="text-xs text-slate-300">
+          {status.state === 'live' ? (
+            <span className="admin-live-count">{onlineCount}</span>
+          ) : (
+            onlineCount
+          )}{' '}
+          signed in on the site
+        </span>
+      </div>
+      <div className="admin-stat">
+        <span className="admin-stat-label">Chat</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={settings.enabled}
+          className={settings.enabled ? 'admin-switch admin-switch--on' : 'admin-switch'}
+          onClick={() =>
+            void run(settings.enabled ? 'Chat turned off' : 'Chat turned on', () =>
+              runtime.admin.setChatEnabled(!settings.enabled),
+            )
+          }
+        >
+          <span className="admin-switch-knob" aria-hidden="true" />
+          Chat {settings.enabled ? 'on' : 'off'}
+        </button>
+      </div>
+      <div className="admin-stat">
+        <span className="admin-stat-label">Visits today</span>
+        <span className="admin-stat-value">{visitsToday === null ? '…' : visitsToday}</span>
+      </div>
+    </section>
+  );
+}
+
+type Tab = 'users' | 'analytics' | 'leaderboards' | 'privacy';
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'users', label: 'Users' },
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'leaderboards', label: 'Leaderboards' },
+  { id: 'privacy', label: 'Privacy requests' },
+];
+
+function Tabs({ panels }: { panels: Record<Tab, ReactNode> }) {
+  const [tab, setTab] = useState<Tab>('users');
+  const buttons = useRef<Record<string, HTMLButtonElement | null>>({});
+  function onKey(event: KeyboardEvent<HTMLDivElement>) {
+    const index = TABS.findIndex((item) => item.id === tab);
+    const next =
+      event.key === 'ArrowRight'
+        ? (index + 1) % TABS.length
+        : event.key === 'ArrowLeft'
+          ? (index - 1 + TABS.length) % TABS.length
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? TABS.length - 1
+              : -1;
+    if (next < 0) return;
+    event.preventDefault();
+    setTab(TABS[next]!.id);
+    buttons.current[TABS[next]!.id]?.focus();
+  }
+  return (
+    <GlassPanel as="section" className="admin-tabs p-4 sm:p-5" aria-label="Admin sections">
+      <div role="tablist" aria-label="Admin sections" className="admin-tablist" onKeyDown={onKey}>
+        {TABS.map((item) => (
+          <button
+            key={item.id}
+            id={`tab-${item.id}`}
+            ref={(element) => {
+              buttons.current[item.id] = element;
+            }}
+            type="button"
+            role="tab"
+            aria-selected={tab === item.id}
+            aria-controls={`panel-${item.id}`}
+            tabIndex={tab === item.id ? 0 : -1}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="mt-5">
+        {panels[tab]}
+      </div>
     </GlassPanel>
   );
 }
@@ -509,7 +272,7 @@ function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }
     return () => stops.forEach((stop) => stop());
   }, [runtime, boardId, board.lowerWins]);
   return (
-    <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="admin-lb">
+    <section className="flex flex-col gap-4" aria-labelledby="admin-lb">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="admin-lb" className="text-lg font-semibold">
           Leaderboards
@@ -566,7 +329,7 @@ function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }
           );
         })}
       </ol>
-    </GlassPanel>
+    </section>
   );
 }
 
@@ -578,15 +341,16 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
   const [error, setError] = useState('');
   useEffect(() => runtime.admin.watchPrivacyRequests(setRequests), [runtime]);
   return (
-    <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="privacy-log">
+    <section className="flex flex-col gap-4" aria-labelledby="privacy-log">
       <h2 id="privacy-log" className="text-lg font-semibold">
         Privacy requests
       </h2>
       <p className="text-sm text-slate-300">
         Record a deletion request by account ID (from the person’s email). Completing it erases
         everything the new site holds for that ID: chat messages, timeouts, bans, online entries,
-        the slow-mode stamp and leaderboard scores. The log keeps only the ID, status and dates. To
-        delete the sign-in account itself, use Firebase console → Authentication.
+        the slow-mode stamp, leaderboard scores, first/last seen times and moderation history. The
+        log keeps only the ID, status and dates. To delete the sign-in account itself, use Firebase
+        console → Authentication.
       </p>
       <form
         className="flex flex-wrap items-end gap-2"
@@ -664,7 +428,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
           </li>
         ))}
       </ul>
-    </GlassPanel>
+    </section>
   );
 }
 
@@ -696,6 +460,11 @@ export function AdminWorkspace({
   const [settings, setSettings] = useState<ChatSettings>({ enabled: true, pinned: null });
   const [presence, setPresence] = useState<Presence>({});
   const [moderation, setModeration] = useState<Moderation>({ bans: {}, mutes: {} });
+  const [users, setUsers] = useState<SeenUser[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [log, setLog] = useState<ModerationLog>({});
+  const [scores, setScores] = useState<UserScores>({});
+  const [days, setDays] = useState<StatsDay[] | null>(null);
   const [notice, setNotice] = useState('');
 
   useEffect(() => start(), [start]);
@@ -722,6 +491,11 @@ export function AdminWorkspace({
       runtime.chat.watchSettings(setSettings),
       runtime.admin.watchPresence(setPresence),
       runtime.admin.watchModeration(setModeration),
+      runtime.admin.watchUsers(setUsers),
+      runtime.admin.watchMessageCounts(setCounts),
+      runtime.admin.watchModerationLog(setLog),
+      runtime.admin.watchAllScores(setScores),
+      runtime.admin.watchStats(setDays, 30),
     ];
     return () => stops.forEach((stop) => stop());
   }, [runtime, isAdmin]);
@@ -737,6 +511,18 @@ export function AdminWorkspace({
     }
   }, []);
   const chatService = useMemo(() => (runtime ? async () => runtime.chat : undefined), [runtime]);
+  const usersData = useMemo(
+    () => ({
+      users,
+      counts,
+      log,
+      scores,
+      presence,
+      moderation,
+      admins: admins ?? new Set<string>(),
+    }),
+    [users, counts, log, scores, presence, moderation, admins],
+  );
 
   if (failed)
     return <Restricted>The admin tools could not be loaded. Check your connection.</Restricted>;
@@ -759,14 +545,22 @@ export function AdminWorkspace({
       </Restricted>
     );
 
+  const today = days?.find((day) => day.day === statsDay())?.totals.visits ?? (days ? 0 : null);
   return (
-    <div className="flex flex-col gap-6">
+    <div className="admin-centre">
       <p role="status" className="admin-notice" aria-live="polite">
         {notice || 'Signed in as admin. Changes apply immediately for everyone.'}
       </p>
-      <WatchStream />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <TopStrip
+        settings={settings}
+        onlineCount={Object.keys(presence).length}
+        visitsToday={today}
+        runtime={runtime}
+        run={run}
+      />
+      <div className="admin-columns">
+        <StreamPreview />
+        <div className="admin-chat-column">
           <ChatPanel
             loadService={chatService}
             renderActions={(message, name) => (
@@ -782,25 +576,29 @@ export function AdminWorkspace({
               />
             )}
           />
+          <ChatControls
+            runtime={runtime}
+            settings={settings}
+            messageCount={messages.length}
+            run={run}
+          />
         </div>
-        <ChatControls
+        <OnlineNow
+          presence={presence}
+          moderation={moderation}
+          admins={admins}
           runtime={runtime}
-          settings={settings}
-          messageCount={messages.length}
           run={run}
         />
       </div>
-      <People
-        runtime={runtime}
-        messages={messages}
-        presence={presence}
-        moderation={moderation}
-        admins={admins}
-        run={run}
+      <Tabs
+        panels={{
+          users: <AdminUsers data={usersData} runtime={runtime} run={run} />,
+          analytics: <AdminAnalytics days={days} />,
+          leaderboards: <AdminLeaderboards runtime={runtime} run={run} />,
+          privacy: <PrivacyLog runtime={runtime} run={run} />,
+        }}
       />
-      <AdminStats runtime={runtime} />
-      <AdminLeaderboards runtime={runtime} run={run} />
-      <PrivacyLog runtime={runtime} run={run} />
     </div>
   );
 }
