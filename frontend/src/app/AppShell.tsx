@@ -129,9 +129,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               icon={<Bell size={18} />}
               onClick={() => setNotificationsOpen(true)}
             />
-            <Link to="/profile" className="app-guest-link" aria-label="Guest profile">
+            <Link to="/profile" className="app-guest-link" aria-label="Your account">
               <UserRound size={17} aria-hidden="true" />
-              <span>Guest</span>
+              <span>Account</span>
             </Link>
           </div>
           {searchError && (
@@ -142,7 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <div className="app-preview-banner">
           <StatusIndicator status="neutral">
-            Prototype only — no authentication, streaming or Firebase connection
+            Preview — sign-in works; chat, online games and admin are still on the current site
           </StatusIndicator>
           <a
             href="https://b24dul.github.io/b24dul-live/legacy/"

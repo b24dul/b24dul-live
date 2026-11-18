@@ -1,7 +1,12 @@
 import { HashRouter } from 'react-router-dom';
 import type { PropsWithChildren } from 'react';
+import { AccountProvider } from '../contexts/AccountContext';
 
-// Routing setup does not initialize Firebase or modify production services.
+// Firebase is loaded on demand by AccountProvider (only when a page needs sign-in).
 export function AppProviders({ children }: PropsWithChildren) {
-  return <HashRouter>{children}</HashRouter>;
+  return (
+    <HashRouter>
+      <AccountProvider>{children}</AccountProvider>
+    </HashRouter>
+  );
 }

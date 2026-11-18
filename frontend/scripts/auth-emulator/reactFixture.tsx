@@ -6,25 +6,25 @@ import {
   getAuth,
   GoogleAuthProvider,
   linkWithCredential,
-  onIdTokenChanged,
-  signInAnonymously,
   signInWithCredential,
 } from 'firebase/auth';
-import { subscribeToAuthSession } from '../../src/services/authObserver';
 import type { AuthSession } from '../../src/services/authSession';
-import {
-  createIdentityTransitions,
-  type TransitionResult,
-} from '../../src/services/identityTransitions';
+import { FIREBASE_APP_NAME } from '../../src/services/firebaseConfig';
+import { createFirebaseIdentity, type GoogleFlow } from '../../src/services/firebaseIdentity';
+import type { TransitionResult } from '../../src/services/identityTransitions';
 
 if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
   throw new Error('This preview requires localhost');
 }
+// Same app name as production (separate persistence from legacy sessions), demo project only.
 const auth = getAuth(
-  initializeApp({ apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-b24dul-auth' }),
+  initializeApp(
+    { apiKey: 'demo-api-key', authDomain: 'localhost', projectId: 'demo-b24dul-auth' },
+    FIREBASE_APP_NAME,
+  ),
 );
 connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-let session: AuthSession = { status: 'checking' };
+
 function credential() {
   if (new URLSearchParams(location.search).has('fail'))
     throw new Error('Simulated cancelled sign-in');
@@ -35,35 +35,23 @@ function credential() {
     `${encode({ alg: 'none', typ: 'JWT' })}.${encode({ iss: 'https://accounts.google.com', aud: 'demo-b24dul-auth', sub: subject, email: `${subject}@example.invalid`, email_verified: true, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 })}.`,
   );
 }
-const transitions = createIdentityTransitions({
-  currentSession: () => session,
-  signInAnonymously: async () => {
-    await signInAnonymously(auth);
-  },
-  signInWithGoogle: async () => {
-    await signInWithCredential(auth, credential());
-  },
-  linkGoogle: async (uid) => {
-    const user = auth.currentUser;
-    if (!user?.isAnonymous || user.uid !== uid) throw new Error('Identity changed before linking');
-    await linkWithCredential(user, credential());
-  },
-});
+
+// The emulator cannot show a Google popup, so the Google step uses synthetic ID tokens.
+// Its collision errors also omit the OAuth token that GoogleAuthProvider.credentialFromError
+// reads, so the fixture re-creates the same synthetic credential. Production uses
+// credentialFromError on the popup error (verified manually; see the slice test list).
+const syntheticGoogle: GoogleFlow = {
+  signIn: (target) => signInWithCredential(target, credential()),
+  link: (user) => linkWithCredential(user, credential()),
+  credentialFromCollision: () => credential(),
+};
+const identity = createFirebaseIdentity(auth, syntheticGoogle);
+
 function Preview() {
-  const [state, setState] = useState<AuthSession>(session);
+  const [state, setState] = useState<AuthSession>({ status: 'checking' });
   const [result, setResult] = useState<TransitionResult>();
   const [pending, setPending] = useState(false);
-  useEffect(
-    () =>
-      subscribeToAuthSession(
-        (next, error) => onIdTokenChanged(auth, next, error),
-        (next) => {
-          session = next;
-          setState(next);
-        },
-      ),
-    [],
-  );
+  useEffect(() => identity.subscribe((next) => setState(next)), []);
   const run = async (action: () => Promise<TransitionResult>) => {
     setPending(true);
     try {
@@ -72,7 +60,7 @@ function Preview() {
       setPending(false);
     }
   };
-  const identity = state.status === 'ready' ? state.identity : undefined;
+  const current = state.status === 'ready' ? state.identity : undefined;
   return (
     <main>
       <h1>React identity emulator preview</h1>
@@ -80,26 +68,32 @@ function Preview() {
       <output
         id="state"
         data-status={state.status}
-        data-kind={identity?.kind ?? ''}
-        data-uid={identity && 'uid' in identity ? identity.uid : ''}
+        data-kind={current?.kind ?? ''}
+        data-uid={current && 'uid' in current ? current.uid : ''}
       >
-        {identity?.kind ?? state.status}
+        {current?.kind ?? state.status}
       </output>
       <button
         disabled={pending || state.status !== 'ready'}
-        onClick={() => void run(transitions.enterAnonymously)}
+        onClick={() => void run(identity.transitions.enterAnonymously)}
       >
         Continue as guest
       </button>
       <button
         disabled={pending || state.status !== 'ready'}
-        onClick={() => void run(transitions.enterWithGoogle)}
+        onClick={() => void run(identity.transitions.enterWithGoogle)}
       >
         Connect test Google account
       </button>
-      <p role="status">
-        {result?.type === 'collision'
-          ? 'This Google account is already linked. Your guest identity has been kept.'
+      <button
+        disabled={pending || state.status !== 'ready'}
+        onClick={() => void run(identity.transitions.signOut)}
+      >
+        Sign out
+      </button>
+      <p role="status" data-result={result?.type ?? ''}>
+        {result?.type === 'switched'
+          ? 'Signed in to the existing Google account. The guest session was not merged.'
           : result?.type === 'failed'
             ? 'Sign-in did not finish. Your existing identity has been kept.'
             : (result?.type ?? '')}

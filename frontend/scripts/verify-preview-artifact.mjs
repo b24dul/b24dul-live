@@ -16,18 +16,27 @@ for (const required of ['index.html', '404.html', 'videos.json', 'legacy/index.h
 if (read('index.html') !== read('404.html')) fail('404.html must be a copy of index.html');
 JSON.parse(read('videos.json'));
 
+// The Firebase SDK contains dormant emulator-support code and its own default domains,
+// so generic words are not checked. Instead: no emulator hosts or ports, no demo
+// projects or test fixtures, and the only API key / project allowed is production's.
+const production = readFileSync('src/services/firebaseConfig.ts', 'utf8');
+const field = (name) => production.match(new RegExp(name + ": '([^']+)'"))?.[1];
+const productionKey = field('apiKey');
+const productionProject = field('projectId');
+if (!productionKey || !productionProject) fail('cannot read src/services/firebaseConfig.ts');
+
 const forbidden = [
   /demo-[a-z0-9]/i,
-  /connect[A-Za-z]*Emulator/,
-  /emulator/i,
   /localhost:\d/,
   /127\.0\.0\.1/,
-  /:(9099|9000|8080|4000)\b/,
-  /firebaseio\.com/,
-  /AIza[0-9A-Za-z_-]{20,}/,
-  /(browser|react)Fixture/,
+  /\[::1\]/,
+  /:(9099|9000|8080|4000|4400|9199)\b/,
+  /(browser|react|presence)Fixture/,
   /synthetic/i,
+  /example\.invalid/,
 ];
+const keyPattern = /AIza[0-9A-Za-z_-]{20,}/g;
+const projectPattern = /projectId:\s*["']([^"']+)["']/g;
 
 const walk = (dir) =>
   readdirSync(dir).flatMap((name) => {
@@ -45,6 +54,13 @@ for (const path of reactFiles) {
   const text = readFileSync(path, 'utf8');
   for (const pattern of forbidden) {
     if (pattern.test(text)) fail(relative(site, path) + ' matches ' + pattern);
+  }
+  for (const [key] of text.matchAll(keyPattern)) {
+    if (key !== productionKey) fail(relative(site, path) + ' contains a non-production API key');
+  }
+  for (const [, project] of text.matchAll(projectPattern)) {
+    if (project !== productionProject)
+      fail(relative(site, path) + ' configures project ' + project);
   }
 }
 if (existsSync(join(site, 'production-gates.json'))) fail('gate file must not be published');

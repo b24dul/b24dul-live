@@ -9,7 +9,7 @@ const pages = [
   ['/community', 'Community'],
   ['/tools', 'Tools'],
   ['/competitions', 'Competitions'],
-  ['/profile', 'Guest profile'],
+  ['/profile', 'Your account'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
 ] as const;
@@ -89,5 +89,5 @@ test('unconnected features are honestly labelled without fake data', async ({ pa
   await page.goto('./#/admin');
   await expect(page.getByText(/No privileged actions are available here/)).toBeVisible();
   await page.goto('./#/profile');
-  await expect(page.getByText(/No account has been created or authenticated/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
 });
