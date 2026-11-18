@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   linkWithCredential,
   signInAnonymously,
+  signOut,
   updateCurrentUser,
 } from 'firebase/auth';
 import {
@@ -83,6 +84,83 @@ after(async () => {
 });
 
 describe('synthetic local RTDB presence fixture', { timeout: 45000 }, () => {
+  it('keeps chat and presence ownership when Google linking preserves the UID', async () => {
+    const account = createRtdbEmulatorFixture('linking-lifecycle');
+    let activePresence;
+    try {
+      const guest = (await signInAnonymously(account.auth)).user;
+      activePresence = startTestConnectionPresence(account, guest.uid);
+      await activePresence.ready;
+      const before = await sendTestMessage(account, guest.uid, 'before linking');
+      const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+      const token = `${encode({ alg: 'none', typ: 'JWT' })}.${encode({
+        iss: 'https://accounts.google.com',
+        aud: 'demo-b24dul-rtdb',
+        sub: 'lifecycle-linked-google',
+        email: 'lifecycle@example.invalid',
+        email_verified: true,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      })}.`;
+      const linked = await linkWithCredential(guest, GoogleAuthProvider.credential(token));
+      assert.equal(linked.user.uid, guest.uid);
+      assert.equal(linked.user.isAnonymous, false);
+      const after = await sendTestMessage(account, guest.uid, 'after linking');
+      for (const key of [before, after]) {
+        assert.equal((await get(ref(observer.database, `messages/${key}`))).val().uid, guest.uid);
+      }
+      goOffline(account.database);
+      await observeValue(observer.database, `statusV2/${guest.uid}`, (value) => value === null);
+      goOnline(account.database);
+      await observeValue(
+        observer.database,
+        `statusV2/${guest.uid}/${activePresence.key}`,
+        (value) => typeof value === 'number',
+      );
+    } finally {
+      activePresence?.stop();
+      goOffline(account.database);
+      await account.close();
+    }
+  });
+  it('rejects old identity handlers after explicit cleanup and account replacement', async () => {
+    const account = createRtdbEmulatorFixture('switching-lifecycle');
+    let oldPresence;
+    let nextPresence;
+    try {
+      const oldUid = (await signInAnonymously(account.auth)).user.uid;
+      oldPresence = startTestConnectionPresence(account, oldUid);
+      await oldPresence.ready;
+      // This tests the required ordering, not a production cleanup adapter.
+      oldPresence.stop();
+      await remove(ref(account.database, `statusV2/${oldUid}/${oldPresence.key}`));
+      await signOut(account.auth);
+      const nextUid = (await signInAnonymously(account.auth)).user.uid;
+      assert.notEqual(nextUid, oldUid);
+      assert.throws(() => startTestPresence(account, oldUid), /Identity is not current/);
+      await assert.rejects(
+        sendTestMessage(account, oldUid, 'stale send'),
+        /Identity is not current/,
+      );
+      nextPresence = startTestConnectionPresence(account, nextUid);
+      await nextPresence.ready;
+      const key = await sendTestMessage(account, nextUid, 'new account');
+      assert.equal((await get(ref(observer.database, `messages/${key}`))).val().uid, nextUid);
+      goOffline(account.database);
+      goOnline(account.database);
+      await observeValue(
+        observer.database,
+        `statusV2/${nextUid}/${nextPresence.key}`,
+        (value) => typeof value === 'number',
+      );
+      assert.equal((await get(ref(observer.database, `statusV2/${oldUid}`))).exists(), false);
+    } finally {
+      oldPresence?.stop();
+      nextPresence?.stop();
+      goOffline(account.database);
+      await account.close();
+    }
+  });
   it('rejects a stale or different identity before registration', () => {
     assert.throws(
       () => startTestPresence(visitor, 'not-the-current-user'),

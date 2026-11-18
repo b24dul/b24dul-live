@@ -1,5 +1,7 @@
 # B24DUL Project Status
 
+> **Lifecycle verification (2026-11-18):** Added synthetic Auth+RTDB emulator cases for chat/presence ownership across same-UID Google linking and for explicit presence cleanup before account replacement, stale-handler rejection and reconnect. The cleanup ordering is exercised manually in the fixture; this does not establish an implemented production lifecycle adapter. Full CI verification is pending.
+
 > **Verified React Auth follow-up:** [Run 44268830302](https://github.com/b24dul/b24dul-live/actions/runs/44268830302) passed all 6 Auth emulator tests and all 18 Chromium/Firefox/WebKit browser cases on `ea19852`, including the React identity preview. The runner mirror selector fix reduced the full job to 1m31s. All five PR checks passed on ea19852. Lighthouse initially measured mobile performance 89 against target 90, then passed its single rerun; the original failure remains in the run history. The production Firebase gate remains open pending deployed-rule equivalence and coverage review.
 
 > **Auth CI follow-up:** Run 44246842229 timed out downloading packages before any Auth tests ran. Its logs identify `/etc/apt/apt-mirrors.txt` as the regional mirror selector. The workflow now updates that selector explicitly; verification of the retry remains pending. All four standard checks passed on that run's commit; local Chromium/WebKit identity results remain valid.
