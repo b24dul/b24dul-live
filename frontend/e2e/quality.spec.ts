@@ -10,6 +10,7 @@ const paths = [
   '/tools',
   '/competitions',
   '/profile',
+  '/privacy',
   '/settings',
   '/admin',
 ];

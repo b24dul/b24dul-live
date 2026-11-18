@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
 import { GlassPanel, PrimaryButton, SecondaryButton, StatusIndicator } from '../../components/ui';
 import { useAccount } from '../../contexts/AccountContext';
@@ -55,6 +56,17 @@ export function AccountPanel() {
         This is the new B24DUL site, starting fresh. Accounts from the old site are not carried over
         — just sign in again. A guest account lives only in this browser; sign in with Google to
         keep it and use it on other devices.
+      </p>
+      {identity && 'uid' in identity && (
+        <p className="mt-3 text-sm text-slate-300">
+          Your account ID: <code className="break-all">{identity.uid}</code>
+        </p>
+      )}
+      <p className="mt-3 text-sm text-slate-300">
+        Your Google name and email are shown only to you, here. Other visitors never see them.{' '}
+        <Link className="font-semibold underline underline-offset-4" to="/privacy">
+          Privacy notice
+        </Link>
       </p>
       <div className="mt-5 flex flex-wrap gap-3">
         {identity?.kind === 'signed-out' && (

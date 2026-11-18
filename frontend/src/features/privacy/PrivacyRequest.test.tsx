@@ -9,7 +9,7 @@ describe('privacy request preview', () => {
     render(<PrivacyRequest />);
     expect(screen.queryByRole('link', { name: 'Open email draft' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Prepare email request' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid visitor account ID');
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid account ID');
     fireEvent.change(screen.getByLabelText('Visitor account ID'), {
       target: { value: 'visitor_123' },
     });

@@ -22,9 +22,16 @@ export type GoogleFlow = {
   credentialFromCollision(error: unknown): AuthCredential | null;
 };
 
+/** Google provider that always shows the account chooser, so people can pick or switch accounts. */
+export function googleProvider() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return provider;
+}
+
 export const googlePopupFlow: GoogleFlow = {
-  signIn: (auth) => signInWithPopup(auth, new GoogleAuthProvider()),
-  link: (user) => linkWithPopup(user, new GoogleAuthProvider()),
+  signIn: (auth) => signInWithPopup(auth, googleProvider()),
+  link: (user) => linkWithPopup(user, googleProvider()),
   credentialFromCollision: (error) =>
     GoogleAuthProvider.credentialFromError(
       error as Parameters<typeof GoogleAuthProvider.credentialFromError>[0],

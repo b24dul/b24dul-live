@@ -5,7 +5,7 @@ test('prepares the existing privacy email only after an explicit valid ID', asyn
   const region = page.getByRole('region', { name: 'Request visitor data deletion' });
   await expect(region.getByRole('link', { name: 'Open email draft' })).toHaveCount(0);
   await region.getByRole('button', { name: 'Prepare email request' }).click();
-  await expect(region.getByRole('alert')).toContainText('Enter a valid visitor account ID');
+  await expect(region.getByRole('alert')).toContainText('Enter a valid account ID');
   await region.getByLabel('Visitor account ID').fill('visitor_123');
   await region.getByRole('button', { name: 'Prepare email request' }).click();
   const draft = region.getByRole('link', { name: 'Open email draft' });

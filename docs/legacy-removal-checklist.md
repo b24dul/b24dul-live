@@ -6,6 +6,20 @@ fresh. Old accounts, UIDs, scores and saves are **not** carried over; people sig
 data lives under `/v2/` in the same Firebase project; legacy data is not read, changed or deleted by
 the new site (cleanup is a separate, later task).
 
+## Owner decisions (2026-11-18)
+
+- **Public data is anonymous.** Chat, presence, leaderboards and anything other visitors can see
+  show only a chosen nickname and UID-derived data. A Google display name, email or photo is never
+  stored in the database or shown to others; the Account page shows them only to the signed-in
+  person, from the local sign-in session. The `/v2/` rules enforce this.
+- **Nicknames** have length limits, a profanity filter, and block impersonation of the admin /
+  B24DUL.
+- **Google sign-in always shows the account chooser** (`prompt: select_account`).
+- **Order of work:** (a) privacy notice; (b) chat, chat protections, pinned message, presence and
+  nicknames with the `/v2/` rules; (c) admin and moderation tools; (d) leaderboards with
+  rules-enforced score checks; (e) finish stream, offline hub, Sudoku, 2048; (f) visitor
+  statistics.
+
 Status: ✅ works on the new site · 🟡 partly · ⬜ not started · ➖ decided not to carry over
 
 Verified from the legacy source at `main` `ae07503` (`index.html`).
@@ -28,9 +42,9 @@ Verified from the legacy source at `main` `ae07503` (`index.html`).
 | 12  | **Chat protection** — 5-second slow mode enforced by the database; swear-word filter (shown as \*\*\*); personal-information filter (blocks asking for or sharing names, ages, locations, socials, phone numbers, emails); chat on/off | ⬜     | Slice 4                                                                        |
 | 13  | **Pinned announcement** above the chat                                                                                                                                                                                                 | ⬜     | Slice 4                                                                        |
 | 14  | **Online presence** (who is online; shown to the admin)                                                                                                                                                                                | ⬜     | Slice 4                                                                        |
-| 15  | **Entry gate asking for a real name** (only the admin sees it)                                                                                                                                                                         | ➖     | Proposed: do not carry over (conflicts with "no real names"). Owner to confirm |
+| 15  | **Entry gate asking for a real name** (only the admin sees it)                                                                                                                                                                         | ➖     | Owner confirmed 2026-11-18: not carried over                                     |
 | 16  | **Privacy request** — prepare an email asking for your visitor record to be deleted                                                                                                                                                    | 🟡     | Draft flow exists for legacy IDs; needs a `/v2/` equivalent                    |
-| 17  | **Privacy notice** — what is recorded and why                                                                                                                                                                                          | ⬜     |                                                                                |
+| 17  | **Privacy notice** — what is recorded and why                                                                                                                                                                                          | ✅     | `#/privacy`, linked from every page; update before each new data feature       |
 | 18  | **Visitor statistics** — visits, watch time, device type, where people came from, which game/videos they picked, Subscribe clicks; plus GoatCounter page counts                                                                        | ⬜     | Decide what to keep for v2                                                     |
 
 ## Admin

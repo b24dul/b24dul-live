@@ -14,7 +14,7 @@ export function PrivacyRequest() {
     const draft = privacyRequestMailto(uid);
     if (!draft) {
       setMailto(null);
-      setError('Enter a valid visitor account ID from the current site.');
+      setError('Enter a valid account ID.');
       return;
     }
     setError('');
@@ -28,9 +28,9 @@ export function PrivacyRequest() {
           Request visitor data deletion
         </h2>
         <p className="mt-3 max-w-2xl text-slate-300">
-          This preview cannot access your visitor account ID. On the current site, use “Request data
-          deletion” to find it, then enter it here to prepare an email. Your ID is not saved by this
-          form.
+          For this site, copy your account ID from the panel above. For the current (old) site, use
+          “Request data deletion” there to find your ID. Enter it here to prepare an email. Your ID
+          is not saved by this form.
         </p>
         <a
           className="ui-button ui-button--secondary mt-4"
