@@ -1,32 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { findDestination, mobileRoutes, routes } from './navigation';
+import { findDestination, mainRoutes, moreRoutes, routes } from './navigation';
 
 describe('navigation registry', () => {
-  it('declares all eleven unique planned routes', () => {
+  it('declares the eight routes', () => {
     expect(routes.map((route) => route.path)).toEqual([
       '/',
-      '/explore',
       '/watch',
       '/videos',
       '/games',
       '/community',
-      '/tools',
-      '/competitions',
       '/profile',
       '/settings',
       '/admin',
     ]);
-    expect(new Set(routes.map((route) => route.path)).size).toBe(11);
+    expect(new Set(routes.map((route) => route.path)).size).toBe(8);
   });
 
-  it('prioritises the five agreed mobile destinations', () => {
-    expect(mobileRoutes.map((route) => route.label)).toEqual([
+  it('puts the five agreed links in the top bar and every other page in the menu', () => {
+    expect(mainRoutes.map((route) => route.label)).toEqual([
       'Home',
       'Watch',
+      'Videos',
       'Games',
       'Community',
-      'Explore',
     ]);
+    expect([...mainRoutes, ...moreRoutes].map((route) => route.path).sort()).toEqual(
+      routes.map((route) => route.path).sort(),
+    );
   });
 
   it('only resolves known sections and trims user input', () => {

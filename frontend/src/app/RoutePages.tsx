@@ -1,12 +1,7 @@
-import { ArrowRight, Compass, Settings2, Trophy, Wrench } from 'lucide-react';
+import { ArrowRight, Settings2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArchiveTile,
-  EditorialSection,
-  FeatureTile,
-  PlannedPanel,
-} from '../components/SectionBlocks';
+import { ArchiveTile, EditorialSection, PlannedPanel } from '../components/SectionBlocks';
 import {
   EmptyState,
   GlassPanel,
@@ -14,7 +9,6 @@ import {
   PageHeader,
   StatusIndicator,
 } from '../components/ui';
-import { utilities } from '../data/directory';
 import { useVideoArchive } from '../contexts/videoArchiveState';
 import { WatchStream } from '../features/stream/WatchStream';
 import { PreferenceControls } from '../components/PreferenceControls';
@@ -82,54 +76,6 @@ function PageFrame({
   );
 }
 
-export function ExplorePage() {
-  return (
-    <PageFrame
-      title="Explore"
-      description="Discover the destinations, entertainment and community spaces B24DUL is building."
-    >
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">
-          Platform directory — not a live content search
-        </StatusIndicator>
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {routes
-            .filter((route) => route.path !== '/explore')
-            .map(({ path, label, description, icon: Icon }) => (
-              <Link to={path} key={path} className="explore-destination">
-                <Icon size={22} aria-hidden="true" />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{label}</span>
-                  <span className="block text-sm text-slate-300">{description}</span>
-                </span>
-                <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
-              </Link>
-            ))}
-        </div>
-      </GlassPanel>
-      <EditorialSection
-        title="Find your next experience"
-        description="Follow the routes to preview what each part of B24DUL will become."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FeatureTile
-            title="Watch and discover"
-            description="Streams, archive and entertainment."
-            icon={<Compass size={23} />}
-            to="/watch"
-          />
-          <FeatureTile
-            title="Play and compete"
-            description="Existing games and future community challenges."
-            icon={<Trophy size={23} />}
-            to="/games"
-          />
-        </div>
-      </EditorialSection>
-    </PageFrame>
-  );
-}
-
 function WatchPage() {
   return (
     <PageFrame title="Watch" description="Live streams from B24DUL, with chat beside the stream.">
@@ -156,12 +102,12 @@ function VideosPage() {
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
           Titles, IDs and published dates come from the existing videos.json file. If the published
-          archive cannot be read, the preview shows its build-time snapshot. Videos open on YouTube.
+          archive cannot be read, the site shows its build-time snapshot. Videos play right here.
         </p>
       </GlassPanel>
-      <EditorialSection title="Archive" description="Open an item to watch it on YouTube.">
+      <EditorialSection title="Archive" description="Press a video to play it here.">
         {videos.length ? (
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="video-grid">
             {videos.map((video) => (
               <ArchiveTile key={video.id} video={video} />
             ))}
@@ -173,7 +119,7 @@ function VideosPage() {
           />
         )}
       </EditorialSection>
-      <RelatedLinks paths={['/watch', '/explore']} />
+      <RelatedLinks paths={['/watch', '/games']} />
     </PageFrame>
   );
 }
@@ -181,19 +127,12 @@ function VideosPage() {
 function GamesPage() {
   return (
     <PageFrame title="Game Centre" description="Play Sudoku and 2048, and climb the leaderboards.">
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Leaderboards</StatusIndicator>
-        <p className="mt-3 text-sm text-slate-300">
-          Sign in with Google and your best 2048 score and hint-free Sudoku times go on the
-          leaderboards under a made-up name.
-        </p>
-      </GlassPanel>
       <Suspense fallback={<p role="status">Loading games…</p>}>
         <Leaderboards />
         <Play2048 />
         <PlaySudoku />
       </Suspense>
-      <RelatedLinks paths={['/competitions', '/explore']} />
+      <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );
 }
@@ -224,68 +163,6 @@ function CommunityPage() {
   );
 }
 
-function ToolsPage() {
-  return (
-    <PageFrame
-      title="Tools"
-      description="Useful everyday, productivity, creative and developer utilities."
-    >
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Directory preview — no tools are enabled</StatusIndicator>
-        <p className="mt-3 text-sm text-slate-300">
-          These ideas are planned, not clickable apps. Working utilities will be added and tested in
-          future milestones.
-        </p>
-      </GlassPanel>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {utilities.map((item) => (
-          <GlassPanel key={item.name} className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <Wrench className="text-brand-cyan" size={23} aria-hidden="true" />
-              <span className="text-xs text-slate-300">{item.category}</span>
-            </div>
-            <h2 className="mt-4 text-lg font-semibold">{item.name}</h2>
-            <p className="mt-2 text-sm text-slate-300">{item.description}</p>
-            <div className="mt-5">
-              <StatusIndicator status="neutral">Planned</StatusIndicator>
-            </div>
-          </GlassPanel>
-        ))}
-      </div>
-      <RelatedLinks paths={['/explore', '/settings']} />
-    </PageFrame>
-  );
-}
-
-function CompetitionsPage() {
-  return (
-    <PageFrame
-      title="Competitions"
-      description="Challenges, community rankings and tournaments — without invented results."
-    >
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel
-          title="Daily challenges"
-          description="Challenge modes will be introduced after scoring and validation rules are ready. No daily winner or active timer is being claimed."
-        />
-        <PlannedPanel
-          title="Leaderboards"
-          description="Scoreboards and rankings will connect to verified backend records in a later milestone, not this preview."
-        />
-        <PlannedPanel
-          title="Tournaments"
-          description="There are no confirmed tournament dates or open sign-ups connected to this frontend."
-        />
-        <PlannedPanel
-          title="Achievements and XP"
-          description="Personal progression is planned; visitor stats and achievements are not simulated."
-        />
-      </div>
-      <RelatedLinks paths={['/games', '/community']} />
-    </PageFrame>
-  );
-}
-
 function ProfilePage() {
   return (
     <PageFrame
@@ -310,20 +187,16 @@ function SettingsPage() {
       description="Change your local appearance and accessibility preferences."
     >
       <GlassPanel className="p-6 sm:p-8">
-        <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
-        <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
+        <Settings2 size={28} className="text-brand-tangerine" aria-hidden="true" />
+        <h2 className="mt-3 text-xl font-semibold">Your preferences</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          Use the navigation rail or the controls below. Your choices are saved only in this
+          Choose spacing, motion and the order of the home page. Your choices are saved only in this
           browser; no Firebase account or cloud record is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
       <PreferenceControls />
-      <PlannedPanel
-        title="Theme"
-        description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested."
-      />
-      <RelatedLinks paths={['/profile', '/explore']} />
+      <RelatedLinks paths={['/profile', '/community']} />
     </PageFrame>
   );
 }
@@ -351,10 +224,6 @@ export function DestinationPage({ path }: { path: string }) {
       return <GamesPage />;
     case '/community':
       return <CommunityPage />;
-    case '/tools':
-      return <ToolsPage />;
-    case '/competitions':
-      return <CompetitionsPage />;
     case '/profile':
       return <ProfilePage />;
     case '/settings':
@@ -368,17 +237,17 @@ export function DestinationPage({ path }: { path: string }) {
 
 export function NotFoundPage() {
   return (
-    <PageFrame title="Page not found" description="That preview destination does not exist.">
+    <PageFrame title="Page not found" description="That page does not exist.">
       <EmptyState
         title="Nothing at this address"
-        description="The URL may be mistyped. Return home or explore all available destinations."
+        description="The URL may be mistyped, or the page has moved. Return home to find your way."
         action={
           <Link className="ui-button ui-button--primary" to="/">
             Return home
           </Link>
         }
       />
-      <RelatedLinks paths={['/explore']} />
+      <RelatedLinks paths={['/watch', '/videos', '/games']} />
     </PageFrame>
   );
 }

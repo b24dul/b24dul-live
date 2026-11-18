@@ -4,7 +4,7 @@ import { PreferencesProvider } from '../contexts/PreferencesContext';
 import { VideoArchiveProvider } from '../contexts/VideoArchiveContext';
 import { ErrorBoundary } from './ErrorBoundary';
 import { HomePage } from './HomePage';
-import { DestinationPage, ExplorePage, NotFoundPage } from './RoutePages';
+import { DestinationPage, NotFoundPage } from './RoutePages';
 import { routes } from './navigation';
 import { PrivacyNotice } from '../features/privacy/PrivacyNotice';
 import { VideoPlayerProvider } from '../features/videos/VideoPlayer';
@@ -18,9 +18,8 @@ export function App() {
             <AppShell>
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/explore" element={<ExplorePage />} />
                 {routes
-                  .filter((route) => route.path !== '/' && route.path !== '/explore')
+                  .filter((route) => route.path !== '/')
                   .map((route) => (
                     <Route
                       key={route.path}

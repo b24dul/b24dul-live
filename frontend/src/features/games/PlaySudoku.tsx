@@ -216,7 +216,7 @@ export function PlaySudoku() {
                       <button
                         aria-label={`Row ${r + 1} column ${c + 1}, ${description}`}
                         aria-selected={game.sel === index}
-                        className={`relative flex aspect-square min-w-0 items-center justify-center rounded text-xs font-semibold focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 sm:text-lg ${game.sel === index ? 'bg-cyan-700 text-white' : given ? 'bg-slate-600 text-white' : wrong ? 'bg-red-900 text-white' : 'bg-slate-800 text-white'}`}
+                        className={`relative flex aspect-square min-w-0 items-center justify-center rounded text-xs font-semibold focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-violet sm:text-lg ${game.sel === index ? 'bg-brand-violet text-white' : given ? 'bg-slate-600 text-white' : wrong ? 'bg-red-900 text-white' : 'bg-slate-800 text-white'}`}
                         key={index}
                         onClick={() =>
                           setGame((current) => (current ? { ...current, sel: index } : current))

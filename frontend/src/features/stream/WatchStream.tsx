@@ -6,16 +6,17 @@ import { GlassPanel, PrimaryButton, StatusIndicator } from '../../components/ui'
 import { ArchiveTile } from '../../components/SectionBlocks';
 import { useLiveStatus } from '../../contexts/LiveStatusContext';
 import { useVideoArchive } from '../../contexts/videoArchiveState';
+import { BannerImage } from '../../components/BannerImage';
 
 export const CHANNEL_ID = 'UCnXAfqk5I7QE3frLhHHyImQ';
 export const SUBSCRIBE_URL = 'https://www.youtube.com/@B24DUL?sub_confirmation=1';
 export const CHANNEL_LIVE_URL = `https://www.youtube.com/channel/${CHANNEL_ID}/live`;
 const LATEST_SHOWN = 6;
 
-export function SubscribeButton() {
+export function SubscribeButton({ secondary = false }: { secondary?: boolean }) {
   return (
     <a
-      className="ui-button ui-button--primary"
+      className={`ui-button ${secondary ? 'ui-button--secondary' : 'ui-button--primary'}`}
       href={SUBSCRIBE_URL}
       onClick={() => countEvent('click/subscribe', 'Clicked Subscribe')}
       target="_blank"
@@ -28,7 +29,7 @@ export function SubscribeButton() {
 
 function Player({ src, title }: { src: string; title: string }) {
   return (
-    <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-black">
+    <div className="player-frame">
       <iframe
         className="h-full w-full"
         title={title}
@@ -50,11 +51,11 @@ function LatestVideos() {
         <h2 id="latest-videos" className="text-xl font-semibold">
           Latest videos
         </h2>
-        <Link className="font-semibold underline underline-offset-4" to="/videos">
+        <Link className="home-row-link" to="/videos">
           All videos
         </Link>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="video-grid video-row">
         {videos.slice(0, LATEST_SHOWN).map((video) => (
           <ArchiveTile key={video.id} video={video} />
         ))}
@@ -83,8 +84,11 @@ export function WatchStream({ chat }: { chat?: ReactNode }) {
     return (
       <section aria-labelledby="live-title" className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="live-title" className="flex items-center gap-2 text-xl font-semibold">
-            <span className="live-dot" aria-hidden="true" /> B24DUL is live now
+          <h2 id="live-title" className="flex items-center gap-3 text-2xl">
+            <span className="live-pill" aria-hidden="true">
+              <span className="live-dot" /> LIVE
+            </span>
+            B24DUL is live now
           </h2>
           <div className="flex flex-wrap gap-2">
             <SubscribeButton />
@@ -111,9 +115,14 @@ export function WatchStream({ chat }: { chat?: ReactNode }) {
   const offline = status.state === 'offline';
   return (
     <div className="flex flex-col gap-8">
-      <GlassPanel as="section" className="p-6 sm:p-8" aria-labelledby="offline-title">
+      <GlassPanel as="section" className="watch-offline p-6 sm:p-8" aria-labelledby="offline-title">
+        {offline && (
+          <div className="watch-offline-banner">
+            <BannerImage />
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-3">
-          <Radio size={24} className="text-brand-cyan" aria-hidden="true" />
+          <Radio size={24} className="text-brand-tangerine" aria-hidden="true" />
           <h2 id="offline-title" className="text-xl font-semibold">
             {offline ? 'B24DUL is offline right now' : 'We couldn’t check whether B24DUL is live'}
           </h2>
@@ -164,7 +173,7 @@ export function LiveStatusCard() {
         {live ? (
           <span className="live-dot" aria-hidden="true" />
         ) : (
-          <Radio size={22} className="text-brand-cyan" aria-hidden="true" />
+          <Radio size={22} className="text-brand-tangerine" aria-hidden="true" />
         )}
         <p className="font-semibold">
           {live
