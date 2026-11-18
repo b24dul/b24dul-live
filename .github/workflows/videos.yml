@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # dispatch the Pages deploy after a data commit
 
 jobs:
   update:
@@ -21,8 +22,22 @@ jobs:
           python-version: "3.12"
       - run: python .github/scripts/fetch_videos.py videos.json
       - name: Commit if the list changed
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add videos.json
-          git diff --cached --quiet || (git commit -m "Update video list" && git push)
+          if git diff --cached --quiet; then
+            echo "Video list unchanged."
+          else
+            git commit -m "Update video list"
+            git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Pages is published by deploy-pages-preview.yml, not from main. That workflow
+      # copies videos.json and the legacy site from main's HEAD at build time.
+      - name: Redeploy GitHub Pages with the new list
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages-preview.yml --repo "$GITHUB_REPOSITORY" --ref release/react-preview
