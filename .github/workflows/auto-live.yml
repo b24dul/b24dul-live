@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # dispatch the Pages deploy after a state commit
 
 concurrency:
   group: auto-live-detector
@@ -42,6 +43,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: python .github/scripts/check_live.py
       - name: Record state for the next check
+        id: record
         if: steps.config.outputs.configured == 'true'
         run: |
           if git status --porcelain -- live-monitor-state.json | grep -q .; then
@@ -50,6 +52,14 @@ jobs:
             git add live-monitor-state.json
             git commit -m "Record YouTube live transition [skip ci]"
             git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
           else
             echo "No broadcast status change."
           fi
+      # Pages is published by deploy-pages-preview.yml, not from main. That workflow
+      # copies the legacy site and data files from main's HEAD at build time.
+      - name: Redeploy GitHub Pages with the recorded state
+        if: steps.record.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages-preview.yml --repo "$GITHUB_REPOSITORY" --ref release/react-preview
