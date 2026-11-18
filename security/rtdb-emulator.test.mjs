@@ -67,6 +67,62 @@ test('moderation changes and privacy history are administrator-only', async () =
   }));
 });
 
+test('unverified or wrong-email claims cannot obtain administrator access', async () => {
+  const unverified = environment.authenticatedContext('unverified-admin', {
+    email: adminEmail,
+    email_verified: false,
+  });
+  const wrongEmail = environment.authenticatedContext('wrong-email-admin', {
+    email: 'someone@example.invalid',
+    email_verified: true,
+    admin: true,
+  });
+  for (const context of [unverified, wrongEmail]) {
+    await assertFails(get(ref(db(context), 'viewers')));
+    await assertFails(get(ref(db(context), 'status')));
+    await assertFails(get(ref(db(context), 'privacyRequests')));
+    await assertFails(set(ref(db(context), 'banned/visitor-c'), true));
+    await assertFails(set(ref(db(context), 'timeouts/visitor-c'), Date.now() + 60000));
+    await assertFails(set(ref(db(context), 'settings/chatEnabled'), false));
+  }
+});
+
+test('privacy history is administrator-only, immutable and not deletable', async () => {
+  const path = 'privacyRequests/test-request-boundary';
+  const valid = {
+    uid: 'visitor-a',
+    status: 'pending',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  await assertFails(set(ref(db(user), path), valid));
+  await assertFails(get(ref(db(guest), path)));
+  await assertFails(get(ref(db(user), path)));
+  await assertFails(set(ref(db(admin), 'privacyRequests/test-invalid-initial'), {
+    ...valid,
+    status: 'completed',
+  }));
+  await assertSucceeds(set(ref(db(admin), path), valid));
+  await assertSucceeds(update(ref(db(admin), path), {
+    status: 'processing',
+    updatedAt: serverTimestamp(),
+  }));
+  await assertFails(update(ref(db(admin), path), {
+    uid: 'visitor-b',
+    updatedAt: serverTimestamp(),
+  }));
+  await assertFails(update(ref(db(admin), path), {
+    createdAt: 0,
+    updatedAt: serverTimestamp(),
+  }));
+  await assertFails(update(ref(db(admin), path), {
+    extra: 'not-allowed',
+    updatedAt: serverTimestamp(),
+  }));
+  await assertFails(remove(ref(db(admin), path)));
+  await assertSucceeds(get(ref(db(admin), path)));
+});
+
 test('a visitor cannot write another visitor\'s leaderboard entry', async () => {
   await assertFails(set(ref(db(user), 'leaderboard/g2048/visitor-b'), {
     name: 'AlphaBravo12',

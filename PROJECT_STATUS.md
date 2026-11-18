@@ -1,5 +1,7 @@
 # B24DUL Project Status
 
+> **2026-11-18 development update:** Added private-snapshot emulator cases for unverified or incorrect administrator claims and privacy-history boundaries. The added cases await their own workflow result. The owner independently verified that [run 44143330773](https://github.com/b24dul/b24dul-live/actions/runs/44143330773) passed all seven earlier emulator tests; this does not establish that the snapshot matches deployed rules or that the security coverage is sufficient. The production Firebase security gate remains open. Earlier dated entries below are historical and may describe the state before that run.
+
 > **Mandatory session handoff:** Read this file, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md` and the B24DUL Master Development Prompt before touching source. Update this file in every meaningful commit. **Do not assume documentation constitutes tested runtime behaviour.**
 
 ## Project identity
