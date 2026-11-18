@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { AccountProvider } from '../../contexts/AccountContext';
 import type { AccountRuntime } from '../../services/accountRuntime';
@@ -42,9 +43,11 @@ function fakeRuntime(google: TransitionResult = { type: 'completed' }) {
 function renderPanel(runtime: AccountRuntime) {
   const load = vi.fn(async () => runtime);
   render(
-    <AccountProvider loadRuntime={load}>
-      <AccountPanel />
-    </AccountProvider>,
+    <MemoryRouter>
+      <AccountProvider loadRuntime={load}>
+        <AccountPanel />
+      </AccountProvider>
+    </MemoryRouter>,
   );
   return load;
 }
@@ -64,6 +67,7 @@ describe('AccountPanel', () => {
       fireEvent.click(button);
     });
     expect(screen.getByRole('heading', { name: 'Signed in as a guest' })).toBeInTheDocument();
+    expect(screen.getByText('guest', { selector: 'code' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Continue as guest' })).not.toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }));
@@ -88,9 +92,11 @@ describe('AccountPanel', () => {
 
   it('shows an error state when sign-in cannot be loaded', async () => {
     render(
-      <AccountProvider loadRuntime={() => Promise.reject(new Error('offline'))}>
-        <AccountPanel />
-      </AccountProvider>,
+      <MemoryRouter>
+        <AccountProvider loadRuntime={() => Promise.reject(new Error('offline'))}>
+          <AccountPanel />
+        </AccountProvider>
+      </MemoryRouter>,
     );
     expect(
       await screen.findByRole('heading', { name: 'Sign-in is unavailable right now' }),

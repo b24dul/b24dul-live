@@ -51,6 +51,18 @@ describe('isolated application shell', () => {
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 
+  it('links every page to a privacy notice that promises names and emails stay private', () => {
+    renderRoute('/');
+    expect(screen.getByRole('link', { name: 'Privacy notice' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+    renderRoute('/privacy');
+    expect(screen.getByRole('heading', { name: 'Privacy notice' })).toBeInTheDocument();
+    expect(screen.getAllByText(/never shown to other people/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Firebase Authentication/).length).toBeGreaterThan(0);
+  });
+
   it('renders a useful page for unknown paths', () => {
     renderRoute('/not-real');
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();

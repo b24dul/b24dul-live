@@ -10,6 +10,7 @@ const routes: Array<[string, string]> = [
   ['/tools', 'Tools'],
   ['/competitions', 'Competitions'],
   ['/profile', 'Your account'],
+  ['/privacy', 'Privacy notice'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
 ];

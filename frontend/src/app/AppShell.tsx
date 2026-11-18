@@ -101,7 +101,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <div className="header-section-name" aria-live="polite">
               <span className="text-xs text-slate-300">DEVELOPMENT PREVIEW</span>
-              <span className="font-semibold">{current?.label ?? 'Not found'}</span>
+              <span className="font-semibold">
+                {current?.label ?? (location.pathname === '/privacy' ? 'Privacy' : 'Not found')}
+              </span>
             </div>
           </div>
           <form role="search" className="header-search" onSubmit={goToKnownSection}>
@@ -160,6 +162,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <main id="route-content" tabIndex={-1} className="app-page-container">
             {children}
+            <footer className="app-page-footer">
+              <Link to="/privacy" className="underline underline-offset-4">
+                Privacy notice
+              </Link>
+            </footer>
           </main>
         </motion.div>
       </div>

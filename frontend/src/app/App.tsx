@@ -6,6 +6,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { HomePage } from './HomePage';
 import { DestinationPage, ExplorePage, NotFoundPage } from './RoutePages';
 import { routes } from './navigation';
+import { PrivacyNotice } from '../features/privacy/PrivacyNotice';
 
 export function App() {
   return (
@@ -25,6 +26,7 @@ export function App() {
                     element={<DestinationPage path={route.path} />}
                   />
                 ))}
+              <Route path="/privacy" element={<PrivacyNotice />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </AppShell>
