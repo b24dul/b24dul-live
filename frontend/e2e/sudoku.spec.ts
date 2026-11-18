@@ -53,6 +53,12 @@ test('plays a copy of a legacy Sudoku save without changing the original', async
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, notes 4' })).toBeVisible();
   await page.getByRole('button', { name: 'Sudoku hint' }).click();
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
+  await page.getByRole('button', { name: 'Save Sudoku practice' }).click();
+  await expect(page.getByText('Sudoku practice saved in this browser.')).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Load Sudoku practice' }).click();
+  await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
+  await expect(page.getByText(/Mistakes: 1 · Hints: 1/)).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_sudoku'))).toBe(legacySave);
 });
 

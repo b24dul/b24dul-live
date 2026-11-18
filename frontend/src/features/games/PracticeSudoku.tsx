@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
+import { loadPracticeSudoku, savePracticeSudoku } from './practiceSaves';
 import {
   eraseSudoku,
   hintSudoku,
@@ -35,6 +36,40 @@ export function PracticeSudoku() {
   function start(level: SudokuLevel) {
     setGame(newSudoku(level));
     setMessage(`New ${level} practice puzzle started.`);
+  }
+
+  function savePractice() {
+    if (!game) return;
+    try {
+      const result = savePracticeSudoku(window.localStorage, game);
+      setMessage(
+        result === 'saved'
+          ? 'Sudoku practice saved in this browser.'
+          : result === 'unrecognized'
+            ? 'The existing Sudoku practice save could not be read and was not overwritten.'
+            : 'The Sudoku practice game could not be saved. Existing saves have not been changed.',
+      );
+    } catch {
+      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
+    }
+  }
+
+  function loadPractice() {
+    try {
+      const saved = loadPracticeSudoku(window.localStorage);
+      if (saved.status === 'ready') {
+        setGame(saved.game);
+        setMessage('Loaded your Sudoku practice save.');
+      } else {
+        setMessage(
+          saved.status === 'missing'
+            ? 'No Sudoku practice save was found in this browser.'
+            : 'The Sudoku practice save is unavailable or cannot be read. It has not been changed.',
+        );
+      }
+    } catch {
+      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
+    }
   }
 
   function loadLegacy() {
@@ -92,8 +127,8 @@ export function PracticeSudoku() {
           Sudoku practice
         </h2>
         <p className="mt-2 text-sm text-slate-300">
-          Start a puzzle or load a copy of a save from this browser. Practice changes and times are
-          not saved or sent to leaderboards.
+          Save practice progress separately in this browser, or load a copy of an existing save.
+          Practice times are not sent to leaderboards.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {(['easy', 'medium', 'hard'] as const).map((level) => (
@@ -108,6 +143,17 @@ export function PracticeSudoku() {
           ))}
           <button className="ui-button ui-button--secondary" onClick={loadLegacy} type="button">
             Load Sudoku save copy
+          </button>
+          <button
+            className="ui-button ui-button--secondary"
+            disabled={!game}
+            onClick={savePractice}
+            type="button"
+          >
+            Save Sudoku practice
+          </button>
+          <button className="ui-button ui-button--secondary" onClick={loadPractice} type="button">
+            Load Sudoku practice
           </button>
         </div>
         <p className="mt-3 text-sm text-slate-300" role="status">

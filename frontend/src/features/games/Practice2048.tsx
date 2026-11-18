@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type TouchEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
+import { loadPractice2048, savePractice2048 } from './practiceSaves';
 import {
   LEGACY_2048_STORAGE_KEY,
   move2048,
@@ -32,6 +33,40 @@ export function Practice2048() {
       if (!current) return current;
       return move2048(current, direction).game;
     });
+  }
+
+  function savePractice() {
+    if (!game) return;
+    try {
+      const result = savePractice2048(window.localStorage, game);
+      setMessage(
+        result === 'saved'
+          ? '2048 practice saved in this browser.'
+          : result === 'unrecognized'
+            ? 'The existing 2048 practice save could not be read and was not overwritten.'
+            : 'The 2048 practice game could not be saved. Existing saves have not been changed.',
+      );
+    } catch {
+      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
+    }
+  }
+
+  function loadPractice() {
+    try {
+      const saved = loadPractice2048(window.localStorage);
+      if (saved.status === 'ready') {
+        setGame(saved.game);
+        setMessage('Loaded your 2048 practice save.');
+      } else {
+        setMessage(
+          saved.status === 'missing'
+            ? 'No 2048 practice save was found in this browser.'
+            : 'The 2048 practice save is unavailable or cannot be read. It has not been changed.',
+        );
+      }
+    } catch {
+      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
+    }
   }
 
   function loadLegacy() {
@@ -80,8 +115,8 @@ export function Practice2048() {
     <GlassPanel className="p-5 sm:p-7">
       <h2 className="text-xl font-semibold">2048 practice</h2>
       <p className="mt-2 text-sm text-slate-300">
-        Play in this preview, or load a copy of a save from this browser. Practice changes and
-        scores are not saved or sent to the leaderboard.
+        Save practice progress separately in this browser, or load a copy of an existing save.
+        Practice scores are not sent to the leaderboard.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -96,6 +131,17 @@ export function Practice2048() {
         </button>
         <button className="ui-button ui-button--secondary" type="button" onClick={loadLegacy}>
           Load 2048 save copy
+        </button>
+        <button
+          className="ui-button ui-button--secondary"
+          disabled={!game}
+          onClick={savePractice}
+          type="button"
+        >
+          Save 2048 practice
+        </button>
+        <button className="ui-button ui-button--secondary" onClick={loadPractice} type="button">
+          Load 2048 practice
         </button>
       </div>
       <p className="mt-3 text-sm text-slate-300" role="status">

@@ -22,6 +22,13 @@ test('loads and plays a copy of a legacy save without modifying it', async ({ pa
   await board.press('ArrowRight');
   await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
   await expect(page.getByText('Score: 16 · Best: 20')).toBeVisible();
+  const savedBoard = await board.getByRole('gridcell').allTextContents();
+  await page.getByRole('button', { name: 'Save 2048 practice' }).click();
+  await expect(page.getByText('2048 practice saved in this browser.')).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Load 2048 practice' }).click();
+  await expect(board.getByRole('gridcell')).toHaveText(savedBoard);
+  await expect(page.getByText('Score: 16 · Best: 20')).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
 });
 
@@ -60,4 +67,21 @@ test('moves a loaded practice board with a swipe', async ({ page }) => {
   });
   await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
+});
+
+test('does not overwrite an unrecognized or newer 2048 practice save', async ({ page }) => {
+  const future = JSON.stringify({ schemaVersion: 2, kind: '2048', game: { future: true } });
+  await page.addInitScript(
+    (saved) => window.localStorage.setItem('b24dul.preview.2048.v1', saved),
+    future,
+  );
+  await page.goto('./#/games');
+  await page.getByRole('button', { name: 'Start 2048 practice' }).click();
+  await page.getByRole('button', { name: 'Save 2048 practice' }).click();
+  await expect(
+    page.getByText('The existing 2048 practice save could not be read and was not overwritten.'),
+  ).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.getItem('b24dul.preview.2048.v1'))).toBe(
+    future,
+  );
 });
