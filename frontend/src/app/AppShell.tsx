@@ -1,3 +1,4 @@
+import { countPath, countVisit } from '../services/visitorCounts';
 import { StreamNotice } from '../features/stream/StreamNotice';
 import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
@@ -24,6 +25,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     document.title = (current?.label ?? 'Page not found') + ' | B24DUL Preview';
     const heading = document.querySelector<HTMLElement>('#route-content h1');
     heading?.focus({ preventScroll: true });
+    countVisit({
+      path: countPath(location.pathname),
+      title: current?.label ?? (location.pathname === '/privacy' ? 'Privacy' : 'Not found'),
+    });
   }, [location.pathname, current?.label]);
 
   function toggleSidebar() {

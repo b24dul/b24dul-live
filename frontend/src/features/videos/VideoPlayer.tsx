@@ -1,3 +1,4 @@
+import { countEvent } from '../../services/visitorCounts';
 import {
   createContext,
   useCallback,
@@ -168,6 +169,7 @@ export function VideoPlayerProvider({ children }: PropsWithChildren) {
   const play = useCallback((next: ArchivedVideo) => {
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setVideo(next);
+    countEvent(`video/${next.id}`, `Played: ${next.title}`);
   }, []);
   const close = useCallback(() => {
     // The list may have re-rendered while the video played; then find the same video's Play button.

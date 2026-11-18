@@ -1,3 +1,4 @@
+import { countEvent } from '../../services/visitorCounts';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { loadSudoku, saveSudoku } from './gameSaves';
@@ -38,6 +39,10 @@ export function PlaySudoku() {
   // Like the old site: only hint-free solves go on the leaderboard (fastest time wins).
   useEffect(() => {
     if (!done || !game || !session.claim('solved')) return;
+    countEvent(
+      `sudoku/solved-${game.level}`,
+      `Solved Sudoku (${game.level[0]!.toUpperCase()}${game.level.slice(1)})`,
+    );
     if (game.hints > 0) {
       setMessage('Solved! Solve without hints to get on the leaderboard.');
       return;
@@ -62,6 +67,7 @@ export function PlaySudoku() {
   }, [running, setGame]);
 
   function start(level: SudokuLevel) {
+    countEvent('pick/sudoku', 'Picked Sudoku');
     setGame(newSudoku(level));
     session.begin(true);
     setMessage(`New ${level} puzzle started.`);

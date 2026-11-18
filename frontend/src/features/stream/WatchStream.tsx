@@ -1,3 +1,4 @@
+import { countEvent } from '../../services/visitorCounts';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Bell, Radio } from 'lucide-react';
@@ -16,6 +17,7 @@ export function SubscribeButton() {
     <a
       className="ui-button ui-button--primary"
       href={SUBSCRIBE_URL}
+      onClick={() => countEvent('click/subscribe', 'Clicked Subscribe')}
       target="_blank"
       rel="noopener noreferrer"
     >
