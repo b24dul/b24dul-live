@@ -25,6 +25,7 @@ import {
 } from 'firebase/database';
 import { createRtdbEmulatorFixture } from './presenceFixture.ts';
 import { createChatService } from '../../src/services/chatService.ts';
+import { createAdminService } from '../../src/services/adminService.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
@@ -349,6 +350,147 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
     await denied(createChatService(visitor.database).send(visitor.uid, 'guest via the client'));
   });
 
+  it('admin tools: the site’s admin service works, and nobody else can use it', async () => {
+    const tools = createAdminService(admin.database);
+    const notAdmin = createAdminService(alice.database);
+    const gina = await googleUser('v2-gina');
+    await denied(notAdmin.setChatEnabled(false));
+    await denied(notAdmin.pin('x'));
+    await denied(notAdmin.ban(gina.uid));
+    await denied(notAdmin.mute(gina.uid, 5));
+    await denied(notAdmin.deleteAllMessagesFrom(gina.uid));
+    await tools.pin('Stream at 7pm');
+    assert.equal(
+      (await get(ref(bob.database, 'v2/chat/settings/pinned/text'))).val(),
+      'Stream at 7pm',
+    );
+    await tools.unpin();
+    await tools.setChatEnabled(false);
+    await tools.setChatEnabled(true);
+    await slowMode();
+    const key = await post(gina, 'first from gina');
+    await tools.editMessage(key, 'edited by admin');
+    const edited = (await get(ref(admin.database, `v2/chat/messages/${key}`))).val();
+    assert.deepEqual([edited.text, edited.edited, edited.uid], ['edited by admin', true, gina.uid]);
+    await slowMode();
+    await post(gina, 'second from gina');
+    assert.equal(await tools.deleteAllMessagesFrom(gina.uid), 2);
+    await tools.mute(gina.uid, 1);
+    await denied(post(gina, 'muted'));
+    await tools.unmute(gina.uid);
+    await tools.ban(gina.uid);
+    const moderation = await new Promise<{ bans: Record<string, number> }>((resolve) => {
+      const stop = tools.watchModeration((value) => {
+        if (value.bans[gina.uid]) {
+          stop();
+          resolve(value);
+        }
+      });
+    });
+    assert.equal(typeof moderation.bans[gina.uid], 'number');
+    await denied(post(gina, 'banned'));
+    await tools.unban(gina.uid);
+    await slowMode();
+    await post(gina, 'welcome back');
+    const stopPresence = createChatService(gina.database).startPresence(gina.uid);
+    const online = await new Promise<Record<string, number>>((resolve) => {
+      const stop = tools.watchPresence((presence) => {
+        if (presence[gina.uid]) {
+          stop();
+          resolve(presence);
+        }
+      });
+    });
+    assert.equal(typeof online[gina.uid], 'number');
+    stopPresence();
+  });
+
+  it('privacy requests: admin-only log; statuses only move forward; completed is final', async () => {
+    const tools = createAdminService(admin.database);
+    await denied(createAdminService(alice.database).recordPrivacyRequest(alice.uid));
+    await denied(get(ref(alice.database, 'v2/privacyRequests')));
+    const requests = ref(admin.database, 'v2/privacyRequests');
+    await denied(
+      set(push(requests), {
+        uid: alice.uid,
+        status: 'completed',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await denied(
+      set(push(requests), {
+        uid: alice.uid,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        email: 'x',
+      }),
+    );
+    await denied(
+      set(push(requests), {
+        uid: 'not a uid!',
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    const henry = await googleUser('v2-henry');
+    await tools.recordPrivacyRequest(henry.uid);
+    const [request] = await new Promise<Awaited<ReturnType<typeof listOnce>>>((resolve) =>
+      listOnce(tools).then(resolve),
+    );
+    assert.equal(request!.status, 'pending');
+    await denied(
+      update(ref(admin.database, `v2/privacyRequests/${request!.id}`), { uid: alice.uid }),
+    );
+    await tools.markProcessing(request!.id);
+    await denied(
+      update(ref(admin.database, `v2/privacyRequests/${request!.id}`), {
+        status: 'pending',
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    // Give henry data in every /v2/ place, then erase it.
+    await slowMode();
+    await post(henry, 'one');
+    await tools.mute(henry.uid, 5);
+    await set(push(ref(henry.database, `v2/presence/${henry.uid}`)), serverTimestamp());
+    const erased = await tools.completeAndErase({ ...request!, status: 'processing' });
+    assert.equal(erased, 1);
+    for (const path of [
+      `moderation/mutes/${henry.uid}`,
+      `presence/${henry.uid}`,
+      `chat/lastPost/${henry.uid}`,
+    ]) {
+      const response = await fetch(`http://127.0.0.1:9000/v2/${path}.json?ns=${NS}`, {
+        headers: { Authorization: 'Bearer owner' },
+      });
+      assert.equal(await response.text(), 'null', path);
+    }
+    const ids = await get(
+      query(ref(admin.database, 'v2/chat/messages'), orderByChild('uid'), equalTo(henry.uid)),
+    );
+    assert.equal(ids.exists(), false);
+    const done = (await get(ref(admin.database, `v2/privacyRequests/${request!.id}`))).val();
+    assert.equal(done.status, 'completed');
+    await denied(
+      update(ref(admin.database, `v2/privacyRequests/${request!.id}`), {
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await denied(remove(ref(admin.database, `v2/privacyRequests/${request!.id}`)));
+  });
+
+  it('only the admin can remove someone else’s online entries or slow-mode stamp', async () => {
+    await set(push(ref(alice.database, `v2/presence/${alice.uid}`)), serverTimestamp());
+    await denied(remove(ref(bob.database, `v2/presence/${alice.uid}`)));
+    await denied(remove(ref(bob.database, `v2/chat/lastPost/${alice.uid}`)));
+    await denied(set(ref(admin.database, `v2/presence/${alice.uid}/fake`), serverTimestamp()));
+    await denied(set(ref(admin.database, `v2/chat/lastPost/${alice.uid}`), serverTimestamp()));
+    await remove(ref(admin.database, `v2/presence/${alice.uid}`));
+  });
+
   it('nothing outside the known /v2/ paths can be read or written', async () => {
     await denied(get(ref(alice.database, 'v2')));
     await denied(set(ref(alice.database, 'v2/other'), 1));
@@ -356,3 +498,14 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
     await denied(set(ref(admin.database, 'v2/moderation/other/x'), 1));
   });
 });
+
+function listOnce(tools: ReturnType<typeof createAdminService>) {
+  return new Promise<import('../../src/services/adminService.ts').PrivacyRequest[]>((resolve) => {
+    const stop = tools.watchPrivacyRequests((requests) => {
+      if (requests.length) {
+        stop();
+        resolve(requests);
+      }
+    });
+  });
+}

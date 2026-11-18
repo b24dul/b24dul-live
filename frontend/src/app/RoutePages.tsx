@@ -3,9 +3,7 @@ import {
   ArrowUpRight,
   Compass,
   Gamepad2,
-  LockKeyhole,
   Settings2,
-  Shield,
   Trophy,
   Wrench,
 } from 'lucide-react';
@@ -42,6 +40,12 @@ const PracticeSudoku = lazy(() =>
 
 const ChatPanel = lazy(() =>
   import('../features/chat/ChatPanel').then((module) => ({ default: module.ChatPanel })),
+);
+
+const AdminWorkspace = lazy(() =>
+  import('../features/admin/AdminWorkspace').then((module) => ({
+    default: module.AdminWorkspace,
+  })),
 );
 
 function Chat() {
@@ -377,24 +381,11 @@ function AdminPage() {
   return (
     <PageFrame
       title="Admin"
-      description="Administrative tools are restricted and not available in this development preview."
+      description="Moderation for the new site: chat, people and privacy requests."
     >
-      <GlassPanel className="p-7 sm:p-10">
-        <Shield size={36} className="text-brand-violet" aria-hidden="true" />
-        <div className="mt-4">
-          <StatusIndicator status="warning">Restricted — no backend connection</StatusIndicator>
-        </div>
-        <h2 className="mt-4 text-xl font-semibold">Admin dashboard unavailable</h2>
-        <p className="mt-3 max-w-2xl text-slate-300">
-          This UI is not an access-control check. Existing live administrator permissions,
-          moderation, chat records and privacy requests remain protected by the production
-          implementation.
-        </p>
-        <div className="mt-5 flex items-center gap-2 text-sm text-slate-300">
-          <LockKeyhole size={17} aria-hidden="true" /> No privileged actions are available here
-        </div>
-      </GlassPanel>
-      <RelatedLinks paths={['/explore', '/profile']} />
+      <Suspense fallback={<LoadingSkeleton label="Loading admin tools" className="h-40" />}>
+        <AdminWorkspace />
+      </Suspense>
     </PageFrame>
   );
 }
