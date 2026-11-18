@@ -1,12 +1,14 @@
 name: M1 frontend cross-browser QA
 
 on:
+  # Daily, and by hand before big releases (Actions → Run workflow). Not on every PR.
+  # GitHub runs schedules from the default branch's copy of this file; each run tests
+  # release/react-preview. After each merge to release/react-preview it also runs once,
+  # in the background, without holding up PRs.
+  schedule:
+    - cron: '17 3 * * *'
   push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-crossbrowser.yml'
-  pull_request:
+    branches: [release/react-preview]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-crossbrowser.yml'
@@ -23,6 +25,9 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Scheduled runs start from the default branch; always test the site being built.
+          ref: ${{ github.event_name == 'schedule' && 'release/react-preview' || github.ref }}
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
