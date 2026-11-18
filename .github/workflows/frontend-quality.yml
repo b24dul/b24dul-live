@@ -1,12 +1,14 @@
 name: M1 frontend Phase 6 quality measurements
 
 on:
+  # Daily, and by hand before big releases (Actions → Run workflow). Not on every PR.
+  # GitHub runs schedules from the default branch's copy of this file; each run tests
+  # release/react-preview. After each merge to release/react-preview it also runs once,
+  # in the background, without holding up PRs.
+  schedule:
+    - cron: '47 3 * * *'
   push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-quality.yml'
-  pull_request:
+    branches: [release/react-preview]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-quality.yml'
@@ -18,11 +20,16 @@ permissions:
 jobs:
   lighthouse:
     runs-on: ubuntu-24.04
+    env:
+      LIGHTHOUSE_VERSION: '13.6.0' # pinned; update deliberately
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Scheduled runs start from the default branch; always test the site being built.
+          ref: ${{ github.event_name == 'schedule' && 'release/react-preview' || github.ref }}
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -33,7 +40,13 @@ jobs:
       - name: Check compressed JavaScript transfer budget
         run: node scripts/js-budget.mjs
       - name: Install Chrome
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+        run: |
+          # Hosted runners may select a slow regional Ubuntu mirror.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf 'http://archive.ubuntu.com/ubuntu\n' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
+          npx playwright install --with-deps chromium
       - name: Start built preview
         run: |
           npm run preview -- --host 127.0.0.1 --port 4174 --strictPort > /tmp/b24dul-preview.log 2>&1 &
@@ -43,35 +56,41 @@ jobs:
           done
           cat /tmp/b24dul-preview.log
           exit 1
-      - name: Lighthouse mobile, production build
-        run: >
-          npx --yes lighthouse http://127.0.0.1:4174/b24dul-live/#/
-          --only-categories=performance,accessibility,best-practices,seo
-          --preset=perf
-          --form-factor=mobile
-          --screenEmulation.mobile=true
-          --screenEmulation.width=390
-          --screenEmulation.height=844
-          --screenEmulation.deviceScaleFactor=2
-          --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
-          --output=json
-          --output-path=lighthouse-mobile.json
-          --quiet
-      - name: Lighthouse desktop, production build
-        run: >
-          npx --yes lighthouse http://127.0.0.1:4174/b24dul-live/#/
-          --only-categories=performance,accessibility,best-practices,seo
-          --preset=desktop
-          --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
-          --output=json
-          --output-path=lighthouse-desktop.json
-          --quiet
-      - name: Summarize measured metrics
-        if: always()
+      # Three runs per profile, gated on the median (scripts/lighthouse-report.mjs).
+      # Single runs vary with runner CPU speed (benchmarkIndex); targets are unchanged.
+      - name: Lighthouse mobile, production build (3 runs)
         run: |
-          if [ -f lighthouse-mobile.json ] && [ -f lighthouse-desktop.json ]; then
-            node scripts/lighthouse-report.mjs lighthouse-mobile.json lighthouse-desktop.json
-          fi
+          for run in 1 2 3; do
+            npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" http://127.0.0.1:4174/b24dul-live/#/ \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --preset=perf \
+              --form-factor=mobile \
+              --screenEmulation.mobile=true \
+              --screenEmulation.width=390 \
+              --screenEmulation.height=844 \
+              --screenEmulation.deviceScaleFactor=2 \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --output=json \
+              --output-path="lighthouse-mobile-run${run}.json" \
+              --quiet
+          done
+      - name: Lighthouse desktop, production build (3 runs)
+        run: |
+          for run in 1 2 3; do
+            npx --yes "lighthouse@${LIGHTHOUSE_VERSION}" http://127.0.0.1:4174/b24dul-live/#/ \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --preset=desktop \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --output=json \
+              --output-path="lighthouse-desktop-run${run}.json" \
+              --quiet
+          done
+      - name: Score on the median and record runner benchmarkIndex
+        if: success() || failure()
+        run: >
+          node scripts/lighthouse-report.mjs
+          --mobile lighthouse-mobile-run*.json
+          --desktop lighthouse-desktop-run*.json
       - name: Upload Lighthouse evidence
         if: always()
         uses: actions/upload-artifact@v5
@@ -80,6 +99,7 @@ jobs:
           path: |
             frontend/lighthouse-mobile.json
             frontend/lighthouse-desktop.json
+            frontend/lighthouse-*-run*.json
             frontend/lighthouse-summary.json
           if-no-files-found: warn
           retention-days: 30
