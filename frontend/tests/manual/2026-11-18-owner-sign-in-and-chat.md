@@ -28,3 +28,17 @@ Reported: "Chat tests: all passed."
 7. Admin messages show B24DUL with the Admin badge.
 
 Not covered yet: admin presence view and moderation tools (step c).
+
+## Admin workspace (deployed commits `f363c44`, then `22e53f2` with the pin fix)
+
+Reported: pin tests "all passed"; "chat on/off, edit, delete, timeout, ban, delete all, people list,
+clear chat: all passed". First report found a bug (Pin did nothing with an empty box), fixed in
+PR #36 and re-tested.
+
+1. Only the admin account sees the tools; other accounts see "Admin only".
+2. Chat on/off, pin/unpin (Chat controls and under Moderate), edit, delete.
+3. Timeout and lift timeout; ban and unban; delete all of a person's messages.
+4. People list: visitor shown online, search and filters.
+5. Clear chat with confirmation.
+
+Not yet tested by the owner: privacy request log and erase.

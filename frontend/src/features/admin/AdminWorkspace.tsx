@@ -6,6 +6,8 @@ import { useAccount } from '../../contexts/AccountContext';
 import type { AdminRuntime } from '../../services/adminRuntime';
 import type { Moderation, Presence, PrivacyRequest } from '../../services/adminService';
 import type { ChatMessage, ChatSettings } from '../../services/chatService';
+import type { ScoreEntry, ScoreFlag } from '../../services/leaderboardService';
+import { BOARDS, boardFor, formatScore, type BoardId } from '../games/leaderboardBoards';
 import { ChatPanel } from '../chat/ChatPanel';
 import {
   ADMIN_CHAT_NAME,
@@ -492,6 +494,81 @@ function People({
   );
 }
 
+function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
+  const [boardId, setBoardId] = useState<BoardId>('g2048');
+  const [entries, setEntries] = useState<ScoreEntry[] | null>(null);
+  const [flags, setFlags] = useState<Record<string, ScoreFlag>>({});
+  const board = boardFor(boardId);
+  useEffect(() => {
+    setEntries(null);
+    const stops = [
+      runtime.leaderboards.watchTop(boardId, board.lowerWins, setEntries, () => {}, 50),
+      runtime.leaderboards.watchFlags(boardId, setFlags),
+    ];
+    return () => stops.forEach((stop) => stop());
+  }, [runtime, boardId, board.lowerWins]);
+  return (
+    <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="admin-lb">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="admin-lb" className="text-lg font-semibold">
+          Leaderboards
+        </h2>
+        <label className="flex items-center gap-2 text-sm">
+          Board
+          <select
+            className="admin-select"
+            value={boardId}
+            onChange={(event) => setBoardId(event.target.value as BoardId)}
+          >
+            {BOARDS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-sm text-slate-300">
+        Top 50. “Dev tools seemed open” means the browser window looked like developer tools were
+        docked during that game. It is a hint to review, not proof, and players never see it.
+      </p>
+      <ol className="flex flex-col gap-2" aria-label={`${board.label} scores`}>
+        {entries === null && <li className="text-sm text-slate-300">Loading…</li>}
+        {entries?.length === 0 && <li className="text-sm text-slate-300">No scores yet.</li>}
+        {entries?.map((entry, index) => {
+          const name = chatNameFor(entry.uid);
+          const flagged = flags[entry.uid]?.value === entry.value;
+          return (
+            <li key={entry.uid} className="admin-person">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="leaderboard-rank">{index + 1}</span>
+                <strong>{name}</strong>
+                <span className="font-semibold">{formatScore(board, entry.value)}</span>
+                <code className="break-all text-xs text-slate-400">{entry.uid}</code>
+                {flagged && (
+                  <StatusIndicator status="warning">Dev tools seemed open</StatusIndicator>
+                )}
+              </div>
+              <div>
+                <ConfirmButton
+                  small
+                  label="Delete score"
+                  confirmLabel={`Delete ${name}’s score`}
+                  onConfirm={() =>
+                    void run(`deleted ${name}’s score`, () =>
+                      runtime.leaderboards.deleteScore(boardId, entry.uid),
+                    )
+                  }
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </GlassPanel>
+  );
+}
+
 const ACCOUNT_ID = /^[A-Za-z0-9]{10,128}$/;
 
 function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
@@ -506,10 +583,10 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
       </h2>
       <p className="text-sm text-slate-300">
         Record a deletion request by account ID (from the person’s email). Completing it erases
-        everything the new site holds for that ID: chat messages, timeouts, bans, online entries and
-        the slow-mode stamp. The log keeps only the ID, status and dates. To delete the sign-in
-        account itself, use Firebase console → Authentication. Old-site requests stay on the old
-        site.
+        everything the new site holds for that ID: chat messages, timeouts, bans, online entries,
+        the slow-mode stamp and leaderboard scores. The log keeps only the ID, status and dates. To
+        delete the sign-in account itself, use Firebase console → Authentication. Old-site requests
+        stay on the old site.
       </p>
       <form
         className="flex flex-wrap items-end gap-2"
@@ -721,6 +798,7 @@ export function AdminWorkspace({
         admins={admins}
         run={run}
       />
+      <AdminLeaderboards runtime={runtime} run={run} />
       <PrivacyLog runtime={runtime} run={run} />
     </div>
   );

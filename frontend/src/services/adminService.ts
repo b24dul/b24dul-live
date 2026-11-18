@@ -27,6 +27,8 @@ export type PrivacyRequest = {
 };
 
 const ROOT = 'v2';
+/** Leaderboard boards (kept equal to BOARDS in features/games/leaderboardBoards.ts by a unit test). */
+export const ERASE_BOARD_IDS = ['sudoku-easy', 'sudoku-medium', 'sudoku-hard', 'g2048'];
 const ignore = () => {};
 
 export function createAdminService(database: Database) {
@@ -111,8 +113,8 @@ export function createAdminService(database: Database) {
       update(at(`privacyRequests/${id}`), { status: 'processing', updatedAt: serverTimestamp() }),
 
     /**
-     * Erases everything /v2/ holds for an account (messages, moderation records, online entries and
-     * slow-mode stamp) and completes the request, in one atomic write. The sign-in account itself
+     * Erases everything /v2/ holds for an account (messages, moderation records, online entries,
+     * slow-mode stamp, leaderboard scores and review flags) and completes the request, in one atomic write. The sign-in account itself
      * can only be deleted in the Firebase console.
      */
     async completeAndErase(request: PrivacyRequest) {
@@ -123,6 +125,12 @@ export function createAdminService(database: Database) {
         [`moderation/mutes/${request.uid}`]: null,
         [`presence/${request.uid}`]: null,
         [`chat/lastPost/${request.uid}`]: null,
+        ...Object.fromEntries(
+          ERASE_BOARD_IDS.flatMap((board) => [
+            [`scores/${board}/${request.uid}`, null],
+            [`scoreFlags/${board}/${request.uid}`, null],
+          ]),
+        ),
         [`privacyRequests/${request.id}/status`]: 'completed',
         [`privacyRequests/${request.id}/updatedAt`]: serverTimestamp(),
       });

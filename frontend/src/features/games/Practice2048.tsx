@@ -1,6 +1,8 @@
-import { useRef, useState, type KeyboardEvent, type TouchEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { loadPractice2048, savePractice2048 } from './practiceSaves';
+import { useScoreSession } from './useScoreSession';
+import { useScoreSubmission } from './Leaderboards';
 import {
   LEGACY_2048_STORAGE_KEY,
   move2048,
@@ -27,6 +29,21 @@ export function Practice2048() {
   const [game, setGame] = useState<Game2048 | null>(null);
   const [message, setMessage] = useState('');
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const scores = useScoreSubmission();
+  const session = useScoreSession();
+  const { submit } = scores;
+
+  // Like the old site: the score is offered when 2048 is reached and when the game ends.
+  const won = game?.won ?? false;
+  const over = game?.over ?? false;
+  const score = game?.score ?? 0;
+  useEffect(() => {
+    if (!won && !over) return;
+    if (!session.claim(over ? 'over' : 'won')) return;
+    void submit('g2048', score, session.flagged()).then(setMessage);
+    // Only the transitions matter; score is read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [won, over]);
 
   function move(direction: Direction) {
     setGame((current) => {
@@ -56,6 +73,7 @@ export function Practice2048() {
       const saved = loadPractice2048(window.localStorage);
       if (saved.status === 'ready') {
         setGame(saved.game);
+        session.begin(true);
         setMessage('Loaded your 2048 practice save.');
       } else {
         setMessage(
@@ -74,6 +92,7 @@ export function Practice2048() {
       const saved = readLegacy2048(window.localStorage.getItem(LEGACY_2048_STORAGE_KEY));
       if (saved.status === 'ready') {
         setGame(saved.game);
+        session.begin(false);
         setMessage('Loaded a copy of your saved game for practice.');
       } else {
         setMessage(
@@ -115,8 +134,9 @@ export function Practice2048() {
     <GlassPanel className="p-5 sm:p-7">
       <h2 className="text-xl font-semibold">2048 practice</h2>
       <p className="mt-2 text-sm text-slate-300">
-        Save practice progress separately in this browser, or load a copy of an existing save.
-        Practice scores are not sent to the leaderboard.
+        Save progress in this browser, or load a copy of an old-site save. When you’re signed in
+        with Google, your score goes on the leaderboard when you reach 2048 and when the game ends
+        (copies of old-site saves don’t count).
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -124,7 +144,8 @@ export function Practice2048() {
           type="button"
           onClick={() => {
             setGame(new2048());
-            setMessage('New practice game started.');
+            session.begin(true);
+            setMessage('New game started.');
           }}
         >
           {game ? 'New practice game' : 'Start 2048 practice'}

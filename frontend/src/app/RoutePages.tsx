@@ -34,6 +34,9 @@ import { routes } from './navigation';
 const Practice2048 = lazy(() =>
   import('../features/games/Practice2048').then((module) => ({ default: module.Practice2048 })),
 );
+const Leaderboards = lazy(() =>
+  import('../features/games/Leaderboards').then((module) => ({ default: module.Leaderboards })),
+);
 const PracticeSudoku = lazy(() =>
   import('../features/games/PracticeSudoku').then((module) => ({ default: module.PracticeSudoku })),
 );
@@ -202,18 +205,17 @@ function GamesPage() {
       description="Play practice games and find favourites on the current site."
     >
       <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">
-          Existing games remain on the published site
-        </StatusIndicator>
+        <StatusIndicator status="neutral">New leaderboards — starting fresh</StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Sudoku and 2048 remain available on the published site. Practice games below do not change
-          existing saves or leaderboard records.
+          Sign in with Google and your best 2048 score and hint-free Sudoku times go on the new
+          leaderboards under a made-up name. Old-site scores and saves are not carried over.
         </p>
         <a className="ui-button ui-button--primary mt-4" href={website}>
           Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
         </a>
       </GlassPanel>
       <Suspense fallback={<p role="status">Loading practice games…</p>}>
+        <Leaderboards />
         <Practice2048 />
         <PracticeSudoku />
       </Suspense>

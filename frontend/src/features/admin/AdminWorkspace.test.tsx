@@ -83,7 +83,26 @@ function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
     markProcessing: vi.fn(async () => {}),
     completeAndErase: vi.fn(async () => 0),
   } as unknown as AdminService & Record<string, ReturnType<typeof vi.fn>>;
-  return { chat, admin } as AdminRuntime & { admin: typeof admin };
+  const leaderboards = {
+    watchTop: (_board: string, _lower: boolean, onEntries: (entries: unknown[]) => void) => (
+      onEntries([
+        { uid: 'player00001', value: 2048, ts: 1 },
+        { uid: 'player00002', value: 1024, ts: 1 },
+      ]),
+      () => {}
+    ),
+    watchFlags: (_board: string, onFlags: (flags: unknown) => void) => (
+      onFlags({ player00001: { value: 2048, ts: 1 }, player00002: { value: 999, ts: 1 } }),
+      () => {}
+    ),
+    deleteScore: vi.fn(async () => {}),
+    myBest: vi.fn(async () => null),
+    submit: vi.fn(async () => {}),
+  };
+  return { chat, admin, leaderboards } as unknown as AdminRuntime & {
+    admin: typeof admin;
+    leaderboards: typeof leaderboards;
+  };
 }
 
 async function renderAdmin(identity: AuthIdentity, runtime = fakeRuntime()) {
@@ -222,5 +241,23 @@ describe('AdminWorkspace failures', () => {
     await click(screen.getByRole('button', { name: 'Pin announcement' }));
     expect(screen.getByRole('status', { name: '' })).toHaveTextContent(/^Failed: message pinned/);
     expect(box).toHaveValue('Live at 7');
+  });
+});
+
+describe('AdminWorkspace leaderboards', () => {
+  it('shows the dev-tools hint only on the flagged current score and deletes after confirming', async () => {
+    const runtime = fakeRuntime();
+    await renderAdmin({ kind: 'google', uid: 'owner' }, runtime);
+    const list = await screen.findByRole('list', { name: '2048 scores' });
+    await within(list).findByText('1,024');
+    const [first, second] = within(list).getAllByRole('listitem');
+    expect(within(first!).getByText('Dev tools seemed open')).toBeInTheDocument();
+    expect(within(first!).getByText('2,048')).toBeInTheDocument();
+    // An old flag for a different value is not shown.
+    expect(within(second!).queryByText('Dev tools seemed open')).not.toBeInTheDocument();
+    await click(within(first!).getByRole('button', { name: 'Delete score' }));
+    expect(runtime.leaderboards.deleteScore).not.toHaveBeenCalled();
+    await click(within(first!).getByRole('button', { name: /^Delete .*’s score$/ }));
+    expect(runtime.leaderboards.deleteScore).toHaveBeenCalledWith('g2048', 'player00001');
   });
 });
