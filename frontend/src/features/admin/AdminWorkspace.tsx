@@ -1,3 +1,4 @@
+import { AdminStats } from './AdminStats';
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { LockKeyhole, Shield } from 'lucide-react';
 import { GlassPanel, PrimaryButton, SecondaryButton, StatusIndicator } from '../../components/ui';
@@ -797,6 +798,7 @@ export function AdminWorkspace({
         admins={admins}
         run={run}
       />
+      <AdminStats runtime={runtime} />
       <AdminLeaderboards runtime={runtime} run={run} />
       <PrivacyLog runtime={runtime} run={run} />
     </div>

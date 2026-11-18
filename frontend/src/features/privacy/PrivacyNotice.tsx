@@ -149,6 +149,16 @@ export function PrivacyNotice() {
           saved. The site owner can remove any score.
         </p>
       </Section>
+      <Section title="Visitor statistics">
+        <p>
+          Besides GoatCounter, the site keeps <strong>daily totals</strong> in its database: how
+          many visits there were, minutes spent on the site and watching streams, video plays, games
+          started and Subscribe clicks, plus how many visits came from phones, tablets or computers
+          and from YouTube, search engines, other websites or directly. Each visit only adds 1 to
+          these totals. Nothing is stored about who you are or what you did, so there is nothing
+          linked to you to delete. Only the site owner can see the totals.
+        </p>
+      </Section>
       <Section title="Your choices">
         <p>
           You can sign out at any time on the{' '}

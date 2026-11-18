@@ -4,11 +4,14 @@
  * without loading any third-party script. Nothing identifies the visitor: no account ID, no
  * cookies, nothing stored on the device.
  */
+import { addToTotals, metricForEvent, type Metric, type TotalsTarget } from './dailyTotals';
+import { firebaseConfig } from './firebaseConfig';
+
 export const COUNT_ENDPOINT = 'https://b24dul.goatcounter.com/count';
 export const SITE_HOST = 'b24dul.github.io';
 export const SITE_BASE = '/b24dul-live/';
 
-type CountEnv = {
+export type CountEnv = {
   host: string;
   webdriver: boolean;
   skip: boolean;
@@ -17,7 +20,7 @@ type CountEnv = {
   screenWidth: number;
 };
 
-function browserEnv(): CountEnv {
+export function browserEnv(): CountEnv {
   let skip = false;
   try {
     // GoatCounter's own convention for excluding your own visits: localStorage.skipgc = 't'.
@@ -46,6 +49,24 @@ export function countPath(route: string) {
   return route === '/' ? SITE_BASE : SITE_BASE + route.replace(/^\/+/, '');
 }
 
+/** Only on the published site, never in tests or automated browsers, and not with skipgc. */
+export function countingAllowed(env: CountEnv) {
+  return env.host === SITE_HOST && !env.webdriver && !env.skip;
+}
+
+const productionTotals = (): TotalsTarget => ({
+  databaseURL: firebaseConfig.databaseURL,
+  fetch: (...args) => window.fetch(...args),
+});
+
+const onAdminPage = () => window.location.hash.startsWith('#/admin');
+
+/** Adds to the daily totals (admin-only to read), under the same conditions as GoatCounter. */
+export function countTotals(metrics: readonly Metric[], env: CountEnv = browserEnv()) {
+  if (!metrics.length || !countingAllowed(env) || onAdminPage()) return;
+  void addToTotals(metrics, productionTotals());
+}
+
 /**
  * Counts a page view or an event. Only on the published site, never in tests or automated
  * browsers, never on the admin page, and not when the owner has set skipgc.
@@ -54,8 +75,7 @@ export function countVisit(
   hit: { path: string; title: string; event?: boolean },
   env: CountEnv = browserEnv(),
 ): string | null {
-  if (env.host !== SITE_HOST || env.webdriver || env.skip) return null;
-  if (hit.path.startsWith(SITE_BASE + 'admin')) return null;
+  if (!countingAllowed(env) || hit.path.startsWith(SITE_BASE + 'admin')) return null;
   const params = new URLSearchParams({
     p: hit.path,
     t: hit.title,
@@ -79,6 +99,8 @@ export function countVisit(
 
 /** Counts a click or choice, using the old site's event names so the history carries on. */
 export function countEvent(path: string, title: string) {
+  const metric = metricForEvent(path);
+  if (metric) countTotals([metric]);
   return countVisit({ path, title, event: true });
 }
 

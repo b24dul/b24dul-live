@@ -1,9 +1,12 @@
 // Admin-only /v2/ operations. The database rules allow these only for accounts in /v2/admins;
 // this module adds no access of its own.
+import type { DayTotals } from './dailyTotals';
 import {
   equalTo,
   get,
+  limitToLast,
   onValue,
+  orderByKey,
   orderByChild,
   push,
   query,
@@ -28,6 +31,8 @@ export type PrivacyRequest = {
 
 const ROOT = 'v2';
 /** Leaderboard boards (kept equal to BOARDS in features/games/leaderboardBoards.ts by a unit test). */
+export type StatsDay = { day: string; totals: DayTotals };
+
 export const ERASE_BOARD_IDS = ['sudoku-easy', 'sudoku-medium', 'sudoku-hard', 'g2048'];
 const ignore = () => {};
 
@@ -73,6 +78,20 @@ export function createAdminService(database: Database) {
       );
     },
 
+    /** Daily totals for the most recent days (newest first). Totals only; nothing per person. */
+    watchStats(onDays: (days: StatsDay[]) => void, days = 30) {
+      return onValue(
+        query(at('stats/days'), orderByKey(), limitToLast(days)),
+        (snapshot) => {
+          const result: StatsDay[] = [];
+          snapshot.forEach((day) => {
+            result.unshift({ day: day.key!, totals: (day.val() ?? {}) as DayTotals });
+          });
+          onDays(result);
+        },
+        () => onDays([]),
+      );
+    },
     watchPresence(onPresence: (presence: Presence) => void) {
       return onValue(
         at('presence'),

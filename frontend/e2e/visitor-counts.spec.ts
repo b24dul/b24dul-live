@@ -1,8 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test('test and local runs never send visitor counts to GoatCounter', async ({ page }) => {
+test('test and local runs never send visitor counts to GoatCounter or the daily totals', async ({
+  page,
+}) => {
   const counted: string[] = [];
   await page.route('https://b24dul.goatcounter.com/**', (route) => {
+    counted.push(route.request().url());
+    return route.abort();
+  });
+  await page.route('**/v2/stats/**', (route) => {
     counted.push(route.request().url());
     return route.abort();
   });
