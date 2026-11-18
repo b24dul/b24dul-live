@@ -2,9 +2,8 @@ name: Deploy React preview to GitHub Pages
 
 # Owner-authorised PREVIEW release (2026-11-18). This is NOT the production cutover:
 # frontend/production-gates.json stays blocked, and the dependency audit and Lighthouse
-# findings remain open. The unchanged legacy site from main is published at /legacy/.
-# Rollback: gh api -X PUT repos/b24dul/b24dul-live/pages -f build_type=legacy \
-#   -F "source[branch]=main" -F "source[path]=/"
+# findings remain open. Since step 5 (owner-approved, 2026-11-18) the old site is no longer
+# published; /legacy/ only redirects to the new home page. Rollback steps: docs/rollback.md.
 
 on:
   push:
@@ -27,18 +26,14 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v5
-      - name: Check out legacy site from main
+      - name: Check out the data files kept on main (video list, share image)
         uses: actions/checkout@v5
         with:
           ref: main
-          path: legacy-src
+          path: main-data
           sparse-checkout: |
-            index.html
-            styles.css
-            og.png
-            assets
             videos.json
-            live-monitor-state.json
+            og.png
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v5
         with:
@@ -52,8 +47,8 @@ jobs:
       - run: npm run build
       - name: Validate static assets and Pages base path
         run: node scripts/verify-release.mjs
-      - name: Assemble Pages site (React root, 404 fallback, legacy copy, data)
-        run: bash scripts/assemble-pages.sh ../legacy-src
+      - name: Assemble Pages site (React root, 404 fallback, /legacy/ redirect, data)
+        run: bash scripts/assemble-pages.sh ../main-data
       - name: Check artifact excludes emulator and test material
         run: node scripts/verify-preview-artifact.mjs dist
       - uses: actions/upload-pages-artifact@v4
