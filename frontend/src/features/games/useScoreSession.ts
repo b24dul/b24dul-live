@@ -12,9 +12,14 @@ export function useScoreSession() {
   const session = useRef<ScoreSession>({ watch: null, eligible: false, sent: new Set() });
   useEffect(() => () => session.current.watch?.stop(), []);
   return {
-    begin(eligible: boolean) {
+    /** `alreadySent`: results a restored game already offered, so they aren't sent twice. */
+    begin(eligible: boolean, alreadySent: string[] = []) {
       session.current.watch?.stop();
-      session.current = { watch: eligible ? watchDevtools() : null, eligible, sent: new Set() };
+      session.current = {
+        watch: eligible ? watchDevtools() : null,
+        eligible,
+        sent: new Set(alreadySent),
+      };
     },
     /** True the first time a given result is offered in this session. */
     claim(key: string) {

@@ -74,7 +74,7 @@ function addTile(grid: number[], random: () => number): number {
   return index;
 }
 
-/** Start an in-memory practice game; no existing save or leaderboard is modified. */
+/** Start a new game in memory; no existing save or leaderboard is modified. */
 export function new2048(random: () => number = Math.random): Game2048 {
   const grid = Array<number>(16).fill(0);
   addTile(grid, random);

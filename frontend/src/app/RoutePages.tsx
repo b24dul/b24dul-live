@@ -22,14 +22,14 @@ import { PrivacyRequest } from '../features/privacy/PrivacyRequest';
 import { AccountPanel } from '../features/account/AccountPanel';
 import { routes } from './navigation';
 
-const Practice2048 = lazy(() =>
-  import('../features/games/Practice2048').then((module) => ({ default: module.Practice2048 })),
+const Play2048 = lazy(() =>
+  import('../features/games/Play2048').then((module) => ({ default: module.Play2048 })),
 );
 const Leaderboards = lazy(() =>
   import('../features/games/Leaderboards').then((module) => ({ default: module.Leaderboards })),
 );
-const PracticeSudoku = lazy(() =>
-  import('../features/games/PracticeSudoku').then((module) => ({ default: module.PracticeSudoku })),
+const PlaySudoku = lazy(() =>
+  import('../features/games/PlaySudoku').then((module) => ({ default: module.PlaySudoku })),
 );
 
 const ChatPanel = lazy(() =>
@@ -190,8 +190,8 @@ function GamesPage() {
       </GlassPanel>
       <Suspense fallback={<p role="status">Loading games…</p>}>
         <Leaderboards />
-        <Practice2048 />
-        <PracticeSudoku />
+        <Play2048 />
+        <PlaySudoku />
       </Suspense>
       <RelatedLinks paths={['/competitions', '/explore']} />
     </PageFrame>

@@ -63,7 +63,7 @@ export function PrivacyNotice() {
         <ul className="list-disc space-y-2 pl-5">
           <li>Your sign-in session (in your browser’s storage), until you sign out.</li>
           <li>Display preferences, such as the sidebar setting.</li>
-          <li>Practice game progress for Sudoku and 2048.</li>
+          <li>Your Sudoku and 2048 games, saved automatically so you can carry on later.</li>
         </ul>
         <p>
           You can remove all of this by signing out and clearing this site’s data in your browser.

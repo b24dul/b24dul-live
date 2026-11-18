@@ -137,7 +137,7 @@ function shuffled<T>(values: readonly T[], random: () => number): T[] {
   return result;
 }
 
-/** Generate a fresh uniquely solvable practice puzzle; never writes a legacy save. */
+/** Generate a fresh uniquely solvable puzzle; never writes a legacy save. */
 export function newSudoku(level: SudokuLevel, random: () => number = Math.random): SudokuGame {
   const axis = () =>
     shuffled([0, 1, 2], random).flatMap((group) =>

@@ -25,7 +25,9 @@ const legacySave = JSON.stringify({
   showMistakes: true,
 });
 
-test('plays a saved Sudoku; an old-site save is never changed', async ({ page }) => {
+test('restores a saved Sudoku and saves as you play; an old-site save is never changed', async ({
+  page,
+}) => {
   await page.addInitScript((saved) => {
     window.localStorage.setItem('b24dul_sudoku', saved);
     if (!window.localStorage.getItem('b24dul.preview.sudoku.v1'))
@@ -35,8 +37,7 @@ test('plays a saved Sudoku; an old-site save is never changed', async ({ page })
       );
   }, legacySave);
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load Sudoku practice' }).click();
-  await expect(page.getByText('Loaded your Sudoku practice save.')).toBeVisible();
+  await expect(page.getByText('Welcome back! Your puzzle was restored.')).toBeVisible();
   const board = page.getByRole('grid', { name: 'Sudoku board' });
   await expect(board.getByRole('gridcell')).toHaveCount(81);
   const selected = board.getByRole('gridcell', { name: 'Row 1 column 3, empty' });
@@ -55,10 +56,7 @@ test('plays a saved Sudoku; an old-site save is never changed', async ({ page })
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, notes 4' })).toBeVisible();
   await page.getByRole('button', { name: 'Sudoku hint' }).click();
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
-  await page.getByRole('button', { name: 'Save Sudoku practice' }).click();
-  await expect(page.getByText('Sudoku practice saved in this browser.')).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Load Sudoku practice' }).click();
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
   await expect(page.getByText(/Mistakes: 1 · Hints: 1/)).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_sudoku'))).toBe(legacySave);
@@ -72,4 +70,34 @@ test('starts a new Sudoku without overwriting an unreadable legacy save', async 
     81,
   );
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_sudoku'))).toBe('bad save');
+});
+
+test('How to play explains the rules', async ({ page }) => {
+  await page.goto('./#/games');
+  await page.getByRole('button', { name: 'How to play' }).click();
+  await expect(page.getByText(/every 3×3 box has each number from 1/)).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText(/every 3×3 box has each number from 1/)).toBeHidden();
+});
+
+test('finishing a puzzle shows the solved screen with Play again choices', async ({ page }) => {
+  const grid = [...solution];
+  grid[2] = 0;
+  const almost = JSON.stringify({
+    schemaVersion: 1,
+    kind: 'sudoku',
+    game: { ...JSON.parse(legacySave), puzzle: grid.map((v, i) => (i < 40 ? v : 0)), grid, sel: 2 },
+  });
+  await page.addInitScript(
+    (saved) => window.localStorage.setItem('b24dul.preview.sudoku.v1', saved),
+    almost,
+  );
+  await page.goto('./#/games');
+  await page.getByRole('button', { name: 'Enter 4', exact: true }).click();
+  const solved = page.getByRole('group', { name: 'Puzzle solved!' });
+  await expect(solved).toBeVisible();
+  await expect(solved.getByText(/Easy · Time 3:0\d · Mistakes 0 · Hints 0/)).toBeVisible();
+  await solved.getByRole('button', { name: 'New hard Sudoku' }).click();
+  await expect(solved).toBeHidden();
+  await expect(page.getByText(/^hard · Mistakes: 0/)).toBeVisible();
 });

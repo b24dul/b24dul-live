@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
-import { loadPracticeSudoku, savePracticeSudoku } from './practiceSaves';
+import { loadSudoku, saveSudoku } from './gameSaves';
+import { saveProblemText, useSavedGame } from './useSavedGame';
 import { useScoreSession } from './useScoreSession';
 import { useScoreSubmission } from './Leaderboards';
 import { sudokuBoard } from './leaderboardBoards';
@@ -10,19 +11,29 @@ import {
   inputSudoku,
   newSudoku,
   undoSudoku,
-  type SudokuGame,
   type SudokuLevel,
 } from './sudoku';
 
-export function PracticeSudoku() {
-  const [game, setGame] = useState<SudokuGame | null>(null);
-  const [message, setMessage] = useState('');
+const formatTime = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+export function PlaySudoku() {
+  const { game, setGame, restored, problem } = useSavedGame(loadSudoku, saveSudoku);
+  const [message, setMessage] = useState(restored ? 'Welcome back! Your puzzle was restored.' : '');
+  const [help, setHelp] = useState(false);
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
   const running = game !== null && !game.done;
   const scores = useScoreSubmission();
   const session = useScoreSession();
   const { submit } = scores;
   const done = game?.done ?? false;
+
+  // A restored, unfinished puzzle can still go on the leaderboard; a finished one isn't re-sent.
+  useEffect(() => {
+    if (restored) session.begin(!done);
+    // Runs once, for the puzzle restored on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Like the old site: only hint-free solves go on the leaderboard (fastest time wins).
   useEffect(() => {
@@ -48,47 +59,12 @@ export function PracticeSudoku() {
       }
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [running]);
+  }, [running, setGame]);
 
   function start(level: SudokuLevel) {
     setGame(newSudoku(level));
     session.begin(true);
     setMessage(`New ${level} puzzle started.`);
-  }
-
-  function savePractice() {
-    if (!game) return;
-    try {
-      const result = savePracticeSudoku(window.localStorage, game);
-      setMessage(
-        result === 'saved'
-          ? 'Sudoku practice saved in this browser.'
-          : result === 'unrecognized'
-            ? 'The existing Sudoku practice save could not be read and was not overwritten.'
-            : 'The Sudoku practice game could not be saved. Existing saves have not been changed.',
-      );
-    } catch {
-      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
-    }
-  }
-
-  function loadPractice() {
-    try {
-      const saved = loadPracticeSudoku(window.localStorage);
-      if (saved.status === 'ready') {
-        setGame(saved.game);
-        session.begin(true);
-        setMessage('Loaded your Sudoku practice save.');
-      } else {
-        setMessage(
-          saved.status === 'missing'
-            ? 'No Sudoku practice save was found in this browser.'
-            : 'The Sudoku practice save is unavailable or cannot be read. It has not been changed.',
-        );
-      }
-    } catch {
-      setMessage('Browser storage is unavailable. Existing saves have not been changed.');
-    }
   }
 
   function input(digit: number) {
@@ -121,39 +97,79 @@ export function PracticeSudoku() {
     cells.current[next]?.focus();
   }
 
+  const levels = (['easy', 'medium', 'hard'] as const).map((level) => (
+    <button
+      className="ui-button ui-button--secondary"
+      key={level}
+      onClick={() => start(level)}
+      type="button"
+    >
+      New {level} Sudoku
+    </button>
+  ));
+
   return (
-    <section aria-labelledby="sudoku-practice-title">
+    <section aria-labelledby="sudoku-title">
       <GlassPanel className="p-5 sm:p-7">
-        <h2 className="text-xl font-semibold" id="sudoku-practice-title">
-          Sudoku practice
-        </h2>
-        <p className="mt-2 text-sm text-slate-300">
-          Save progress in this browser. When you’re signed in with Google, hint-free solves go on
-          the leaderboard.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {(['easy', 'medium', 'hard'] as const).map((level) => (
-            <button
-              className="ui-button ui-button--secondary"
-              key={level}
-              onClick={() => start(level)}
-              type="button"
-            >
-              New {level} Sudoku
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold" id="sudoku-title">
+            Sudoku
+          </h2>
           <button
+            aria-controls="sudoku-help"
+            aria-expanded={help}
             className="ui-button ui-button--secondary"
-            disabled={!game}
-            onClick={savePractice}
+            onClick={() => setHelp((open) => !open)}
             type="button"
           >
-            Save Sudoku practice
-          </button>
-          <button className="ui-button ui-button--secondary" onClick={loadPractice} type="button">
-            Load Sudoku practice
+            How to play
           </button>
         </div>
+        <p className="mt-2 text-sm text-slate-300">
+          {saveProblemText(problem)} When you’re signed in with Google, hint-free solves go on the
+          leaderboard (fastest time wins).
+        </p>
+        {help && (
+          <div className="game-help" id="sudoku-help">
+            <h3 className="font-semibold">How to play</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-200">
+              <li>
+                Fill the grid so every row, every column and every 3×3 box has each number from 1 to
+                9 exactly once.
+              </li>
+              <li>The grey numbers are given and can’t be changed.</li>
+              <li>
+                Pick a cell, then tap a number or type it. Arrow keys move between cells; Backspace
+                clears a cell.
+              </li>
+              <li>
+                <strong>Notes</strong>: turn notes on to pencil in small candidate numbers. Tap a
+                number again to remove its note.
+              </li>
+              <li>
+                <strong>Erase</strong> clears your number or notes in the chosen cell;{' '}
+                <strong>Undo</strong> steps back.
+              </li>
+              <li>
+                <strong>Hint</strong> fills in one correct number. Puzzles solved with a hint don’t
+                go on the leaderboard.
+              </li>
+              <li>
+                <strong>Show mistakes</strong> turns wrong numbers red. Every wrong number still
+                counts as a mistake.
+              </li>
+              <li>The timer pauses while the page is hidden. Your puzzle saves as you play.</li>
+            </ul>
+            <button
+              className="ui-button ui-button--secondary mt-3"
+              onClick={() => setHelp(false)}
+              type="button"
+            >
+              Close
+            </button>
+          </div>
+        )}
+        <div className="mt-4 flex flex-wrap gap-3">{levels}</div>
         <p className="mt-3 text-sm text-slate-300" role="status">
           {message}
         </p>
@@ -161,7 +177,7 @@ export function PracticeSudoku() {
           <div className="mt-4 max-w-lg">
             <p className="mb-3 text-sm text-slate-200">
               {game.level} · Mistakes: {game.mistakes} · Hints: {game.hints} · Time:{' '}
-              {Math.floor(game.elapsed / 60)}:{String(game.elapsed % 60).padStart(2, '0')}
+              {formatTime(game.elapsed)}
             </p>
             <p className="mb-3 text-sm text-slate-300">
               Choose a cell and use the number buttons or keyboard. Arrow keys move between cells.
@@ -283,9 +299,17 @@ export function PracticeSudoku() {
               Show mistakes
             </label>
             {game.done && (
-              <p className="mt-3" role="status">
-                Sudoku solved!
-              </p>
+              <div aria-labelledby="sudoku-result" className="game-result-card" role="group">
+                <p className="text-2xl font-bold" id="sudoku-result">
+                  Puzzle solved!
+                </p>
+                <p className="text-slate-200">
+                  {game.level[0]!.toUpperCase() + game.level.slice(1)} · Time{' '}
+                  {formatTime(game.elapsed)} · Mistakes {game.mistakes} · Hints {game.hints}
+                </p>
+                <p className="text-sm text-slate-300">Play again:</p>
+                <div className="flex flex-wrap justify-center gap-2">{levels}</div>
+              </div>
             )}
           </div>
         )}
