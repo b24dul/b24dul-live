@@ -1,10 +1,11 @@
 import { ArrowRight, Play } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { GlassPanel, SectionHeader, StatusIndicator } from './ui';
 import type { ArchivedVideo } from '../services/videoArchive';
 import { videoDate } from '../services/videoArchive';
 import { usePlayVideo } from '../features/videos/VideoPlayer';
+import { thumbnailZoom } from './thumbnailBars';
 
 export function FeatureTile({
   title,
@@ -75,6 +76,7 @@ const thumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 export function ArchiveTile({ video }: { video: ArchivedVideo }) {
   const play = usePlayVideo();
   const [thumbFailed, setThumbFailed] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const media = (
     <>
       {thumbFailed ? (
@@ -85,8 +87,11 @@ export function ArchiveTile({ video }: { video: ArchivedVideo }) {
         <img
           className="video-card-thumb"
           src={thumb(video.id)}
+          crossOrigin="anonymous"
           width={480}
           height={360}
+          style={zoom > 1 ? ({ '--thumb-zoom': zoom.toFixed(3) } as CSSProperties) : undefined}
+          onLoad={(event) => setZoom(thumbnailZoom(event.currentTarget))}
           alt=""
           loading="lazy"
           decoding="async"

@@ -1406,6 +1406,11 @@ main[tabindex='-1']:focus {
   transition: transform 300ms ease;
 }
 
+/* --thumb-zoom removes black bars baked into some thumbnails (see thumbnailBars.ts). */
+.video-card-thumb {
+  transform: scale(var(--thumb-zoom, 1));
+}
+
 .video-card-fallback {
   display: grid;
   place-items: center;
@@ -1416,7 +1421,7 @@ main[tabindex='-1']:focus {
 
 .video-card:hover .video-card-thumb,
 .video-card:focus-within .video-card-thumb {
-  transform: scale(1.05);
+  transform: scale(calc(var(--thumb-zoom, 1) * 1.05));
 }
 
 .video-card-play {
@@ -1665,10 +1670,13 @@ main[tabindex='-1']:focus {
   .video-card:focus-within,
   .game-card:hover,
   .game-card:focus-visible,
-  .ui-button--primary:hover:not(:disabled),
+  .ui-button--primary:hover:not(:disabled) {
+    transform: none;
+  }
+
   .video-card:hover .video-card-thumb,
   .video-card:focus-within .video-card-thumb {
-    transform: none;
+    transform: scale(var(--thumb-zoom, 1));
   }
 }
 
@@ -1676,10 +1684,13 @@ main[tabindex='-1']:focus {
 .app-layout[data-motion='reduce'] .video-card:focus-within,
 .app-layout[data-motion='reduce'] .game-card:hover,
 .app-layout[data-motion='reduce'] .game-card:focus-visible,
-.app-layout[data-motion='reduce'] .ui-button--primary:hover:not(:disabled),
+.app-layout[data-motion='reduce'] .ui-button--primary:hover:not(:disabled) {
+  transform: none;
+}
+
 .app-layout[data-motion='reduce'] .video-card:hover .video-card-thumb,
 .app-layout[data-motion='reduce'] .video-card:focus-within .video-card-thumb {
-  transform: none;
+  transform: scale(var(--thumb-zoom, 1));
 }
 
 /* Keyboard focus stays clearly visible: violet outline, also on cards and pill buttons. */

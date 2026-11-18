@@ -9,6 +9,26 @@
       content="Watch B24DUL live with chat, catch up on videos, play Sudoku and 2048, and hang out with the community."
     />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <!-- The home banner is the largest element: let the browser fetch it before the app runs.
+         Must match BannerImage.tsx (same media, sizes and AVIF candidates). -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      media="(max-width: 640px)"
+      imagesrcset="%BASE_URL%banner/banner-mobile-480.avif 480w, %BASE_URL%banner/banner-mobile-720.avif 720w, %BASE_URL%banner/banner-mobile-960.avif 960w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      media="(min-width: 641px)"
+      imagesrcset="%BASE_URL%banner/banner-640.avif 640w, %BASE_URL%banner/banner-960.avif 960w, %BASE_URL%banner/banner-1280.avif 1280w, %BASE_URL%banner/banner-1600.avif 1600w, %BASE_URL%banner/banner-2172.avif 2172w"
+      imagesizes="(min-width: 1400px) 1340px, 96vw"
+      fetchpriority="high"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="B24DUL Live" />
     <meta property="og:title" content="B24DUL Live" />
