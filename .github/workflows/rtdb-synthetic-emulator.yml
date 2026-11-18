@@ -13,6 +13,26 @@ permissions:
   contents: read
 
 jobs:
+  dependency-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Audit committed dependency tree
+        run: npm audit --package-lock-only --audit-level=high --json --fetch-timeout=30000 --fetch-retries=0 > dependency-audit.json
+      - name: Preserve audit findings including failures
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: dependency-audit
+          path: frontend/dependency-audit.json
+          if-no-files-found: error
   rtdb-synthetic-emulator:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
