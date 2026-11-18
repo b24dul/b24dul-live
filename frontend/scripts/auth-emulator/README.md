@@ -14,4 +14,8 @@ Browser continuity tests run a loopback-only Vite fixture with the exact legacy 
 
 These tests verify synthetic emulator sessions in Chromium, Firefox and WebKit when those engines can run. They do not prove that existing production browser sessions or real Google accounts will migrate, and do not authorize a release.
 
-`reactFixture.html` adds a localhost-only React preview using the shared identity transition coordinator and ID-token session observer. Its three browser scenarios cover restoring a legacy guest and linking without changing UID, a simulated cancelled sign-in, and an account collision with a recovery message while retaining both identities. These scenarios passed locally in Chromium and WebKit on Node 22; the corresponding GitHub Auth run is still pending. The page uses only the fixed demo project and synthetic credentials and is outside the production application entry point.
+`reactFixture.html` is a localhost-only page that uses the production sign-in code (`src/services/firebaseIdentity.ts` and the identity coordinator) against the emulator, with the same app name as the live site (`b24dul-v2`) and synthetic Google tokens in place of the popup. Its scenarios cover the fresh start (a legacy session on the same origin is ignored and left intact), guest-to-Google linking that keeps the UID, a cancelled sign-in, sign-out, and choosing a Google account that already exists (the browser signs in to that account; nothing is merged).
+
+The emulator does not return the OAuth token that `GoogleAuthProvider.credentialFromError` reads from a collision error, so the fixture re-creates its synthetic credential for that step. The production popup path for that case is checked manually in a real browser.
+
+The raw-SDK cases using `browserFixture.html` (including the pinned legacy SDK 10.12.2) describe Firebase SDK behaviour only. The new site deliberately does not reuse legacy sessions.

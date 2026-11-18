@@ -2,11 +2,28 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
+import { AccountProvider } from '../contexts/AccountContext';
+import type { AccountRuntime } from '../services/accountRuntime';
+
+// Unit tests never load Firebase: the runtime reports a signed-out visitor.
+const signedOutRuntime = async (): Promise<AccountRuntime> => ({
+  subscribe: (onSession) => {
+    onSession({ status: 'ready', identity: { kind: 'signed-out' } }, null);
+    return () => {};
+  },
+  transitions: {
+    enterAnonymously: async () => ({ type: 'failed' }),
+    enterWithGoogle: async () => ({ type: 'failed' }),
+    signOut: async () => ({ type: 'failed' }),
+  },
+});
 
 function renderRoute(path = '/') {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <AccountProvider loadRuntime={signedOutRuntime}>
+        <App />
+      </AccountProvider>
     </MemoryRouter>,
   );
 }
@@ -25,10 +42,12 @@ describe('isolated application shell', () => {
     );
   });
 
-  it('provides complete section shells and no simulated sign-in', () => {
+  it('offers real sign-in choices on the account page', async () => {
     renderRoute('/profile');
-    expect(screen.getByRole('heading', { name: 'Guest profile' })).toBeInTheDocument();
-    expect(screen.getByText(/No account has been created or authenticated/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Your account' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Not signed in' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Continue as guest' })).toBeEnabled();
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const fixture = 'scripts/auth-emulator/browserFixture.html';
 
-test('React preview preserves a legacy UID through linking and refresh', async ({
+test('fresh start: the React site ignores a legacy session and leaves it intact', async ({
   page,
   browserName,
 }) => {
@@ -10,15 +10,33 @@ test('React preview preserves a legacy UID through linking and refresh', async (
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'signed-out');
   await page.getByRole('button', { name: 'Create test guest' }).click();
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
-  const uid = await page.locator('#state').getAttribute('data-uid');
+  const legacyUid = await page.locator('#state').getAttribute('data-uid');
+  await page.goto(`scripts/auth-emulator/reactFixture.html?subject=react-fresh-${browserName}`);
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'signed-out');
+  await page.getByRole('button', { name: 'Connect test Google account' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
+  const newUid = await page.locator('#state').getAttribute('data-uid');
+  expect(newUid).not.toBe(legacyUid);
+  await page.reload();
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', newUid!);
+  await page.goto(`${fixture}?sdk=legacy`);
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', legacyUid!);
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+});
+
+test('React guest links Google without changing UID', async ({ page, browserName }) => {
   await page.goto(`scripts/auth-emulator/reactFixture.html?subject=react-linked-${browserName}`);
-  await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+  await page.getByRole('button', { name: 'Continue as guest' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+  const uid = await page.locator('#state').getAttribute('data-uid');
   await page.getByRole('button', { name: 'Connect test Google account' }).click();
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
   await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
   await page.reload();
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
   await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'signed-out');
 });
 
 test('React preview keeps the guest after a failed sign-in', async ({ page }) => {
@@ -32,7 +50,7 @@ test('React preview keeps the guest after a failed sign-in', async ({ page }) =>
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
 });
 
-test('React preview surfaces collision without switching either account', async ({
+test('React guest choosing an existing Google account signs in to that account', async ({
   page,
   browser,
   browserName,
@@ -50,12 +68,12 @@ test('React preview surfaces collision without switching either account', async 
     await guest.goto(url);
     await guest.getByRole('button', { name: 'Continue as guest' }).click();
     await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
-    const uid = await guest.locator('#state').getAttribute('data-uid');
-    expect(uid).not.toBe(ownerUid);
+    const guestUid = await guest.locator('#state').getAttribute('data-uid');
+    expect(guestUid).not.toBe(ownerUid);
     await guest.getByRole('button', { name: 'Connect test Google account' }).click();
-    await expect(guest.locator('p[role=status]')).toContainText('already linked');
-    await expect(guest.locator('#state')).toHaveAttribute('data-uid', uid!);
-    await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+    await expect(guest.locator('p[role=status]')).toHaveAttribute('data-result', 'switched');
+    await expect(guest.locator('#state')).toHaveAttribute('data-uid', ownerUid!);
+    await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'google');
     await expect(page.locator('#state')).toHaveAttribute('data-uid', ownerUid!);
   } finally {
     await separate.close();

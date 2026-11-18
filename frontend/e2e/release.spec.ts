@@ -9,7 +9,7 @@ const routes: Array<[string, string]> = [
   ['/community', 'Community'],
   ['/tools', 'Tools'],
   ['/competitions', 'Competitions'],
-  ['/profile', 'Guest profile'],
+  ['/profile', 'Your account'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
 ];

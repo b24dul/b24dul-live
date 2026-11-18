@@ -8,7 +8,6 @@ import {
   Settings2,
   Shield,
   Trophy,
-  UserRound,
   Wrench,
 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
@@ -26,6 +25,7 @@ import { useVideoArchive } from '../contexts/videoArchiveState';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
 import { PrivacyRequest } from '../features/privacy/PrivacyRequest';
+import { AccountPanel } from '../features/account/AccountPanel';
 import { routes } from './navigation';
 
 const Practice2048 = lazy(() =>
@@ -333,28 +333,14 @@ function CompetitionsPage() {
 function ProfilePage() {
   return (
     <PageFrame
-      title="Guest profile"
-      description="Browse B24DUL without signing into the new frontend."
+      title="Your account"
+      description="Sign in to the new B24DUL site, or keep browsing without an account."
     >
-      <GlassPanel className="p-6 sm:p-8">
-        <div className="flex flex-wrap items-center gap-5">
-          <span className="guest-avatar">
-            <UserRound size={32} aria-hidden="true" />
-          </span>
-          <div>
-            <p className="text-xl font-semibold">Browsing as guest</p>
-            <StatusIndicator status="neutral">Not authenticated</StatusIndicator>
-          </div>
-        </div>
-        <p className="mt-5 max-w-2xl text-slate-300">
-          No account has been created or authenticated. The production Firebase identities and any
-          existing profile data are not accessed by this design preview.
-        </p>
-      </GlassPanel>
+      <AccountPanel />
       <PrivacyRequest />
       <PlannedPanel
-        title="Registered profile preview"
-        description="Profiles, saved favourites and personal achievements are future capabilities. This is not a functioning sign-in screen."
+        title="Profile details"
+        description="Chat names, saved favourites and achievements will appear here as those features move to the new site."
       />
       <RelatedLinks paths={['/settings', '/community']} />
     </PageFrame>

@@ -64,7 +64,7 @@ export const routes: readonly AppRoute[] = [
     icon: Trophy,
     description: 'Challenges and rankings',
   },
-  { path: '/profile', label: 'Profile', icon: UserRound, description: 'Guest profile information' },
+  { path: '/profile', label: 'Profile', icon: UserRound, description: 'Sign in and account' },
   {
     path: '/settings',
     label: 'Settings',
