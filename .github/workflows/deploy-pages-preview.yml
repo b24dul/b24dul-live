@@ -53,14 +53,7 @@ jobs:
       - name: Validate static assets and Pages base path
         run: node scripts/verify-release.mjs
       - name: Assemble Pages site (React root, 404 fallback, legacy copy, data)
-        run: |
-          cp dist/index.html dist/404.html
-          mkdir -p dist/legacy
-          cp -R ../legacy-src/index.html ../legacy-src/styles.css ../legacy-src/og.png \
-            ../legacy-src/assets ../legacy-src/videos.json ../legacy-src/live-monitor-state.json \
-            dist/legacy/
-          cp ../legacy-src/videos.json ../legacy-src/og.png dist/
-          echo "legacy source: $(git -C ../legacy-src rev-parse HEAD)"
+        run: bash scripts/assemble-pages.sh ../legacy-src
       - name: Check artifact excludes emulator and test material
         run: node scripts/verify-preview-artifact.mjs dist
       - uses: actions/upload-pages-artifact@v4

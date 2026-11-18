@@ -1,14 +1,18 @@
 name: Synthetic RTDB chat and presence emulator verification
 
+# Firebase rules and emulator tests: run when rules, Firebase code or their tests change.
+# Any rules deploy must first pass these in full against the merged rules (docs/testing.md).
 on:
   pull_request:
     paths:
+      - 'firebase/**'
       - 'frontend/scripts/rtdb-emulator/**'
       - 'frontend/scripts/merge-v2-rules*'
-      - 'frontend/src/services/chatService.ts'
+      - 'frontend/src/services/*Service.ts'
+      - 'frontend/src/services/*Runtime.ts'
+      - 'frontend/src/services/firebase*.ts'
       - 'frontend/src/features/chat/chatPolicy.ts'
-      - 'firebase/v2.rules.json'
-      - 'firebase/v2.emulator.json'
+      - 'frontend/src/features/games/leaderboardBoards.ts'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - '.github/workflows/rtdb-synthetic-emulator.yml'

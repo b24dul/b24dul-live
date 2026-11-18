@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - 'frontend/scripts/auth-emulator/**'
+      - 'frontend/src/services/auth*.ts'
+      - 'frontend/src/services/identityTransitions.ts'
+      - 'frontend/src/services/accountRuntime.ts'
+      - 'frontend/src/services/firebase*.ts'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - '.github/workflows/auth-emulator.yml'
