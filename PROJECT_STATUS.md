@@ -381,3 +381,8 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 - Added explicit Save and Load actions for 2048 and Sudoku practice, using versioned, preview-only browser keys distinct from the legacy games' keys. Both legacy saves remain read-only. Practice saves and scores stay on the current browser and are never sent to Firebase or a leaderboard; Sudoku undo history is cleared on reload as in the legacy loader.
 - Unreadable or future-version practice saves are not overwritten, and storage failures are reported without changing existing saves. This does not provide account-linked cloud progress, legacy-save writeback, leaderboard parity or production release readiness.
 - Node 22 local verification passed: 57 unit tests, 30 Chromium regressions, typecheck, lint (five existing warnings), formatting, build and JS budget. Browser tests cover resuming after refresh, unchanged legacy saves and protection of a newer-format practice save. Firefox/WebKit CI and physical-device verification remain required.
+
+## 2026-11-18 — Cross-browser Auth emulator continuity
+
+- Extended the synthetic legacy-to-new SDK browser tests to Chromium, Firefox and WebKit, with separate test accounts per engine. They exercise anonymous UID restoration, two-tab token updates, Google linking and collision safety against the disposable Auth emulator. No production authentication or records are accessed.
+- On the local Windows environment, all six Chromium and WebKit cases passed; Firefox failed to launch before its tests, so it is not counted as passed locally. The updated GitHub workflow must verify all three engines on Linux. Real production session migration, cross-device behavior, actual Google sign-in and deployed database rules remain unverified.

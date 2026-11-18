@@ -23,8 +23,10 @@ test('restores a legacy anonymous session with the new SDK across refreshes', as
 test('shares identity between legacy and new SDK tabs and preserves it after linking', async ({
   page,
   context,
+  browserName,
 }) => {
-  await page.goto(`${fixture}?sdk=legacy`);
+  const subject = `browser-linked-${browserName}`;
+  await page.goto(`${fixture}?sdk=legacy&subject=${subject}`);
   const first = page.locator('#state');
   await expect(first).toHaveAttribute('data-kind', 'signed-out');
   await page.getByRole('button', { name: 'Create test guest' }).click();
@@ -32,7 +34,7 @@ test('shares identity between legacy and new SDK tabs and preserves it after lin
   const uid = await first.getAttribute('data-uid');
   expect(uid).toBeTruthy();
   const secondPage = await context.newPage();
-  await secondPage.goto(`${fixture}?sdk=modern`);
+  await secondPage.goto(`${fixture}?sdk=modern&subject=${subject}`);
   const second = secondPage.locator('#state');
   await expect(second).toHaveAttribute('data-uid', uid!);
   await secondPage.getByRole('button', { name: 'Link test Google account' }).click();
@@ -53,8 +55,9 @@ test('shares identity between legacy and new SDK tabs and preserves it after lin
 test('keeps both browser identities when a Google account is already linked', async ({
   page,
   browser,
+  browserName,
 }) => {
-  const query = '?sdk=modern&subject=browser-collision-test';
+  const query = `?sdk=modern&subject=browser-collision-${browserName}`;
   await page.goto(`${fixture}${query}`);
   const owner = page.locator('#state');
   await expect(owner).toHaveAttribute('data-kind', 'signed-out');

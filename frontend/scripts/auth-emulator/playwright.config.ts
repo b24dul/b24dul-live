@@ -4,10 +4,12 @@ export default defineConfig({
   testDir: '.',
   testMatch: 'identity.browser.spec.ts',
   workers: 1,
-  use: {
-    baseURL: 'http://127.0.0.1:4188/b24dul-live/',
-    ...devices['Desktop Chrome'],
-  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
+  use: { baseURL: 'http://127.0.0.1:4188/b24dul-live/' },
   webServer: {
     cwd: process.cwd(),
     command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4188 --strictPort',
