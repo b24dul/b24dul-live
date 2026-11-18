@@ -1,43 +1,61 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const endpoint = '**/api/status';
-
-test('fresh verified LIVE shows only a valid confirmed stream link', async ({ page }) => {
-  await page.route(endpoint, (route) =>
+const fresh = (body: Record<string, unknown>) => (page: Page) =>
+  page.route(endpoint, (route) =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({
-        live: true,
-        videoId: '1yVlKouJnag',
-        checkedAt: Date.now(),
-        stale: false,
-      }),
+      body: JSON.stringify({ checkedAt: Date.now(), stale: false, ...body }),
     }),
   );
+
+test.beforeEach(async ({ page }) => {
+  // The player is never fetched from YouTube in tests.
+  await page.route('https://www.youtube-nocookie.com/**', (route) => route.abort());
+});
+
+test('live: the stream plays on the Watch page with chat beside it on desktop', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await fresh({ live: true, videoId: '1yVlKouJnag' })(page);
   await page.goto('./#/watch');
-  await expect(page.getByTestId('published-live-status')).toContainText('LIVE confirmed');
-  await expect(page.getByRole('link', { name: /Open confirmed broadcast/ })).toHaveAttribute(
+  await expect(page.getByRole('heading', { name: 'B24DUL is live now' })).toBeVisible();
+  const player = page.getByTitle('B24DUL live stream');
+  await expect(player).toHaveAttribute(
+    'src',
+    'https://www.youtube-nocookie.com/embed/1yVlKouJnag?autoplay=1&mute=1&rel=0',
+  );
+  const chat = page.getByRole('heading', { name: 'Live chat' });
+  await expect(chat).toBeVisible();
+  const playerBox = (await player.boundingBox())!;
+  const chatBox = (await chat.boundingBox())!;
+  expect(chatBox.x).toBeGreaterThan(playerBox.x + playerBox.width - 1);
+  await expect(page.getByRole('link', { name: 'Subscribe' })).toHaveAttribute(
     'href',
-    'https://www.youtube.com/watch?v=1yVlKouJnag',
+    'https://www.youtube.com/@B24DUL?sub_confirmation=1',
   );
 });
 
-test('fresh confirmed offline does not claim live', async ({ page }) => {
-  await page.route(endpoint, (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ live: false, videoId: '', checkedAt: Date.now(), stale: false }),
-    }),
-  );
+test('live on a phone: chat sits below the stream', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await fresh({ live: true, videoId: '1yVlKouJnag' })(page);
   await page.goto('./#/watch');
-  await expect(page.getByTestId('published-live-status')).toContainText('Offline confirmed');
-  await expect(page.getByRole('link', { name: /Open confirmed broadcast/ })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Open YouTube live channel/ })).toBeVisible();
+  const playerBox = (await page.getByTitle('B24DUL live stream').boundingBox())!;
+  const chatBox = (await page.getByRole('heading', { name: 'Live chat' }).boundingBox())!;
+  expect(chatBox.y).toBeGreaterThan(playerBox.y + playerBox.height - 1);
 });
 
-test('stale or blocked API never invents a live or offline state', async ({ page }) => {
+test('offline: a clear message, latest videos, and no player', async ({ page }) => {
+  await fresh({ live: false })(page);
+  await page.goto('./#/watch');
+  await expect(page.getByRole('heading', { name: 'B24DUL is offline right now' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Latest videos' })).toBeVisible();
+  await expect(page.getByTitle('B24DUL live stream')).toHaveCount(0);
+});
+
+test('stale or blocked checks never claim live or offline', async ({ page }) => {
   await page.route(endpoint, (route) =>
     route.fulfill({
       status: 200,
@@ -51,48 +69,39 @@ test('stale or blocked API never invents a live or offline state', async ({ page
     }),
   );
   await page.goto('./#/watch');
-  await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
-  await expect(page.getByRole('button', { name: 'Load verified live player' })).toHaveCount(0);
-  await expect(page.getByTitle('B24DUL verified live broadcast')).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Open confirmed broadcast/ })).toHaveCount(0);
-  await page.route(endpoint, (route) => route.abort());
-  await page.reload();
-  await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
-  await expect(page.getByRole('link', { name: /Open YouTube live channel/ })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'We couldn’t check whether B24DUL is live' }),
+  ).toBeVisible();
+  await expect(page.getByTitle('B24DUL live stream')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open the player anyway' }).click();
+  await expect(page.getByTitle('B24DUL live stream')).toHaveAttribute(
+    'src',
+    /live_stream\?channel=/,
+  );
 });
 
-test('embedded player is opt-in and limited to a fresh verified broadcast', async ({ page }) => {
+test('the "stream just started" notice appears when the stream goes live', async ({ page }) => {
+  let live = false;
+  await page.clock.install();
   await page.route(endpoint, (route) =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        live: true,
-        videoId: '1yVlKouJnag',
+        live,
+        videoId: live ? '1yVlKouJnag' : '',
         checkedAt: Date.now(),
         stale: false,
       }),
     }),
   );
-  await page.route('https://www.youtube-nocookie.com/**', (route) => route.abort());
-  await page.goto('./#/watch');
-  await expect(page.getByTestId('published-live-status')).toContainText('LIVE confirmed');
-  const embed = page.getByTitle('B24DUL verified live broadcast');
-  await expect(embed).toHaveCount(0);
-  await page.getByRole('button', { name: 'Load verified live player' }).click();
-  await expect(embed).toHaveAttribute('src', 'https://www.youtube-nocookie.com/embed/1yVlKouJnag');
-});
-
-test('offline and stale states never load an embedded YouTube player', async ({ page }) => {
-  await page.route(endpoint, (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ live: false, checkedAt: Date.now(), stale: false }),
-    }),
-  );
-  await page.goto('./#/watch');
-  await expect(page.getByTestId('published-live-status')).toContainText('Offline confirmed');
-  await expect(page.getByRole('button', { name: 'Load verified live player' })).toHaveCount(0);
-  await expect(page.getByTitle('B24DUL verified live broadcast')).toHaveCount(0);
+  await page.goto('./#/games');
+  await page.waitForTimeout(500);
+  await expect(page.getByText('B24DUL has started streaming!')).toHaveCount(0);
+  live = true;
+  await page.clock.runFor(61_000);
+  await expect(page.getByText('B24DUL has started streaming!')).toBeVisible();
+  await page.getByRole('button', { name: 'Watch stream' }).click();
+  await expect(page).toHaveURL(/#\/watch$/);
+  await expect(page.getByRole('heading', { name: 'B24DUL is live now' })).toBeVisible();
 });

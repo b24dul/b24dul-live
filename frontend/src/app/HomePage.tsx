@@ -1,3 +1,4 @@
+import { LiveStatusCard } from '../features/stream/WatchStream';
 import {
   ArrowRight,
   CalendarClock,
@@ -13,7 +14,6 @@ import {
   EditorialSection,
   FeatureTile,
   PlannedPanel,
-  StreamPresentation,
 } from '../components/SectionBlocks';
 import { GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { useVideoArchive } from '../contexts/videoArchiveState';
@@ -89,10 +89,10 @@ export function HomePage() {
 
       <EditorialSection
         title="Streaming"
-        description="A dedicated place for live broadcasts, with a clearly labelled disconnected preview."
+        description="Watch B24DUL live, with chat beside the stream."
         action={{ label: 'Visit Watch', to: '/watch' }}
       >
-        <StreamPresentation compact />
+        <LiveStatusCard />
       </EditorialSection>
 
       <div className="home-feature-order" data-layout={preferences.homeLayout}>

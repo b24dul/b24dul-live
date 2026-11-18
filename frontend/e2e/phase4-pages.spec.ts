@@ -54,7 +54,11 @@ test('homepage contains all nine required areas and honest stream state', async 
   ]) {
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   }
-  await expect(page.getByText(/Live status unavailable in this preview/)).toBeVisible();
+  await expect(
+    page.getByText(
+      /B24DUL is (live now|offline right now)|Live status unavailable|Checking whether/,
+    ),
+  ).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Footer links' })).toBeVisible();
   await expect(page.getByRole('link', { name: /explore games/i })).toHaveAttribute(
     'href',

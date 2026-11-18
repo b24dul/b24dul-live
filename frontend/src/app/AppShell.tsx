@@ -1,3 +1,4 @@
+import { StreamNotice } from '../features/stream/StreamNotice';
 import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
@@ -142,6 +143,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           )}
         </header>
+        <StreamNotice />
         <motion.div
           key={location.pathname}
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}

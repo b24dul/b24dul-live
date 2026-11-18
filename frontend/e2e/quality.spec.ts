@@ -73,8 +73,9 @@ test('read-only disconnected states work with external network blocked', async (
   await page.route('https://**/*', (route) => route.abort());
   await page.routeWebSocket(/.*/, (socket) => socket.close());
   await page.goto('./#/watch');
-  await expect(page.getByText('Verified playback available when live')).toBeVisible();
-  await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
+  await expect(
+    page.getByRole('heading', { name: 'We couldn’t check whether B24DUL is live' }),
+  ).toBeVisible();
   await page.goto('./#/community');
   await expect(page.getByRole('heading', { name: 'Live chat' })).toBeVisible();
   await expect(page.getByText('Loading chat…')).toBeVisible();

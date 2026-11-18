@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { LockKeyhole, Shield } from 'lucide-react';
 import { GlassPanel, PrimaryButton, SecondaryButton, StatusIndicator } from '../../components/ui';
-import { PublishedStreamStatus } from '../../components/PublishedStreamStatus';
+import { WatchStream } from '../stream/WatchStream';
 import { useAccount } from '../../contexts/AccountContext';
 import type { AdminRuntime } from '../../services/adminRuntime';
 import type { Moderation, Presence, PrivacyRequest } from '../../services/adminService';
@@ -763,7 +763,7 @@ export function AdminWorkspace({
       <p role="status" className="admin-notice" aria-live="polite">
         {notice || 'Signed in as admin. Changes apply immediately for everyone.'}
       </p>
-      <PublishedStreamStatus />
+      <WatchStream />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ChatPanel

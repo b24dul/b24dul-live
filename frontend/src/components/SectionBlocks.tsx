@@ -62,36 +62,6 @@ export function EditorialSection({
   );
 }
 
-export function StreamPresentation({ compact = false }: { compact?: boolean }) {
-  return (
-    <GlassPanel className="stream-presentation p-5 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <StatusIndicator status="neutral">
-          {compact
-            ? 'Live status unavailable in this preview'
-            : 'Verified playback available when live'}
-        </StatusIndicator>
-        <span className="text-xs font-semibold tracking-widest text-slate-300 uppercase">
-          Stream placeholder
-        </span>
-      </div>
-      <div className={compact ? 'stream-display stream-display--compact' : 'stream-display'}>
-        <div className="mx-auto flex max-w-lg flex-col items-center gap-3 text-center">
-          <span className="stream-display-orbit" aria-hidden="true">
-            B
-          </span>
-          <h3 className="text-xl font-bold sm:text-2xl">Your next broadcast starts here</h3>
-          <p className="text-sm text-slate-300">
-            {compact
-              ? 'A preview of the future player. No video is playing and no live/offline result has been fetched.'
-              : 'The verified stream monitor below can launch an embedded player when a current live broadcast is confirmed.'}
-          </p>
-        </div>
-      </div>
-    </GlassPanel>
-  );
-}
-
 export function ArchiveTile({ video }: { video: ArchivedVideo }) {
   return (
     <GlassCard className="flex min-w-0 flex-col gap-3 p-4">
