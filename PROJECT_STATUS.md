@@ -386,3 +386,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 
 - Extended the synthetic legacy-to-new SDK browser tests to Chromium, Firefox and WebKit, with separate test accounts per engine. They exercise anonymous UID restoration, two-tab token updates, Google linking and collision safety against the disposable Auth emulator. No production authentication or records are accessed.
 - On the local Windows environment, all six Chromium and WebKit cases passed; Firefox failed to launch before its tests, so it is not counted as passed locally. The updated GitHub workflow must verify all three engines on Linux. Real production session migration, cross-device behavior, actual Google sign-in and deployed database rules remain unverified.
+
+## 2026-11-18 — Provider classification and identity preservation
+
+- The isolated Auth planner no longer labels every non-anonymous identity as Google. It recognizes Google only when Firebase provider data reports `google.com`; an authenticated user with missing or different provider data remains an authenticated session and is preserved for both anonymous-entry and Google-entry planning. This does not enable additional sign-in providers.
+- The observer contract records that a future SDK bridge must subscribe to token changes, because account linking can preserve the UID while changing the provider. Tests cover a same-UID anonymous-to-Google notification and unknown-provider preservation. The planner is still disconnected from production Firebase.
+- Local Node 22 checks passed: 59 unit tests, typecheck, lint (five existing warnings), formatting and build. The parent branch's [Auth emulator workflow](https://github.com/b24dul/b24dul-live/actions/runs/44215264674) passed six SDK tests and nine Chromium/Firefox/WebKit identity tests. Production sessions and deployed-rules alignment remain unverified; no production gates changed.

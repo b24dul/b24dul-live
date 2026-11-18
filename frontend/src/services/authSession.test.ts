@@ -44,6 +44,35 @@ describe('Firebase session preservation policy', () => {
     });
   });
 
+  it('keeps an authenticated UID even when its provider is unknown', () => {
+    const unknown: AuthSession = {
+      status: 'ready',
+      identity: { kind: 'authenticated', uid: 'existing-uid' },
+    };
+    expect(planAnonymousEntry(unknown)).toEqual({
+      type: 'keep-existing-session',
+      uid: 'existing-uid',
+    });
+    expect(planGoogleEntry(unknown)).toEqual({
+      type: 'keep-existing-session',
+      uid: 'existing-uid',
+    });
+    expect(normaliseAuthIdentity({ uid: 'existing-uid', isAnonymous: false })).toEqual({
+      kind: 'authenticated',
+      uid: 'existing-uid',
+    });
+    expect(
+      normaliseAuthIdentity({
+        uid: 'other',
+        isAnonymous: false,
+        providerData: [{ providerId: 'other.example' }],
+      }),
+    ).toEqual({
+      kind: 'authenticated',
+      uid: 'other',
+    });
+  });
+
   it('only offers anonymous sign-in after an observer-confirmed signed-out state', () => {
     expect(planAnonymousEntry(signedOut)).toEqual({ type: 'offer-anonymous-sign-in' });
   });
@@ -61,7 +90,13 @@ describe('Firebase session preservation policy', () => {
       kind: 'anonymous',
       uid: 'a',
     });
-    expect(normaliseAuthIdentity({ uid: 'g', isAnonymous: false })).toEqual({
+    expect(
+      normaliseAuthIdentity({
+        uid: 'g',
+        isAnonymous: false,
+        providerData: [{ providerId: 'google.com' }],
+      }),
+    ).toEqual({
       kind: 'google',
       uid: 'g',
     });

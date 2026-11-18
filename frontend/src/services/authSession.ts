@@ -6,7 +6,10 @@
  * actual user once the isolated integration has passed review.
  */
 export type AuthIdentity =
-  { kind: 'anonymous'; uid: string } | { kind: 'google'; uid: string } | { kind: 'signed-out' };
+  | { kind: 'anonymous'; uid: string }
+  | { kind: 'google'; uid: string }
+  | { kind: 'authenticated'; uid: string }
+  | { kind: 'signed-out' };
 
 export type AuthSession =
   | { status: 'checking' }
@@ -21,12 +24,21 @@ export type AuthAction =
   | { type: 'offer-google-sign-in' };
 
 export function normaliseAuthIdentity(
-  user: { uid: string; isAnonymous: boolean } | null,
+  user: {
+    uid: string;
+    isAnonymous: boolean;
+    providerData?: readonly { providerId: string }[];
+  } | null,
 ): AuthIdentity {
   if (user === null) return { kind: 'signed-out' };
   if (!user.uid.trim()) throw new Error('Firebase user UID must not be empty');
   if (user.isAnonymous) return { kind: 'anonymous', uid: user.uid };
-  return { kind: 'google', uid: user.uid };
+  return {
+    kind: user.providerData?.some((provider) => provider.providerId === 'google.com')
+      ? 'google'
+      : 'authenticated',
+    uid: user.uid,
+  };
 }
 
 /** Never start a second anonymous session until Firebase resolves persistence. */
@@ -48,7 +60,7 @@ export function planGoogleEntry(session: AuthSession): AuthAction {
   if (session.identity.kind === 'anonymous') {
     return { type: 'offer-google-linking', uid: session.identity.uid };
   }
-  if (session.identity.kind === 'google') {
+  if (session.identity.kind !== 'signed-out') {
     return { type: 'keep-existing-session', uid: session.identity.uid };
   }
   return { type: 'offer-google-sign-in' };

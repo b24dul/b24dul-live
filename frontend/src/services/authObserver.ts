@@ -1,6 +1,10 @@
 import { normaliseAuthIdentity, type AuthSession } from './authSession';
 
-export type ObservedUser = { uid: string; isAnonymous: boolean } | null;
+export type ObservedUser = {
+  uid: string;
+  isAnonymous: boolean;
+  providerData?: readonly { providerId: string }[];
+} | null;
 export type ObserverUnsubscribe = () => void;
 export type AuthObserver = (
   onUser: (user: ObservedUser) => void,
@@ -9,6 +13,8 @@ export type AuthObserver = (
 
 /**
  * Bridges an SDK auth observer to the preview's session model.
+ * A future SDK adapter must observe ID-token changes so same-UID linking
+ * refreshes provider classification; auth-state-only callbacks are insufficient.
  * This module does not initialise Firebase, sign in, store credentials or
  * read/write the Realtime Database.
  */
