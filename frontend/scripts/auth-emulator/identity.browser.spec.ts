@@ -27,7 +27,7 @@ test('React preview keeps the guest after a failed sign-in', async ({ page }) =>
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
   const uid = await page.locator('#state').getAttribute('data-uid');
   await page.getByRole('button', { name: 'Connect test Google account' }).click();
-  await expect(page.getByRole('status')).toContainText('Sign-in did not finish');
+  await expect(page.locator('p[role=status]')).toContainText('Sign-in did not finish');
   await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
   await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
 });
@@ -53,7 +53,7 @@ test('React preview surfaces collision without switching either account', async 
     const uid = await guest.locator('#state').getAttribute('data-uid');
     expect(uid).not.toBe(ownerUid);
     await guest.getByRole('button', { name: 'Connect test Google account' }).click();
-    await expect(guest.getByRole('status')).toContainText('already linked');
+    await expect(guest.locator('p[role=status]')).toContainText('already linked');
     await expect(guest.locator('#state')).toHaveAttribute('data-uid', uid!);
     await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
     await expect(page.locator('#state')).toHaveAttribute('data-uid', ownerUid!);
