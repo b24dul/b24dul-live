@@ -81,7 +81,7 @@ test('read-only disconnected states work with external network blocked', async (
   await page.goto('./#/videos');
   await expect(page.getByText(/Read-only archive snapshot/)).toBeVisible();
   await page.goto('./#/admin');
-  await expect(page.getByText('No privileged actions are available here')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Admin only' })).toBeVisible();
 });
 
 test('route controls avoid page-wide horizontal clipping in mobile landscape and zoom', async ({

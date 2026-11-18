@@ -9,8 +9,13 @@
       "evidence": []
     },
     "anonymousGoogleAuth": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "src/services/identityTransitions.test.ts",
+        "src/features/account/AccountPanel.test.tsx",
+        "scripts/auth-emulator/identity.browser.spec.ts"
+      ]
     },
     "identityContinuity": {
       "passed": false,
@@ -18,7 +23,11 @@
     },
     "chatPresence": {
       "passed": false,
-      "evidence": []
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "scripts/rtdb-emulator/v2.emulator.test.ts",
+        "src/features/chat/ChatPanel.test.tsx"
+      ]
     },
     "moderation": {
       "passed": false,

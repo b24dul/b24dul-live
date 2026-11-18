@@ -96,7 +96,14 @@ function Composer({
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
 
-export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: LoadChatService }) {
+export function ChatPanel({
+  loadService = loadFirebaseChat,
+  renderActions,
+}: {
+  loadService?: LoadChatService;
+  /** Admin workspace only: moderation controls shown under each message. */
+  renderActions?: (message: ChatMessage, name: string) => React.ReactNode;
+}) {
   const account = useAccount();
   const { start } = account;
   const [service, setService] = useState<ChatService | null>(null);
@@ -239,6 +246,7 @@ export function ChatPanel({ loadService = loadFirebaseChat }: { loadService?: Lo
               >
                 {timeFormat.format(message.ts)}
               </time>
+              {renderActions?.(message, nameFor(message.uid))}
             </li>
           );
         })}

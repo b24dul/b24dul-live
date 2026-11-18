@@ -87,7 +87,7 @@ test('unconnected features are honestly labelled without fake data', async ({ pa
   await expect(page.getByRole('heading', { name: 'Daily challenges' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Leaderboards' })).toBeVisible();
   await page.goto('./#/admin');
-  await expect(page.getByText(/No privileged actions are available here/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Admin only' })).toBeVisible();
   await page.goto('./#/profile');
   await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
 });

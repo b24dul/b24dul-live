@@ -935,3 +935,48 @@ input {
   font-size: 0.7rem;
   vertical-align: middle;
 }
+
+.admin-small-button {
+  min-height: 2rem;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.admin-danger {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+.admin-input,
+.admin-select {
+  min-width: 0;
+  border: 1px solid #64748b;
+  border-radius: 0.5rem;
+  background: #020617;
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+}
+
+.admin-person {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.admin-message-actions summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.admin-notice {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  font-size: 0.875rem;
+}

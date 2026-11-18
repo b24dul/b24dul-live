@@ -135,7 +135,14 @@ export function PrivacyNotice() {
           <Link className="font-semibold underline underline-offset-4" to="/profile">
             Account page
           </Link>
-          . To ask for your data to be deleted, use the privacy request on the same page.
+          . To ask for your data to be deleted, use the privacy request on the same page; it
+          includes your account ID.
+        </p>
+        <p>
+          The site owner keeps a log of deletion requests containing only the account ID, the
+          request’s status and dates. Completing a request erases your chat messages, online
+          entries, slow-mode stamp and any timeout or ban, and the site owner deletes your sign-in
+          account from Firebase Authentication.
         </p>
       </Section>
     </section>

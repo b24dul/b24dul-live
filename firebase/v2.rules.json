@@ -59,7 +59,7 @@
         "lastPost": {
           "$uid": {
             ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()",
+            ".write": "auth != null && ((auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()))",
             ".validate": "newData.val() === now && (!data.exists() || now - data.val() >= 5000)"
           }
         }
@@ -89,6 +89,29 @@
           "$connection": {
             ".write": "auth != null && auth.uid === $uid",
             ".validate": "newData.val() === now"
+          },
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()"
+        }
+      },
+      "privacyRequests": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$id": {
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && newData.exists() && (!data.exists() || data.child('status').val() !== 'completed')",
+          ".validate": "newData.hasChildren(['uid', 'status', 'createdAt', 'updatedAt'])",
+          "uid": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{10,128}$/) && (!data.exists() || newData.val() === data.val())"
+          },
+          "status": {
+            ".validate": "(!data.exists() && newData.val() === 'pending') || (data.val() === 'pending' && (newData.val() === 'processing' || newData.val() === 'completed')) || (data.val() === 'processing' && newData.val() === 'completed')"
+          },
+          "createdAt": {
+            ".validate": "(!data.exists() && newData.val() === now) || (data.exists() && newData.val() === data.val())"
+          },
+          "updatedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
           }
         }
       }
