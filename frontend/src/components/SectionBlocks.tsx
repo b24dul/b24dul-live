@@ -89,7 +89,10 @@ export function StreamPresentation({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <a className="ui-button ui-button--secondary" href="https://b24dul.github.io/b24dul-live/">
+        <a
+          className="ui-button ui-button--secondary"
+          href="https://b24dul.github.io/b24dul-live/legacy/"
+        >
           Open the current stream site <ArrowUpRight size={17} aria-hidden="true" />
         </a>
       </div>

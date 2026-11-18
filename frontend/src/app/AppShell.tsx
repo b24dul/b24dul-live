@@ -145,7 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             Prototype only — no authentication, streaming or Firebase connection
           </StatusIndicator>
           <a
-            href="https://b24dul.github.io/b24dul-live/"
+            href="https://b24dul.github.io/b24dul-live/legacy/"
             className="inline-flex items-center gap-1 font-semibold underline underline-offset-4"
           >
             Visit current site <ArrowUpRight size={15} aria-hidden="true" />

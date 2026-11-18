@@ -35,7 +35,7 @@ const PracticeSudoku = lazy(() =>
   import('../features/games/PracticeSudoku').then((module) => ({ default: module.PracticeSudoku })),
 );
 
-const website = 'https://b24dul.github.io/b24dul-live/';
+const website = 'https://b24dul.github.io/b24dul-live/legacy/';
 
 function RelatedLinks({ paths }: { paths: string[] }) {
   return (

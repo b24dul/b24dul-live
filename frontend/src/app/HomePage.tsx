@@ -213,7 +213,7 @@ export function HomePage() {
           <Link to="/explore">About the platform</Link>
           <Link to="/profile">Guest and privacy information</Link>
           <Link to="/settings">Settings</Link>
-          <a href="https://b24dul.github.io/b24dul-live/">
+          <a href="https://b24dul.github.io/b24dul-live/legacy/">
             Current website <ArrowUpRight size={14} className="inline" aria-hidden="true" />
           </a>
         </nav>

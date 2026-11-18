@@ -1,0 +1,81 @@
+name: Deploy React preview to GitHub Pages
+
+# Owner-authorised PREVIEW release (2026-11-18). This is NOT the production cutover:
+# frontend/production-gates.json stays blocked, and the dependency audit and Lighthouse
+# findings remain open. The unchanged legacy site from main is published at /legacy/.
+# Rollback: gh api -X PUT repos/b24dul/b24dul-live/pages -f build_type=legacy \
+#   -F "source[branch]=main" -F "source[path]=/"
+
+on:
+  push:
+    branches: [release/react-preview]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check out legacy site from main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          path: legacy-src
+          sparse-checkout: |
+            index.html
+            styles.css
+            og.png
+            assets
+            videos.json
+            live-monitor-state.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Validate static assets and Pages base path
+        run: node scripts/verify-release.mjs
+      - name: Assemble Pages site (React root, 404 fallback, legacy copy, data)
+        run: |
+          cp dist/index.html dist/404.html
+          mkdir -p dist/legacy
+          cp -R ../legacy-src/index.html ../legacy-src/styles.css ../legacy-src/og.png \
+            ../legacy-src/assets ../legacy-src/videos.json ../legacy-src/live-monitor-state.json \
+            dist/legacy/
+          cp ../legacy-src/videos.json ../legacy-src/og.png dist/
+          echo "legacy source: $(git -C ../legacy-src rev-parse HEAD)"
+      - name: Check artifact excludes emulator and test material
+        run: node scripts/verify-preview-artifact.mjs dist
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: frontend/dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

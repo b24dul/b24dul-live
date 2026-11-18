@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { privacyRequestMailto } from './privacyDraft';
 
-const currentSite = 'https://b24dul.github.io/b24dul-live/';
+const currentSite = 'https://b24dul.github.io/b24dul-live/legacy/';
 
 export function PrivacyRequest() {
   const [uid, setUid] = useState('');

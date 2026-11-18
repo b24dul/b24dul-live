@@ -21,7 +21,7 @@ describe('isolated application shell', () => {
     expect(screen.getByText('Isolated development preview')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /visit current site/i })).toHaveAttribute(
       'href',
-      'https://b24dul.github.io/b24dul-live/',
+      'https://b24dul.github.io/b24dul-live/legacy/',
     );
   });
 
