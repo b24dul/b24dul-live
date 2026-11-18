@@ -7,21 +7,24 @@ const legacySave = JSON.stringify({
   won: false,
   over: false,
 });
+const SAVE_KEY = 'b24dul.preview.2048.v1';
 
-const seed = (saved: string) => {
+/** Seeds only once, so a reload shows what the site itself saved. */
+const seed = ([key, saved]: [string, string]) => {
   window.localStorage.setItem('b24dul_2048', saved);
-  if (!window.localStorage.getItem('b24dul.preview.2048.v1'))
+  if (!window.localStorage.getItem(key))
     window.localStorage.setItem(
-      'b24dul.preview.2048.v1',
+      key,
       JSON.stringify({ schemaVersion: 1, kind: '2048', game: JSON.parse(saved) }),
     );
 };
 
-test('loads and plays a saved game; an old-site save is never changed', async ({ page }) => {
-  await page.addInitScript(seed, legacySave);
+test('restores a saved game, saves every move automatically; an old-site save is never changed', async ({
+  page,
+}) => {
+  await page.addInitScript(seed, [SAVE_KEY, legacySave]);
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load 2048 practice' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Loaded your 2048' })).toBeVisible();
+  await expect(page.getByText('Welcome back! Your game was restored.')).toBeVisible();
   const board = page.getByRole('grid', { name: '2048 board' });
   await expect(board.getByRole('gridcell')).toHaveCount(16);
   await board.focus();
@@ -29,21 +32,41 @@ test('loads and plays a saved game; an old-site save is never changed', async ({
   await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
   await expect(page.getByText('Score: 16 · Best: 20')).toBeVisible();
   const savedBoard = await board.getByRole('gridcell').allTextContents();
-  await page.getByRole('button', { name: 'Save 2048 practice' }).click();
-  await expect(page.getByText('2048 practice saved in this browser.')).toBeVisible();
   await page.reload();
-  await page.getByRole('button', { name: 'Load 2048 practice' }).click();
   await expect(board.getByRole('gridcell')).toHaveText(savedBoard);
   await expect(page.getByText('Score: 16 · Best: 20')).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
 });
 
-test('starts a playable practice game and leaves an unreadable save untouched', async ({
+test('reaching 2048 shows the win screen with Keep going and Play again', async ({ page }) => {
+  const nearWin = JSON.stringify({
+    grid: [1024, 1024, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    score: 0,
+    best: 0,
+    won: false,
+    over: false,
+  });
+  await page.addInitScript(seed, [SAVE_KEY, nearWin]);
+  await page.goto('./#/games');
+  const board = page.getByRole('grid', { name: '2048 board' });
+  await board.focus();
+  await board.press('ArrowLeft');
+  const win = page.getByRole('dialog', { name: 'You made 2048!' });
+  await expect(win).toBeVisible();
+  await win.getByRole('button', { name: 'Keep going' }).click();
+  await expect(win).toBeHidden();
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
+  await page.getByRole('button', { name: 'New game' }).click();
+  await expect(page.getByText(/^Score: 0 · Best: \d+/)).toBeVisible();
+});
+
+test('starts a playable game and leaves an unreadable old-site save untouched', async ({
   page,
 }) => {
   await page.addInitScript(() => window.localStorage.setItem('b24dul_2048', 'bad save'));
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Start 2048 practice' }).click();
+  await expect(page.getByText(/practice/i)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Play 2048' }).click();
   const board = page.getByRole('grid', { name: '2048 board' });
   await expect(board.getByRole('gridcell')).toHaveCount(16);
   await expect(board.getByRole('gridcell', { name: /^(2|4)$/ })).toHaveCount(2);
@@ -51,10 +74,9 @@ test('starts a playable practice game and leaves an unreadable save untouched', 
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe('bad save');
 });
 
-test('moves a loaded practice board with a swipe', async ({ page }) => {
-  await page.addInitScript(seed, legacySave);
+test('moves the board with a swipe', async ({ page }) => {
+  await page.addInitScript(seed, [SAVE_KEY, legacySave]);
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load 2048 practice' }).click();
   const board = page.getByRole('grid', { name: '2048 board' });
   await board.evaluate((element) => {
     const start = new Event('touchstart', { bubbles: true });
@@ -68,19 +90,15 @@ test('moves a loaded practice board with a swipe', async ({ page }) => {
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
 });
 
-test('does not overwrite an unrecognized or newer 2048 practice save', async ({ page }) => {
+test('does not overwrite an unrecognized or newer save', async ({ page }) => {
   const future = JSON.stringify({ schemaVersion: 2, kind: '2048', game: { future: true } });
   await page.addInitScript(
-    (saved) => window.localStorage.setItem('b24dul.preview.2048.v1', saved),
-    future,
+    ([key, saved]) => window.localStorage.setItem(key, saved),
+    [SAVE_KEY, future],
   );
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Start 2048 practice' }).click();
-  await page.getByRole('button', { name: 'Save 2048 practice' }).click();
-  await expect(
-    page.getByText('The existing 2048 practice save could not be read and was not overwritten.'),
-  ).toBeVisible();
-  expect(await page.evaluate(() => window.localStorage.getItem('b24dul.preview.2048.v1'))).toBe(
-    future,
-  );
+  await expect(page.getByText(/saved game this version can’t read/).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Play 2048' }).click();
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), SAVE_KEY)).toBe(future);
 });

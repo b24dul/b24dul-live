@@ -1,13 +1,16 @@
 import { readLegacy2048, type Game2048 } from './game2048';
 import { readLegacySudoku, type SudokuGame } from './sudoku';
 
-/** Preview-only keys: intentionally distinct from the legacy games' storage keys. */
-export const PRACTICE_2048_KEY = 'b24dul.preview.2048.v1';
-export const PRACTICE_SUDOKU_KEY = 'b24dul.preview.sudoku.v1';
-type StorageAccess = Pick<Storage, 'getItem' | 'setItem'>;
-type LoadResult<T> =
+/**
+ * This site's own save keys, separate from the old site's keys (which are never written).
+ * The key names date from the preview; they're kept so games saved since then aren't lost.
+ */
+export const SAVE_2048_KEY = 'b24dul.preview.2048.v1';
+export const SAVE_SUDOKU_KEY = 'b24dul.preview.sudoku.v1';
+export type StorageAccess = Pick<Storage, 'getItem' | 'setItem'>;
+export type LoadResult<T> =
   { status: 'ready'; game: T } | { status: 'missing' | 'invalid' | 'unavailable' };
-type SaveResult = 'saved' | 'unrecognized' | 'invalid' | 'unavailable';
+export type SaveResult = 'saved' | 'unrecognized' | 'invalid' | 'unavailable';
 type Decoder<T> = (
   raw: string | null,
 ) => { status: 'ready'; game: T } | { status: 'missing' | 'invalid' };
@@ -45,7 +48,7 @@ function saveEnvelope<T>(
   decode: Decoder<T>,
 ): SaveResult {
   try {
-    // Never overwrite a corrupt or newer-version practice save automatically.
+    // Never overwrite a corrupt or newer-version save automatically.
     const existing = readEnvelope(storage, key, kind, decode);
     if (existing.status === 'unavailable') return 'unavailable';
     if (existing.status === 'invalid') return 'unrecognized';
@@ -57,20 +60,20 @@ function saveEnvelope<T>(
   }
 }
 
-export function loadPractice2048(storage: StorageAccess): LoadResult<Game2048> {
-  return readEnvelope(storage, PRACTICE_2048_KEY, '2048', readLegacy2048);
+export function load2048(storage: StorageAccess): LoadResult<Game2048> {
+  return readEnvelope(storage, SAVE_2048_KEY, '2048', readLegacy2048);
 }
-export function savePractice2048(storage: StorageAccess, game: Game2048): SaveResult {
-  return saveEnvelope(storage, PRACTICE_2048_KEY, '2048', game, readLegacy2048);
+export function save2048(storage: StorageAccess, game: Game2048): SaveResult {
+  return saveEnvelope(storage, SAVE_2048_KEY, '2048', game, readLegacy2048);
 }
-export function loadPracticeSudoku(storage: StorageAccess): LoadResult<SudokuGame> {
-  return readEnvelope(storage, PRACTICE_SUDOKU_KEY, 'sudoku', readLegacySudoku);
+export function loadSudoku(storage: StorageAccess): LoadResult<SudokuGame> {
+  return readEnvelope(storage, SAVE_SUDOKU_KEY, 'sudoku', readLegacySudoku);
 }
-export function savePracticeSudoku(storage: StorageAccess, game: SudokuGame): SaveResult {
+export function saveSudoku(storage: StorageAccess, game: SudokuGame): SaveResult {
   // The original game clears undo history on reload; preserve that behavior and bound the save.
   return saveEnvelope(
     storage,
-    PRACTICE_SUDOKU_KEY,
+    SAVE_SUDOKU_KEY,
     'sudoku',
     { ...game, history: [] },
     readLegacySudoku,

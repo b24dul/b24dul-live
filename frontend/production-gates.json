@@ -40,8 +40,12 @@
       ]
     },
     "streamPlayback": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-test-stream.md",
+        "e2e/live-status.spec.ts",
+        "src/features/stream/stream.test.tsx"
+      ]
     },
     "gamesAndSaves": {
       "passed": false,

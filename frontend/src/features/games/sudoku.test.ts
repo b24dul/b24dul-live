@@ -42,7 +42,7 @@ function seededRandom() {
   };
 }
 
-describe('Sudoku practice and legacy save compatibility', () => {
+describe('Sudoku games and legacy save compatibility', () => {
   it('recognizes the legacy save and never changes the source', () => {
     const original = saved();
     original.grid[2] = 1; // Legacy permits an incorrect guess.
@@ -68,7 +68,7 @@ describe('Sudoku practice and legacy save compatibility', () => {
     expect(countSudokuSolutions(bad)).toBe(0);
     expect(countSudokuSolutions(Array<number>(81).fill(0))).toBe(2);
   });
-  it('generates valid, uniquely solvable practice puzzles at each level', () => {
+  it('generates valid, uniquely solvable puzzles at each level', () => {
     for (const level of ['easy', 'medium', 'hard'] as const) {
       const next = newSudoku(level, seededRandom());
       expect(next.level).toBe(level);

@@ -35,7 +35,7 @@ describe('legacy 2048 migration foundation', () => {
       expect(readLegacy2048(bad)).toEqual({ status: 'invalid' });
     }
   });
-  it('starts a practice game with two tiles and an empty score', () => {
+  it('starts a game with two tiles and an empty score', () => {
     const created = new2048(random);
     expect(created.grid.filter(Boolean)).toEqual([2, 2]);
     expect(created.score).toBe(0);
