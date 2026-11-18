@@ -397,3 +397,9 @@ Frontend Phases 1–4 are complete; Phases 5–7 and all production cutover/back
 
 - The React preview now requests the published `videos.json` using a credential-free read-only GET, validates entries and YouTube IDs, and shares the resulting archive between Home and Videos. On failure, timeout, malformed data, oversized response or no valid entries it retains the build-time snapshot and labels that fallback. Published data can still be subject to the host's caching; no realtime freshness guarantee is claimed.
 - No production data or configuration is modified. Node 22 local checks passed: 65 unit tests, 32 Chromium regressions, typecheck, lint (five existing warnings), formatting, build and JS budget. Tests cover fresh data, invalid entries, fallback, timeout, cancellation and safe outbound URLs. Firefox/WebKit CI and live production parity verification remain outstanding; release gates remain unchanged.
+
+## 2026-11-18 — Privacy request email draft in preview
+
+- Added an explicit, user-initiated form on the guest profile page for preparing the existing visitor-data deletion email. The preview does not create or authenticate accounts, access Firebase, store the entered visitor ID or send an email. A valid ID must be supplied by the visitor; the link opens an editable draft addressed to the same recipient as the legacy site. The UI explains that an administrator reviews requests and that chat, scores and sign-in accounts may need separate review.
+- This is a partial manual-request path, not an integrated administrator queue, automatic deletion or a claim of completed erasure. No production data, rules or release gates changed.
+- Node 22 checks passed locally: 68 unit tests, 10 targeted privacy/navigation/responsive browser regressions, typecheck, lint (five existing warnings), formatting, build and JS budget. Firefox/WebKit CI and end-to-end review of the real privacy workflow remain necessary.

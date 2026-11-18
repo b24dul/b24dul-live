@@ -25,6 +25,7 @@ import { games, utilities } from '../data/directory';
 import { useVideoArchive } from '../contexts/videoArchiveState';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
+import { PrivacyRequest } from '../features/privacy/PrivacyRequest';
 import { routes } from './navigation';
 
 const Practice2048 = lazy(() =>
@@ -350,6 +351,7 @@ function ProfilePage() {
           existing profile data are not accessed by this design preview.
         </p>
       </GlassPanel>
+      <PrivacyRequest />
       <PlannedPanel
         title="Registered profile preview"
         description="Profiles, saved favourites and personal achievements are future capabilities. This is not a functioning sign-in screen."
