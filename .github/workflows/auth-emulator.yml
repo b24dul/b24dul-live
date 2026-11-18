@@ -27,7 +27,13 @@ jobs:
       - name: Install committed dependencies
         run: npm ci --no-audit --no-fund
       - name: Install browser engines for continuity tests
-        run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 8
+        run: |
+          # Regional EC2 mirror downloads stalled on the hosted runner.
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sudo sed -i -E 's|http://[a-z0-9.-]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          fi
+          npx playwright install --with-deps chromium firefox webkit
       - name: Test disposable identities in local Auth emulator
         run: >-
           npx --yes firebase-tools@15.36.0 emulators:exec
