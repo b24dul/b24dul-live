@@ -29,18 +29,14 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v5
-      - name: Check out legacy site from main (for the deployed-site layout)
+      - name: Check out the data files kept on main (video list, share image)
         uses: actions/checkout@v5
         with:
           ref: main
-          path: legacy-src
+          path: main-data
           sparse-checkout: |
-            index.html
-            styles.css
-            og.png
-            assets
             videos.json
-            live-monitor-state.json
+            og.png
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v5
         with:
@@ -64,7 +60,7 @@ jobs:
       - name: Check gzip JavaScript budget
         run: node scripts/js-budget.mjs
       - name: Assemble the site exactly as deployed
-        run: bash scripts/assemble-pages.sh ../legacy-src
+        run: bash scripts/assemble-pages.sh ../main-data
       - name: Artifact safety scan (no emulator, demo or test material)
         run: node scripts/verify-preview-artifact.mjs dist
       - name: Install Chromium

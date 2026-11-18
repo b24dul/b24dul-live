@@ -1,7 +1,12 @@
 # Legacy removal checklist
 
-`/legacy/` (the old site, served unchanged from `main`) is removed only when **every item below
-works on the new site and the owner confirms**. Scope decision (2026-11-18): the new site starts
+**Update 2026-11-18 (step 5):** `/legacy/` is no longer published; it redirects to the new home
+page. The owner confirmed this once steps 1–4 were live, even though some rows below are still 🟡
+and the privacy-request test isn't done yet. The old site's files stay on `main` and in the tag
+`legacy-pre-react-2026-11-18`; rollback steps are in `docs/rollback.md`.
+
+Originally: `/legacy/` (the old site, served unchanged from `main`) was to be removed only when
+**every item below works on the new site and the owner confirms**. Scope decision (2026-11-18): the new site starts
 fresh. Old accounts, UIDs, scores and saves are **not** carried over; people sign in again. All new
 data lives under `/v2/` in the same Firebase project; legacy data is not read, changed or deleted by
 the new site (cleanup is a separate, later task).
@@ -76,14 +81,15 @@ Verified from the legacy source at `main` `ae07503` (`index.html`).
 2. Stream: embedded player, "stream just started" notice, Subscribe; chat beside the stream.
 3. Finish 2048 and Sudoku (win screens, How to play, autosave, no "practice" labels).
 4. Visitor statistics including GoatCounter page counts.
-5. Stop publishing `/legacy/`, redirect it to the new home page (owner confirmed once 1–4 are live).
+5. Stop publishing `/legacy/`, redirect it to the new home page (owner confirmed once 1–4 are live). Done: PR "Stop publishing /legacy/".
 6. Offline hub.
 7. New games one at a time (Snake, Memory Match, Minesweeper, Connect Four), each with a
    leaderboard rules summary for approval.
 
-## Before removing `/legacy/`
+## Removing `/legacy/` (done 2026-11-18)
 
-1. Every row above is ✅ or ➖ (with the owner's agreement).
-2. Owner confirms in writing.
-3. Remove the `/legacy/` copy from the deploy workflow and repoint the "current site" links.
-4. Legacy Firebase data and rules cleanup is a separate task.
+1. Owner confirmed in writing that this is fine once steps 1–4 are live (rows still 🟡 accepted).
+2. The `/legacy/` copy was removed from the deploy; `/legacy/` is a redirect page. The artifact
+   safety scan fails if any old-site file is published again.
+3. Kept as backup: `main`'s old-site files and the tag `legacy-pre-react-2026-11-18`.
+4. Legacy Firebase data and rules are untouched; cleanup is a separate task.

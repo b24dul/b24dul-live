@@ -78,3 +78,10 @@ test('unknown routes recover on the built static site', async ({ page }) => {
   await page.getByRole('link', { name: 'Return home' }).click();
   await expect(page).toHaveURL(/#\/$/);
 });
+
+test('the old /legacy/ address sends visitors to the new home page', async ({ page }) => {
+  await page.goto('./legacy/');
+  await expect(page).toHaveURL(/\/b24dul-live\/(#\/)?$/);
+  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  await expect(page.locator('#gateForm')).toHaveCount(0);
+});

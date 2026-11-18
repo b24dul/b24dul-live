@@ -1,4 +1,4 @@
-// Checks the assembled GitHub Pages preview artifact (React build + legacy copy).
+// Checks the assembled GitHub Pages preview artifact (React build, /legacy/ redirect, data).
 // Fails if emulator, demo-project or test-credential material reaches the React bundle.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -15,6 +15,22 @@ for (const required of ['index.html', '404.html', 'videos.json', 'legacy/index.h
 }
 if (read('index.html') !== read('404.html')) fail('404.html must be a copy of index.html');
 JSON.parse(read('videos.json'));
+
+// Since step 5 the old site is not published: /legacy/ holds only a small page that sends visitors
+// to the new home page. Anything else under legacy/ means the old site leaked back in.
+const legacyFiles = existsSync(join(site, 'legacy'))
+  ? readdirSync(join(site, 'legacy'), { recursive: true })
+  : [];
+if (legacyFiles.length !== 1 || legacyFiles[0] !== 'index.html')
+  fail('legacy/ must contain only the redirect index.html, found: ' + legacyFiles.join(', '));
+const redirect = read('legacy/index.html');
+if (
+  !redirect.includes("location.replace('/b24dul-live/')") ||
+  !redirect.includes('url=/b24dul-live/')
+)
+  fail('legacy/index.html must redirect to the new home page');
+if (redirect.length > 3000 || /firebase|goatcounter|gateForm|<iframe/i.test(redirect))
+  fail('legacy/index.html must be the small redirect page, not the old site');
 
 // The Firebase SDK contains dormant emulator-support code and its own default domains,
 // so generic words are not checked. Instead: no emulator hosts or ports, no demo
@@ -46,10 +62,10 @@ const walk = (dir) =>
     return statSync(path).isDirectory() ? walk(path) : [path];
   });
 
-// The legacy directory is the unchanged current production site and is checked separately.
+// Every published file is scanned, including the /legacy/ redirect.
 const reactFiles = walk(site).filter((path) => {
   const rel = relative(site, path).replaceAll('\\', '/');
-  return !rel.startsWith('legacy/') && /\.(html|js|css|json|map)$/.test(rel);
+  return /\.(html|js|css|json|map)$/.test(rel);
 });
 for (const path of reactFiles) {
   if (path.endsWith('videos.json')) continue;
@@ -72,5 +88,5 @@ for (const path of reactFiles) {
 if (existsSync(join(site, 'production-gates.json'))) fail('gate file must not be published');
 
 process.stdout.write(
-  'Preview artifact PASS: ' + reactFiles.length + ' React files scanned, legacy copy present\n',
+  'Preview artifact PASS: ' + reactFiles.length + ' files scanned; /legacy/ is only the redirect\n',
 );
