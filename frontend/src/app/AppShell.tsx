@@ -1,3 +1,4 @@
+import { DailyTotalsTracker } from '../features/stats/DailyTotalsTracker';
 import { countPath, countVisit } from '../services/visitorCounts';
 import { StreamNotice } from '../features/stream/StreamNotice';
 import { useEffect, useState } from 'react';
@@ -149,6 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </header>
         <StreamNotice />
+        <DailyTotalsTracker />
         <motion.div
           key={location.pathname}
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}

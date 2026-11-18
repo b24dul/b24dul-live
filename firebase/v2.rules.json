@@ -257,6 +257,60 @@
         "$other": {
           ".validate": false
         }
+      },
+      "stats": {
+        "days": {
+          ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          "$day": {
+            ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()",
+            ".validate": "$day.matches(/^20[0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)",
+            "$other": {
+              ".validate": false
+            },
+            "visits": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "siteMinutes": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "liveMinutes": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "videoPlays": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sudokuStarts": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "g2048Starts": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "subscribeClicks": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "devicePhone": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "deviceTablet": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "deviceDesktop": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceYoutube": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceSearch": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceDirect": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceOther": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            }
+          }
+        }
       }
     }
   }

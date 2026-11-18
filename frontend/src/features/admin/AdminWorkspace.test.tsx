@@ -79,6 +79,22 @@ function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
       onRequests(requests),
       () => {}
     ),
+    watchStats: (onDays: AdminCallback<'watchStats'>) => (
+      onDays([
+        {
+          day: '2026-11-19',
+          totals: {
+            visits: 12,
+            siteMinutes: 80,
+            liveMinutes: 30,
+            devicePhone: 9,
+            deviceDesktop: 3,
+          },
+        },
+        { day: '2026-11-18', totals: { visits: 8, videoPlays: 4, sourceYoutube: 8 } },
+      ]),
+      () => {}
+    ),
     recordPrivacyRequest: vi.fn(async () => {}),
     markProcessing: vi.fn(async () => {}),
     completeAndErase: vi.fn(async () => 0),
@@ -127,6 +143,17 @@ describe('AdminWorkspace', () => {
     await renderAdmin({ kind: 'signed-out' });
     expect(await screen.findByRole('heading', { name: 'Admin only' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeInTheDocument();
+  });
+
+  it('shows daily visitor totals for the admin, with a total row and breakdowns', async () => {
+    await renderAdmin({ kind: 'google', uid: 'owner' });
+    const table = await screen.findByRole('table');
+    const rows = within(table).getAllByRole('row');
+    expect(rows[1]).toHaveTextContent('2026-11-19');
+    expect(rows[2]).toHaveTextContent('2026-11-18');
+    expect(rows[3]).toHaveTextContent(/Total\s*20\s*80\s*30\s*4/);
+    expect(screen.getByText('Phone: 9 (75%)')).toBeInTheDocument();
+    expect(screen.getByText('YouTube: 8 (100%)')).toBeInTheDocument();
   });
 
   it('is closed to a Google user who is not on the admin list', async () => {
