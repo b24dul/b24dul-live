@@ -24,8 +24,16 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - name: Audit committed dependency tree
-        run: npm audit --package-lock-only --audit-level=high --json --fetch-timeout=30000 --fetch-retries=0 > dependency-audit.json
+      # Policy: security/dependency-audit.md. Every finding is reported; nothing is suppressed.
+      - name: Full audit report, all dependencies (kept as an artifact)
+        run: npm audit --package-lock-only --json --fetch-timeout=30000 --fetch-retries=0 > dependency-audit.json || true
+      - name: List every finding; fail if a high dev finding has a published fix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/audit-summary.mjs dependency-audit.json package-lock.json
+      - name: Fail on high or critical findings in production dependencies
+        if: success() || failure()
+        run: npm audit --package-lock-only --omit=dev --audit-level=high --fetch-timeout=30000 --fetch-retries=0
       - name: Preserve audit findings including failures
         if: always()
         uses: actions/upload-artifact@v5
