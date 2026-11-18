@@ -66,22 +66,31 @@ test('homepage contains all nine required areas and honest stream state', async 
   );
 });
 
-test('video archive presents real source metadata and safe outbound YouTube links', async ({
+test('video archive plays on the site with a safe Open on YouTube link for every video', async ({
   page,
 }) => {
   await page.route('https://b24dul.github.io/b24dul-live/videos.json', (route) => route.abort());
+  await page.route('https://www.youtube-nocookie.com/**', (route) => route.abort());
   await page.goto('./#/videos');
   await expect(page.getByText(/read-only archive snapshot/i)).toBeVisible();
-  const videos = page.getByRole('link', { name: /Watch on YouTube:/ });
+  const videos = page.getByRole('button', { name: /^Play video: / });
   const count = await videos.count();
   expect(count).toBeGreaterThan(0);
   for (let i = 0; i < count; i++) {
-    const link = videos.nth(i);
+    await videos.nth(i).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.locator('iframe')).toHaveAttribute(
+      'src',
+      /^https:\/\/www\.youtube-nocookie\.com\/embed\/[A-Za-z0-9_-]{11}\?/,
+    );
+    const link = dialog.getByRole('link', { name: /^Open on YouTube: / });
     await expect(link).toHaveAttribute(
       'href',
       /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/,
     );
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
   }
 });
 

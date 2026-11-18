@@ -1,9 +1,10 @@
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { GlassCard, GlassPanel, SectionHeader, StatusIndicator } from './ui';
 import type { ArchivedVideo } from '../services/videoArchive';
 import { videoDate } from '../services/videoArchive';
+import { usePlayVideo } from '../features/videos/VideoPlayer';
 
 export function FeatureTile({
   title,
@@ -63,23 +64,41 @@ export function EditorialSection({
 }
 
 export function ArchiveTile({ video }: { video: ArchivedVideo }) {
+  const play = usePlayVideo();
   return (
     <GlassCard className="flex min-w-0 flex-col gap-3 p-4">
-      <div className="archive-poster" aria-hidden="true">
+      <div
+        className={'archive-poster' + (play ? ' cursor-pointer' : '')}
+        aria-hidden="true"
+        onClick={play ? () => play(video) : undefined}
+      >
+        <Play size={30} className="archive-poster-play" />
         <span className="text-4xl font-black tracking-tight">B24DUL</span>
-        <span className="text-xs tracking-widest text-slate-200 uppercase">YouTube archive</span>
+        <span className="text-xs tracking-widest text-slate-200 uppercase">Video</span>
       </div>
       <h3 className="line-clamp-2 text-base font-semibold">{video.title}</h3>
       <p className="text-xs text-slate-300">Published {videoDate(video.published)}</p>
-      <a
-        className="ui-button ui-button--secondary mt-auto"
-        href={video.watchUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={'Watch on YouTube: ' + video.title}
-      >
-        Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" />
-      </a>
+      {play ? (
+        <button
+          className="ui-button ui-button--secondary mt-auto"
+          onClick={() => play(video)}
+          type="button"
+          data-play-video={video.id}
+          aria-label={'Play video: ' + video.title}
+        >
+          <Play size={16} aria-hidden="true" /> Play video
+        </button>
+      ) : (
+        <a
+          className="ui-button ui-button--secondary mt-auto"
+          href={video.watchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={'Watch on YouTube: ' + video.title}
+        >
+          Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" />
+        </a>
+      )}
     </GlassCard>
   );
 }
