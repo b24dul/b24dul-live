@@ -29,7 +29,14 @@ jobs:
       - name: Install committed dependencies
         run: npm ci --no-audit --no-fund
       - name: Install Firefox and WebKit browser dependencies
-        run: npx playwright install --with-deps firefox webkit
+        timeout-minutes: 8
+        run: |
+          # Regional EC2 mirror downloads stalled on the hosted runner (same fix as auth-emulator.yml).
+          sudo find /etc/apt -type f \( -name '*.list' -o -name '*.sources' -o -name 'apt-mirrors.txt' \) -exec sed -i -E 's|http://[a-z0-9.-]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' {} +
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf 'http://archive.ubuntu.com/ubuntu\n' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
+          npx playwright install --with-deps firefox webkit
       - name: Run existing regression suites on both browser engines
         run: npx playwright test --config=playwright.crossbrowser.config.ts --workers=2
       - name: Upload browser reports on failure
