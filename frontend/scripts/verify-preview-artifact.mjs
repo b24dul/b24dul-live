@@ -35,6 +35,7 @@ const forbidden = [
   /synthetic/i,
   /example\.invalid/,
 ];
+const SDK_MOCK_TOKEN_DEFAULT = '||"demo-project",';
 const keyPattern = /AIza[0-9A-Za-z_-]{20,}/g;
 const projectPattern = /projectId:\s*["']([^"']+)["']/g;
 
@@ -52,8 +53,12 @@ const reactFiles = walk(site).filter((path) => {
 for (const path of reactFiles) {
   if (path.endsWith('videos.json')) continue;
   const text = readFileSync(path, 'utf8');
+  // The Firebase Database SDK's createMockUserToken helper (only used with connectDatabaseEmulator,
+  // which the site never calls) defaults its project to this exact literal. Only that exact
+  // snippet is exempt; any other demo- project, and any non-production projectId, still fails.
+  const scanned = text.replaceAll(SDK_MOCK_TOKEN_DEFAULT, '');
   for (const pattern of forbidden) {
-    if (pattern.test(text)) fail(relative(site, path) + ' matches ' + pattern);
+    if (pattern.test(scanned)) fail(relative(site, path) + ' matches ' + pattern);
   }
   for (const [key] of text.matchAll(keyPattern)) {
     if (key !== productionKey) fail(relative(site, path) + ' contains a non-production API key');
