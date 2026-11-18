@@ -33,7 +33,13 @@ jobs:
       - name: Check compressed JavaScript transfer budget
         run: node scripts/js-budget.mjs
       - name: Install Chrome
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+        run: |
+          # Hosted runners may select a slow regional Ubuntu mirror.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf 'http://archive.ubuntu.com/ubuntu\n' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
+          npx playwright install --with-deps chromium
       - name: Start built preview
         run: |
           npm run preview -- --host 127.0.0.1 --port 4174 --strictPort > /tmp/b24dul-preview.log 2>&1 &
