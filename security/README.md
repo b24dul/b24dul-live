@@ -31,3 +31,5 @@ For local operation with Node 22+, Java 21 and test packages installed, run `nod
 5. Existing user data and auth identities must not be reset or recreated. All integration tests must use the `demo-` project only.
 
 **Release decision:** `firebaseRules` remains false in `frontend/production-gates.json` until actual emulator permission tests pass *and* the supplied rules are verified to match deployed production rules. A green synthetic static test must never unlock this gate.
+
+The [2048 replay prototype](2048-replay-prototype.md) is an offline calculation only. It is not connected to a leaderboard or a trusted server and does not establish score integrity or prevent automated play.
