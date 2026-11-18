@@ -80,9 +80,11 @@ export function PrivacyNotice() {
             live. Your browser asks it for the current status; no account details are sent.
           </li>
           <li>
-            <strong>YouTube</strong>: while B24DUL is live, the Watch page loads the YouTube player
-            automatically, in YouTube’s privacy-enhanced mode. Videos in the archive and the
-            Subscribe button open on YouTube.
+            <strong>YouTube</strong>: videos play on this site in YouTube’s player, using its
+            privacy-enhanced mode. The player loads only when you press Play on a video, or
+            automatically on the Watch page while B24DUL is live. The player itself is run by
+            YouTube, so YouTube receives your IP address and the video you watch. “Open on YouTube”
+            and Subscribe take you to YouTube’s own site.
           </li>
           <li>
             <strong>Firebase</strong> (Google) provides sign-in. The chat is stored in its database
