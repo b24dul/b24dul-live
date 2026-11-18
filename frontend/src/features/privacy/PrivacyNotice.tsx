@@ -55,8 +55,8 @@ export function PrivacyNotice() {
           sign-in session in your own browser.
         </p>
         <p>
-          The new site starts fresh: accounts, names and scores from the old site are not carried
-          over.
+          The site started fresh on 18 November 2026: accounts, names and scores from before then
+          are not carried over.
         </p>
       </Section>
       <Section title="Stored on your device">

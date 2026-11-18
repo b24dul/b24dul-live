@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { ArrowUpRight, Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
+import { Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { usePreferences } from '../contexts/PreferencesContext';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { IconButton, Modal, SecondaryButton, StatusIndicator } from '../components/ui';
+import { IconButton, Modal, SecondaryButton } from '../components/ui';
 import { findDestination, mobileRoutes, routes } from './navigation';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -142,17 +142,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </p>
           )}
         </header>
-        <div className="app-preview-banner">
-          <StatusIndicator status="neutral">
-            Preview — sign-in and chat work; online games and admin are still on the current site
-          </StatusIndicator>
-          <a
-            href="https://b24dul.github.io/b24dul-live/legacy/"
-            className="inline-flex items-center gap-1 font-semibold underline underline-offset-4"
-          >
-            Visit current site <ArrowUpRight size={15} aria-hidden="true" />
-          </a>
-        </div>
         <motion.div
           key={location.pathname}
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}

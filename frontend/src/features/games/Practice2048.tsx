@@ -3,14 +3,7 @@ import { GlassPanel } from '../../components/ui';
 import { loadPractice2048, savePractice2048 } from './practiceSaves';
 import { useScoreSession } from './useScoreSession';
 import { useScoreSubmission } from './Leaderboards';
-import {
-  LEGACY_2048_STORAGE_KEY,
-  move2048,
-  new2048,
-  readLegacy2048,
-  type Direction,
-  type Game2048,
-} from './game2048';
+import { move2048, new2048, type Direction, type Game2048 } from './game2048';
 
 const directions: { label: string; direction: Direction }[] = [
   { label: 'Up', direction: 'up' },
@@ -87,25 +80,6 @@ export function Practice2048() {
     }
   }
 
-  function loadLegacy() {
-    try {
-      const saved = readLegacy2048(window.localStorage.getItem(LEGACY_2048_STORAGE_KEY));
-      if (saved.status === 'ready') {
-        setGame(saved.game);
-        session.begin(false);
-        setMessage('Loaded a copy of your saved game for practice.');
-      } else {
-        setMessage(
-          saved.status === 'missing'
-            ? 'No saved 2048 game was found in this browser.'
-            : 'This saved game could not be read. It has been left unchanged.',
-        );
-      }
-    } catch {
-      setMessage('Browser storage is unavailable. Your saved game has not been changed.');
-    }
-  }
-
   function handleKey(event: KeyboardEvent<HTMLDivElement>) {
     const direction = keys[event.key];
     if (direction) {
@@ -134,9 +108,8 @@ export function Practice2048() {
     <GlassPanel className="p-5 sm:p-7">
       <h2 className="text-xl font-semibold">2048 practice</h2>
       <p className="mt-2 text-sm text-slate-300">
-        Save progress in this browser, or load a copy of an old-site save. When you’re signed in
-        with Google, your score goes on the leaderboard when you reach 2048 and when the game ends
-        (copies of old-site saves don’t count).
+        Save progress in this browser. When you’re signed in with Google, your score goes on the
+        leaderboard when you reach 2048 and when the game ends.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -149,9 +122,6 @@ export function Practice2048() {
           }}
         >
           {game ? 'New practice game' : 'Start 2048 practice'}
-        </button>
-        <button className="ui-button ui-button--secondary" type="button" onClick={loadLegacy}>
-          Load 2048 save copy
         </button>
         <button
           className="ui-button ui-button--secondary"

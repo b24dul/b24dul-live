@@ -53,9 +53,9 @@ export function AccountPanel() {
         </div>
       </div>
       <p className="mt-5 max-w-2xl text-slate-300">
-        This is the new B24DUL site, starting fresh. Accounts from the old site are not carried over
-        — just sign in again. A guest account lives only in this browser; sign in with Google to
-        keep it and use it on other devices.
+        B24DUL started fresh on 18 November 2026: accounts from before then are not carried over —
+        just sign in again. A guest account lives only in this browser; sign in with Google to keep
+        it and use it on other devices.
       </p>
       {identity && 'uid' in identity && (
         <p className="mt-3 text-sm text-slate-300">

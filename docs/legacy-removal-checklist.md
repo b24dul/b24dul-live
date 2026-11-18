@@ -70,6 +70,17 @@ Verified from the legacy source at `main` `ae07503` (`index.html`).
 - `auto-live.yml`: manual fallback detector.
 - Social preview image `og.png`.
 
+## Owner plan (2026-11-18)
+
+1. Remove every link and text pointing to the old site; hide unbuilt games (done: PR "Remove old-site links").
+2. Stream: embedded player, "stream just started" notice, Subscribe; chat beside the stream.
+3. Finish 2048 and Sudoku (win screens, How to play, autosave, no "practice" labels).
+4. Visitor statistics including GoatCounter page counts.
+5. Stop publishing `/legacy/`, redirect it to the new home page (owner confirmed once 1–4 are live).
+6. Offline hub.
+7. New games one at a time (Snake, Memory Match, Minesweeper, Connect Four), each with a
+   leaderboard rules summary for approval.
+
 ## Before removing `/legacy/`
 
 1. Every row above is ✅ or ➖ (with the owner's agreement).

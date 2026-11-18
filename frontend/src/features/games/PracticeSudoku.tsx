@@ -8,9 +8,7 @@ import {
   eraseSudoku,
   hintSudoku,
   inputSudoku,
-  LEGACY_SUDOKU_STORAGE_KEY,
   newSudoku,
-  readLegacySudoku,
   undoSudoku,
   type SudokuGame,
   type SudokuLevel,
@@ -93,25 +91,6 @@ export function PracticeSudoku() {
     }
   }
 
-  function loadLegacy() {
-    try {
-      const saved = readLegacySudoku(window.localStorage.getItem(LEGACY_SUDOKU_STORAGE_KEY));
-      if (saved.status === 'ready') {
-        setGame(saved.game);
-        session.begin(false);
-        setMessage('Loaded a copy of your saved Sudoku game for practice.');
-      } else {
-        setMessage(
-          saved.status === 'missing'
-            ? 'No saved Sudoku game was found in this browser.'
-            : 'This Sudoku save could not be read. It has been left unchanged.',
-        );
-      }
-    } catch {
-      setMessage('Browser storage is unavailable. Your Sudoku save has not been changed.');
-    }
-  }
-
   function input(digit: number) {
     setGame((current) => (current ? inputSudoku(current, digit) : current));
   }
@@ -149,9 +128,8 @@ export function PracticeSudoku() {
           Sudoku practice
         </h2>
         <p className="mt-2 text-sm text-slate-300">
-          Save progress in this browser, or load a copy of an old-site save. When you’re signed in
-          with Google, hint-free solves go on the leaderboard (copies of old-site saves don’t
-          count).
+          Save progress in this browser. When you’re signed in with Google, hint-free solves go on
+          the leaderboard.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {(['easy', 'medium', 'hard'] as const).map((level) => (
@@ -164,9 +142,6 @@ export function PracticeSudoku() {
               New {level} Sudoku
             </button>
           ))}
-          <button className="ui-button ui-button--secondary" onClick={loadLegacy} type="button">
-            Load Sudoku save copy
-          </button>
           <button
             className="ui-button ui-button--secondary"
             disabled={!game}

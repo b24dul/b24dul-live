@@ -2,8 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { privacyRequestMailto } from './privacyDraft';
 
-const currentSite = 'https://b24dul.github.io/b24dul-live/legacy/';
-
 export function PrivacyRequest() {
   const [uid, setUid] = useState('');
   const [mailto, setMailto] = useState<string | null>(null);
@@ -28,18 +26,9 @@ export function PrivacyRequest() {
           Request visitor data deletion
         </h2>
         <p className="mt-3 max-w-2xl text-slate-300">
-          For this site, copy your account ID from the panel above. For the current (old) site, use
-          “Request data deletion” there to find your ID. Enter it here to prepare an email. Your ID
+          Copy your account ID from the panel above and enter it here to prepare an email. Your ID
           is not saved by this form.
         </p>
-        <a
-          className="ui-button ui-button--secondary mt-4"
-          href={currentSite}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Find your ID on the current site
-        </a>
         <form className="mt-5 flex max-w-xl flex-col gap-3" onSubmit={prepare} noValidate>
           <label className="text-sm font-semibold" htmlFor="privacy-visitor-id">
             Visitor account ID
