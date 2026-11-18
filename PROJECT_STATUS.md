@@ -1,5 +1,7 @@
 # B24DUL Project Status
 
+> **React identity preview (2026-11-18):** Added a localhost-only React emulator page using the identity transition coordinator from `dev/identity-transition-safety` and the ID-token session observer. New browser cases cover legacy UID restoration, same-UID Google linking and refresh, cancelled sign-in, and credential collision without account switching. Browser verification is pending; this is a disposable demo-project preview, not production authentication integration.
+
 > **2026-11-18 development update:** [Private-snapshot emulator run 44224697746](https://github.com/b24dul/b24dul-live/actions/runs/44224697746) passed all nine tests, including new cases for unverified or incorrect administrator claims and privacy-history boundaries. The owner independently verified that [run 44143330773](https://github.com/b24dul/b24dul-live/actions/runs/44143330773) passed all seven earlier emulator tests. Neither run establishes that the snapshot matches deployed rules or that the security coverage is sufficient. The production Firebase security gate remains open. Earlier dated entries below are historical and may describe the state before these runs.
 
 > **Mandatory session handoff:** Read this file, `docs/legacy-audit.md`, `docs/architecture.md`, `docs/migration-plan.md` and the B24DUL Master Development Prompt before touching source. Update this file in every meaningful commit. **Do not assume documentation constitutes tested runtime behaviour.**

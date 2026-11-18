@@ -2,6 +2,66 @@ import { expect, test } from '@playwright/test';
 
 const fixture = 'scripts/auth-emulator/browserFixture.html';
 
+test('React preview preserves a legacy UID through linking and refresh', async ({
+  page,
+  browserName,
+}) => {
+  await page.goto(`${fixture}?sdk=legacy`);
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'signed-out');
+  await page.getByRole('button', { name: 'Create test guest' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+  const uid = await page.locator('#state').getAttribute('data-uid');
+  await page.goto(`scripts/auth-emulator/reactFixture.html?subject=react-linked-${browserName}`);
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+  await page.getByRole('button', { name: 'Connect test Google account' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+  await page.reload();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+});
+
+test('React preview keeps the guest after a failed sign-in', async ({ page }) => {
+  await page.goto('scripts/auth-emulator/reactFixture.html?fail=1');
+  await page.getByRole('button', { name: 'Continue as guest' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+  const uid = await page.locator('#state').getAttribute('data-uid');
+  await page.getByRole('button', { name: 'Connect test Google account' }).click();
+  await expect(page.getByRole('status')).toContainText('Sign-in did not finish');
+  await expect(page.locator('#state')).toHaveAttribute('data-uid', uid!);
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+});
+
+test('React preview surfaces collision without switching either account', async ({
+  page,
+  browser,
+  browserName,
+}) => {
+  const url = `scripts/auth-emulator/reactFixture.html?subject=react-collision-${browserName}`;
+  await page.goto(url);
+  await page.getByRole('button', { name: 'Continue as guest' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+  await page.getByRole('button', { name: 'Connect test Google account' }).click();
+  await expect(page.locator('#state')).toHaveAttribute('data-kind', 'google');
+  const ownerUid = await page.locator('#state').getAttribute('data-uid');
+  const separate = await browser.newContext();
+  try {
+    const guest = await separate.newPage();
+    await guest.goto(url);
+    await guest.getByRole('button', { name: 'Continue as guest' }).click();
+    await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+    const uid = await guest.locator('#state').getAttribute('data-uid');
+    expect(uid).not.toBe(ownerUid);
+    await guest.getByRole('button', { name: 'Connect test Google account' }).click();
+    await expect(guest.getByRole('status')).toContainText('already linked');
+    await expect(guest.locator('#state')).toHaveAttribute('data-uid', uid!);
+    await expect(guest.locator('#state')).toHaveAttribute('data-kind', 'anonymous');
+    await expect(page.locator('#state')).toHaveAttribute('data-uid', ownerUid!);
+  } finally {
+    await separate.close();
+  }
+});
+
 test('restores a legacy anonymous session with the new SDK across refreshes', async ({ page }) => {
   await page.goto(`${fixture}?sdk=legacy`);
   const state = page.locator('#state');
