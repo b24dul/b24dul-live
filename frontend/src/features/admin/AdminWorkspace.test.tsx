@@ -123,13 +123,18 @@ describe('AdminWorkspace', () => {
     await click(screen.getByRole('button', { name: 'Turn chat off' }));
     expect(runtime.admin.setChatEnabled).toHaveBeenCalledWith(false);
     fireEvent.change(screen.getByLabelText('Pinned message'), { target: { value: 'Live at 7' } });
-    await click(screen.getByRole('button', { name: 'Pin' }));
+    await click(screen.getByRole('button', { name: 'Pin announcement' }));
     expect(runtime.admin.pin).toHaveBeenCalledWith('Live at 7');
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Done: message pinned.');
+    // An empty box explains itself instead of doing nothing.
+    await click(screen.getByRole('button', { name: 'Pin announcement' }));
+    expect(screen.getByText('Type the announcement in the box first.')).toBeInTheDocument();
+    expect(runtime.admin.pin).toHaveBeenCalledTimes(1);
     await click(screen.getByRole('button', { name: 'Clear chat' }));
     expect(runtime.admin.clearChat).not.toHaveBeenCalled();
     await click(screen.getByRole('button', { name: /Delete every message/ }));
     expect(runtime.admin.clearChat).toHaveBeenCalled();
-    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Chat cleared.');
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Done: chat cleared.');
   });
 
   it('moderates a message and its author; the admin’s own messages have no person actions', async () => {
@@ -149,6 +154,9 @@ describe('AdminWorkspace', () => {
     expect(runtime.admin.ban).not.toHaveBeenCalled();
     await click(actions.getByRole('button', { name: `Ban ${chatNameFor('visitor1234')}` }));
     expect(runtime.admin.ban).toHaveBeenCalledWith('visitor1234');
+    await click(actions.getByRole('button', { name: 'Pin' }));
+    expect(runtime.admin.pin).toHaveBeenCalledWith('hello');
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent('Done: message pinned.');
     await click(actions.getByRole('button', { name: 'Edit' }));
     fireEvent.change(actions.getByLabelText('Edit message'), { target: { value: 'oh shit' } });
     await click(actions.getByRole('button', { name: 'Save' }));
@@ -199,5 +207,20 @@ describe('AdminWorkspace', () => {
     expect(runtime.admin.completeAndErase).not.toHaveBeenCalled();
     await click(within(log).getByRole('button', { name: 'Erase this account’s data now' }));
     expect(runtime.admin.completeAndErase).toHaveBeenCalledWith(pending);
+  });
+});
+
+describe('AdminWorkspace failures', () => {
+  it('says when the database refuses a pin, and keeps the typed text', async () => {
+    const runtime = fakeRuntime();
+    runtime.admin.pin = vi.fn(async () => {
+      throw new Error('PERMISSION_DENIED');
+    });
+    await renderAdmin({ kind: 'google', uid: 'owner' }, runtime);
+    const box = await screen.findByLabelText('Pinned message');
+    fireEvent.change(box, { target: { value: 'Live at 7' } });
+    await click(screen.getByRole('button', { name: 'Pin announcement' }));
+    expect(screen.getByRole('status', { name: '' })).toHaveTextContent(/^Failed: message pinned/);
+    expect(box).toHaveValue('Live at 7');
   });
 });

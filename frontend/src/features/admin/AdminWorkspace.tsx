@@ -19,7 +19,8 @@ export type LoadAdminRuntime = () => Promise<AdminRuntime>;
 const loadFirebaseAdmin: LoadAdminRuntime = () =>
   import('../../services/adminRuntime').then((module) => module.startAdminRuntime());
 
-type Run = (label: string, action: () => Promise<unknown>) => Promise<void>;
+/** Runs an admin action, reports "done" or "failed", and resolves to whether it worked. */
+type Run = (label: string, action: () => Promise<unknown>) => Promise<boolean>;
 
 const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 const time = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -85,7 +86,7 @@ function PersonActions({
       {muted ? (
         <SecondaryButton
           className="admin-small-button"
-          onClick={() => void run(`Lifted ${name}’s timeout`, () => admin.unmute(uid))}
+          onClick={() => void run(`lifted ${name}’s timeout`, () => admin.unmute(uid))}
         >
           Lift timeout (until {time.format(mutedUntil)})
         </SecondaryButton>
@@ -109,7 +110,7 @@ function PersonActions({
           <SecondaryButton
             className="admin-small-button"
             onClick={() =>
-              void run(`Timed out ${name} for ${minutes} min`, () => admin.mute(uid, minutes))
+              void run(`timed out ${name} for ${minutes} min`, () => admin.mute(uid, minutes))
             }
           >
             Timeout
@@ -119,7 +120,7 @@ function PersonActions({
       {banned ? (
         <SecondaryButton
           className="admin-small-button"
-          onClick={() => void run(`Unbanned ${name}`, () => admin.unban(uid))}
+          onClick={() => void run(`unbanned ${name}`, () => admin.unban(uid))}
         >
           Unban
         </SecondaryButton>
@@ -128,7 +129,7 @@ function PersonActions({
           small
           label="Ban"
           confirmLabel={`Ban ${name}`}
-          onConfirm={() => void run(`Banned ${name}`, () => admin.ban(uid))}
+          onConfirm={() => void run(`banned ${name}`, () => admin.ban(uid))}
         />
       )}
       <ConfirmButton
@@ -136,7 +137,7 @@ function PersonActions({
         label="Delete all their messages"
         confirmLabel={`Delete all from ${name}`}
         onConfirm={() =>
-          void run(`Deleted ${name}’s messages`, async () => {
+          void run(`deleted ${name}’s messages`, async () => {
             const count = await admin.deleteAllMessagesFrom(uid);
             return count;
           })
@@ -151,6 +152,7 @@ function MessageActions({
   name,
   isAdminAuthor,
   moderation,
+  pinnedText,
   runtime,
   run,
 }: {
@@ -158,6 +160,7 @@ function MessageActions({
   name: string;
   isAdminAuthor: boolean;
   moderation: Moderation;
+  pinnedText: string | null;
   runtime: AdminRuntime;
   run: Run;
 }) {
@@ -168,7 +171,7 @@ function MessageActions({
     const cleaned = cleanMessage(text);
     if (!cleaned || cleaned.length > MAX_MESSAGE_LENGTH) return;
     setEditing(false);
-    void run('Message edited', () => runtime.admin.editMessage(message.id, cleaned));
+    void run('message edited', () => runtime.admin.editMessage(message.id, cleaned));
   }
   return (
     <details className="admin-message-actions">
@@ -198,12 +201,27 @@ function MessageActions({
             <SecondaryButton className="admin-small-button" onClick={() => setEditing(true)}>
               Edit
             </SecondaryButton>
+            {pinnedText === message.text ? (
+              <SecondaryButton
+                className="admin-small-button"
+                onClick={() => void run('unpinned', () => runtime.admin.unpin())}
+              >
+                Unpin
+              </SecondaryButton>
+            ) : (
+              <SecondaryButton
+                className="admin-small-button"
+                onClick={() => void run('message pinned', () => runtime.admin.pin(message.text))}
+              >
+                Pin
+              </SecondaryButton>
+            )}
             <ConfirmButton
               small
               label="Delete"
               confirmLabel="Delete message"
               onConfirm={() =>
-                void run('Message deleted', () => runtime.admin.deleteMessage(message.id))
+                void run('message deleted', () => runtime.admin.deleteMessage(message.id))
               }
             />
           </div>
@@ -234,6 +252,7 @@ function ChatControls({
   run: Run;
 }) {
   const [pinText, setPinText] = useState('');
+  const [pinError, setPinError] = useState('');
   const { admin } = runtime;
   return (
     <GlassPanel as="section" className="flex flex-col gap-4 p-5" aria-labelledby="chat-controls">
@@ -259,8 +278,9 @@ function ChatControls({
         onSubmit={(event) => {
           event.preventDefault();
           const text = pinText.trim();
-          if (!text) return;
-          void run('Message pinned', () => admin.pin(text)).then(() => setPinText(''));
+          if (!text) return setPinError('Type the announcement in the box first.');
+          setPinError('');
+          void run('message pinned', () => admin.pin(text)).then((ok) => ok && setPinText(''));
         }}
       >
         <label className="text-sm font-semibold" htmlFor="pin-text">
@@ -273,14 +293,23 @@ function ChatControls({
           id="pin-text"
           className="admin-input"
           maxLength={MAX_MESSAGE_LENGTH}
-          placeholder="Announcement shown above the chat"
+          aria-describedby="pin-help pin-error"
           value={pinText}
-          onChange={(event) => setPinText(event.target.value)}
+          onChange={(event) => {
+            setPinText(event.target.value);
+            setPinError('');
+          }}
         />
+        <p id="pin-help" className="text-xs text-slate-300">
+          Type an announcement, or use “Pin” under Moderate on any chat message.
+        </p>
+        <p id="pin-error" role="alert" className="text-sm text-red-200">
+          {pinError}
+        </p>
         <div className="flex flex-wrap gap-2">
-          <PrimaryButton type="submit">Pin</PrimaryButton>
+          <PrimaryButton type="submit">Pin announcement</PrimaryButton>
           {settings.pinned && (
-            <SecondaryButton onClick={() => void run('Unpinned', () => admin.unpin())}>
+            <SecondaryButton onClick={() => void run('unpinned', () => admin.unpin())}>
               Unpin
             </SecondaryButton>
           )}
@@ -290,7 +319,7 @@ function ChatControls({
         <ConfirmButton
           label="Clear chat"
           confirmLabel={`Delete every message (${messageCount} shown)`}
-          onConfirm={() => void run('Chat cleared', () => admin.clearChat())}
+          onConfirm={() => void run('chat cleared', () => admin.clearChat())}
         />
       </div>
     </GlassPanel>
@@ -490,7 +519,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
           const value = uid.trim();
           if (!ACCOUNT_ID.test(value)) return setError('Enter a valid account ID.');
           setError('');
-          void run('Request recorded', () => runtime.admin.recordPrivacyRequest(value)).then(() =>
+          void run('request recorded', () => runtime.admin.recordPrivacyRequest(value)).then(() =>
             setUid(''),
           );
         }}
@@ -537,7 +566,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
                   <SecondaryButton
                     className="admin-small-button"
                     onClick={() =>
-                      void run('Marked processing', () => runtime.admin.markProcessing(request.id))
+                      void run('marked processing', () => runtime.admin.markProcessing(request.id))
                     }
                   >
                     Mark processing
@@ -548,7 +577,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
                   label="Complete and erase data"
                   confirmLabel="Erase this account’s data now"
                   onConfirm={() =>
-                    void run('Request completed and data erased', () =>
+                    void run('request completed and data erased', () =>
                       runtime.admin.completeAndErase(request),
                     )
                   }
@@ -623,9 +652,11 @@ export function AdminWorkspace({
   const run = useCallback<Run>(async (label, action) => {
     try {
       await action();
-      setNotice(`${label}.`);
+      setNotice(`Done: ${label}.`);
+      return true;
     } catch {
-      setNotice(`${label}: failed — the database refused it or the connection dropped.`);
+      setNotice(`Failed: ${label} — the database refused it or the connection dropped.`);
+      return false;
     }
   }, []);
   const chatService = useMemo(() => (runtime ? async () => runtime.chat : undefined), [runtime]);
@@ -668,6 +699,7 @@ export function AdminWorkspace({
                 name={name}
                 isAdminAuthor={admins.has(message.uid)}
                 moderation={moderation}
+                pinnedText={settings.pinned?.text ?? null}
                 runtime={runtime}
                 run={run}
               />
