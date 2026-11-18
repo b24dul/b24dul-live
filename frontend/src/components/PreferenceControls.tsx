@@ -38,7 +38,7 @@ function PreferenceField<T extends string>({
               <span className="mt-1 block text-sm text-slate-300">{option.detail}</span>
             </span>
             {value === option.value && (
-              <Check aria-hidden="true" size={19} className="text-brand-cyan" />
+              <Check aria-hidden="true" size={19} className="text-brand-tangerine" />
             )}
           </label>
         ))}
@@ -58,19 +58,10 @@ export function PreferenceControls() {
           <StatusIndicator status="success">Changes apply immediately</StatusIndicator>
         </div>
         <p className="mb-7 text-sm text-slate-300">
-          These settings are stored in this browser only. The accessible dark theme stays enabled;
-          no account, login tokens or Firebase records are used.
+          These settings are stored in this browser only. No account, login tokens or Firebase
+          records are used.
         </p>
         <div className="flex flex-col gap-7">
-          <PreferenceField
-            legend="Accent colour"
-            value={preferences.accent}
-            options={[
-              { value: 'violet', label: 'Violet', detail: 'Signature purple accents' },
-              { value: 'cyan', label: 'Cyan', detail: 'Brighter blue highlights' },
-            ]}
-            onChange={(accent) => updatePreferences({ accent })}
-          />
           <PreferenceField
             legend="Content density"
             value={preferences.density}
@@ -92,7 +83,7 @@ export function PreferenceControls() {
               {
                 value: 'reduce',
                 label: 'Reduce motion',
-                detail: 'Minimise animation in this preview',
+                detail: 'Minimise animation on this site',
               },
             ]}
             onChange={(motion) => updatePreferences({ motion })}
@@ -103,25 +94,16 @@ export function PreferenceControls() {
             options={[
               {
                 value: 'standard',
-                label: 'Discover first',
-                detail: 'Explore the platform before featured games',
+                label: 'Videos first',
+                detail: 'Show videos before games on the home page',
               },
               {
                 value: 'games-first',
                 label: 'Games first',
-                detail: 'Move featured games above discovery',
+                detail: 'Show games before videos on the home page',
               },
             ]}
             onChange={(homeLayout) => updatePreferences({ homeLayout })}
-          />
-          <PreferenceField
-            legend="Desktop sidebar"
-            value={preferences.sidebarCollapsed ? 'collapsed' : 'expanded'}
-            options={[
-              { value: 'expanded', label: 'Expanded', detail: 'Show full section names' },
-              { value: 'collapsed', label: 'Collapsed', detail: 'Show compact icon navigation' },
-            ]}
-            onChange={(sidebar) => updatePreferences({ sidebarCollapsed: sidebar === 'collapsed' })}
           />
         </div>
         <div className="mt-8 border-t border-white/15 pt-6">

@@ -156,12 +156,12 @@ function VideosPage() {
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
           Titles, IDs and published dates come from the existing videos.json file. If the published
-          archive cannot be read, the preview shows its build-time snapshot. Videos open on YouTube.
+          archive cannot be read, the site shows its build-time snapshot. Videos play right here.
         </p>
       </GlassPanel>
-      <EditorialSection title="Archive" description="Open an item to watch it on YouTube.">
+      <EditorialSection title="Archive" description="Press a video to play it here.">
         {videos.length ? (
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="video-grid">
             {videos.map((video) => (
               <ArchiveTile key={video.id} video={video} />
             ))}
@@ -241,7 +241,7 @@ function ToolsPage() {
         {utilities.map((item) => (
           <GlassPanel key={item.name} className="p-5">
             <div className="flex items-center justify-between gap-3">
-              <Wrench className="text-brand-cyan" size={23} aria-hidden="true" />
+              <Wrench className="text-brand-tangerine" size={23} aria-hidden="true" />
               <span className="text-xs text-slate-300">{item.category}</span>
             </div>
             <h2 className="mt-4 text-lg font-semibold">{item.name}</h2>
@@ -310,19 +310,15 @@ function SettingsPage() {
       description="Change your local appearance and accessibility preferences."
     >
       <GlassPanel className="p-6 sm:p-8">
-        <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
-        <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
+        <Settings2 size={28} className="text-brand-tangerine" aria-hidden="true" />
+        <h2 className="mt-3 text-xl font-semibold">Your preferences</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          Use the navigation rail or the controls below. Your choices are saved only in this
+          Choose spacing, motion and the order of the home page. Your choices are saved only in this
           browser; no Firebase account or cloud record is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
       <PreferenceControls />
-      <PlannedPanel
-        title="Theme"
-        description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested."
-      />
       <RelatedLinks paths={['/profile', '/explore']} />
     </PageFrame>
   );

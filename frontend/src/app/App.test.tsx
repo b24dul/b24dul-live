@@ -28,15 +28,26 @@ function renderRoute(path = '/') {
   );
 }
 
-describe('isolated application shell', () => {
+describe('application shell', () => {
   beforeEach(() => {
     window.localStorage.clear();
   });
 
-  it('identifies the home page as a preview and links to the live site', () => {
+  it('shows the banner hero with the agreed alt text, and never links to the old site', () => {
     renderRoute();
-    expect(screen.getByText('Isolated development preview')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'B24DUL' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'B24DUL Live' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Latest streams' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Games' })).toBeInTheDocument();
     expect(document.querySelector('a[href*="legacy"]')).toBeNull();
+  });
+
+  it('uses the banner only on the home page and the Watch page', () => {
+    for (const path of ['/videos', '/games', '/community', '/profile', '/privacy', '/settings']) {
+      const { unmount } = renderRoute(path);
+      expect(document.querySelector('img[alt="B24DUL Live"]'), path).toBeNull();
+      unmount();
+    }
   });
 
   it('offers real sign-in choices on the account page', async () => {
@@ -66,37 +77,50 @@ describe('isolated application shell', () => {
     expect(screen.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
   });
 
-  it('collapses the sidebar and persists its local preference', () => {
+  it('top bar: wordmark, the five main links and the account link', () => {
     renderRoute();
-    expect(screen.getByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
-    fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
-    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument();
-    expect(
-      JSON.parse(window.localStorage.getItem('b24dul.preferences.v1') || '{}').sidebarCollapsed,
-    ).toBe(true);
-  });
-
-  it('navigates only to named sections using the header search', () => {
-    renderRoute();
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a section' }), {
-      target: { value: 'not-real' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
-    expect(screen.getByText(/No matching section/)).toBeVisible();
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a section' }), {
-      target: { value: 'tools' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Go to section' }));
-    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
-  });
-
-  it('makes all five mobile destinations available', () => {
-    renderRoute();
-    const nav = screen.getByRole('navigation', { name: 'Mobile navigation' });
+    expect(screen.getByRole('link', { name: 'B24DUL Live home' })).toHaveAttribute('href', '/');
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
     expect(
       within(nav)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Home', 'Watch', 'Games', 'Community', 'Explore']);
+    ).toEqual(['Home', 'Watch', 'Videos', 'Games', 'Community']);
+    expect(screen.getByRole('link', { name: 'Your account' })).toHaveAttribute('href', '/profile');
+  });
+
+  it('phone menu: opens with every page, closes with Escape or after choosing a page', () => {
+    renderRoute();
+    const button = screen.getByRole('button', { name: 'Menu' });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(button);
+    const menu = screen.getByRole('navigation', { name: 'Site menu' });
+    expect(
+      within(menu)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual([
+      'Home',
+      'Watch',
+      'Videos',
+      'Games',
+      'Community',
+      'Explore',
+      'Tools',
+      'Competitions',
+      'Profile',
+      'Settings',
+      'Admin',
+    ]);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('navigation', { name: 'Site menu' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Site menu' })).getByRole('link', {
+        name: 'Tools',
+      }),
+    );
+    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Site menu' })).not.toBeInTheDocument();
   });
 });

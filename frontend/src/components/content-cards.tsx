@@ -36,7 +36,7 @@ export function VideoCard({ title, description, action }: CardBase) {
 export function FeatureCard({ title, description, action }: CardBase) {
   return (
     <GlassCard className="flex h-full flex-col gap-4 p-5">
-      <Sparkles aria-hidden="true" className="text-brand-cyan" size={28} />
+      <Sparkles aria-hidden="true" className="text-brand-tangerine" size={28} />
       <h3 className="text-lg font-bold">{title}</h3>
       <p className="flex-1 text-sm text-slate-300">{description}</p>
       {action && <div>{action}</div>}

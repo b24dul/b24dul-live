@@ -2,57 +2,52 @@ import { DailyTotalsTracker } from '../features/stats/DailyTotalsTracker';
 import { countPath, countVisit } from '../services/visitorCounts';
 import { StreamNotice } from '../features/stream/StreamNotice';
 import { useEffect, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
-import { Bell, ChevronsLeft, ChevronsRight, Search, UserRound } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Menu, UserRound, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { usePreferences } from '../contexts/PreferencesContext';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { IconButton, Modal, SecondaryButton } from '../components/ui';
-import { findDestination, mobileRoutes, routes } from './navigation';
+import { useLiveStatus } from '../contexts/LiveStatusContext';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { mainRoutes, moreRoutes, routes } from './navigation';
+
+const titleFor = (pathname: string, label?: string) =>
+  label ?? (pathname === '/privacy' ? 'Privacy' : 'Not found');
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { preferences, updatePreferences } = usePreferences();
-  const collapsed = preferences.sidebarCollapsed;
-  const [search, setSearch] = useState('');
-  const [searchError, setSearchError] = useState('');
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const navigate = useNavigate();
+  const { preferences } = usePreferences();
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const live = useLiveStatus().state === 'live';
   const systemReducedMotion = useReducedMotion();
   const reducedMotion = preferences.motion === 'reduce' || systemReducedMotion;
   const current = routes.find((route) => route.path === location.pathname);
 
   useEffect(() => {
-    document.title = (current?.label ?? 'Page not found') + ' | B24DUL Preview';
+    document.title = (current?.label ?? 'Page not found') + ' | B24DUL Live';
     const heading = document.querySelector<HTMLElement>('#route-content h1');
     heading?.focus({ preventScroll: true });
     countVisit({
       path: countPath(location.pathname),
-      title: current?.label ?? (location.pathname === '/privacy' ? 'Privacy' : 'Not found'),
+      title: titleFor(location.pathname, current?.label),
     });
+    setMenuOpen(false);
   }, [location.pathname, current?.label]);
 
-  function toggleSidebar() {
-    updatePreferences({ sidebarCollapsed: !collapsed });
-  }
-
-  function goToKnownSection(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const match = findDestination(search);
-    if (!match) {
-      setSearchError('No matching section. Browse Explore for all available destinations.');
-      return;
-    }
-    setSearchError('');
-    setSearch('');
-    navigate(match.path);
-  }
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        document.getElementById('site-menu-button')?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   return (
     <div
       className="app-layout"
-      data-sidebar={collapsed ? 'collapsed' : 'expanded'}
-      data-accent={preferences.accent}
       data-density={preferences.density}
       data-motion={reducedMotion ? 'reduce' : 'system'}
     >
@@ -66,136 +61,110 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <aside className="app-sidebar glass-panel" aria-label="Desktop navigation">
-        <div className="app-sidebar-brand">
-          <Link to="/" aria-label="B24DUL preview home" className="brand-mark">
-            B
+      <header className="topbar">
+        <div className="topbar-inner">
+          <Link to="/" className="wordmark" aria-label="B24DUL Live home">
+            B24DUL
           </Link>
-          {!collapsed && <span className="min-w-0 font-extrabold tracking-widest">B24DUL</span>}
-        </div>
-        <nav aria-label="Main navigation" className="app-sidebar-nav">
-          {routes.map(({ path, label, icon: Icon }) => (
+          <nav aria-label="Main navigation" className="topbar-nav">
+            {mainRoutes.map(({ path, label }) => (
+              <NavLink
+                key={path}
+                to={path}
+                end={path === '/'}
+                className={({ isActive }) =>
+                  'topbar-link' + (isActive ? ' topbar-link--active' : '')
+                }
+              >
+                {label}
+                {path === '/watch' && live && (
+                  <span className="topbar-live">
+                    <span className="live-dot live-dot--small" aria-hidden="true" />
+                    LIVE
+                  </span>
+                )}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="topbar-actions">
             <NavLink
-              key={path}
-              to={path}
-              end={path === '/'}
-              title={collapsed ? label : undefined}
-              aria-label={collapsed ? label : undefined}
+              to="/profile"
               className={({ isActive }) =>
-                'app-nav-link' + (isActive ? ' app-nav-link--active' : '')
+                'topbar-account' + (isActive ? ' topbar-account--active' : '')
               }
+              aria-label="Your account"
             >
-              <Icon size={19} aria-hidden="true" />
-              {!collapsed && <span>{label}</span>}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="app-sidebar-footer">
-          <IconButton
-            label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            icon={collapsed ? <ChevronsRight size={19} /> : <ChevronsLeft size={19} />}
-            onClick={toggleSidebar}
-          />
-          {!collapsed && <span className="text-xs text-slate-300">Local display preference</span>}
-        </div>
-      </aside>
-      <div className="app-main-area">
-        <header className="app-global-header">
-          <div className="app-header-intro">
-            <Link to="/" className="mobile-brand" aria-label="B24DUL preview home">
-              B24DUL
-            </Link>
-            <div className="header-section-name" aria-live="polite">
-              <span className="text-xs text-slate-300">DEVELOPMENT PREVIEW</span>
-              <span className="font-semibold">
-                {current?.label ?? (location.pathname === '/privacy' ? 'Privacy' : 'Not found')}
+              <span className="topbar-avatar" aria-hidden="true">
+                <UserRound size={18} />
               </span>
-            </div>
-          </div>
-          <form role="search" className="header-search" onSubmit={goToKnownSection}>
-            <label className="sr-only" htmlFor="section-search">
-              Find a section
-            </label>
-            <Search aria-hidden="true" size={17} />
-            <input
-              id="section-search"
-              type="search"
-              placeholder="Find a section"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                if (searchError) setSearchError('');
-              }}
-            />
-            <button type="submit" aria-label="Go to section" title="Go to section">
-              Go
-            </button>
-          </form>
-          <div className="app-header-actions">
-            <IconButton
-              label="Notifications"
-              icon={<Bell size={18} />}
-              onClick={() => setNotificationsOpen(true)}
-            />
-            <Link to="/profile" className="app-guest-link" aria-label="Your account">
-              <UserRound size={17} aria-hidden="true" />
               <span>Account</span>
-            </Link>
+            </NavLink>
+            <button
+              id="site-menu-button"
+              type="button"
+              className="ui-button ui-button--secondary ui-icon-button topbar-menu-button"
+              aria-label={menuOpen ? 'Close menu' : 'Menu'}
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? (
+                <X size={20} aria-hidden="true" />
+              ) : (
+                <Menu size={20} aria-hidden="true" />
+              )}
+            </button>
           </div>
-          {searchError && (
-            <p role="status" className="header-search-error">
-              {searchError}
-            </p>
-          )}
-        </header>
-        <StreamNotice />
-        <DailyTotalsTracker />
-        <motion.div
-          key={location.pathname}
-          initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.16 }}
-          className="app-page-transition"
-        >
-          <main id="route-content" tabIndex={-1} className="app-page-container">
-            {children}
-            <footer className="app-page-footer">
-              <Link to="/privacy" className="underline underline-offset-4">
-                Privacy notice
-              </Link>
-            </footer>
-          </main>
-        </motion.div>
-      </div>
-      <nav className="app-mobile-nav" aria-label="Mobile navigation">
-        {mobileRoutes.map(({ path, label, icon: Icon }) => (
-          <NavLink
-            key={path}
-            to={path}
-            end={path === '/'}
-            className={({ isActive }) =>
-              'app-mobile-nav-link' + (isActive ? ' app-mobile-nav-link--active' : '')
-            }
-          >
-            <Icon size={20} aria-hidden="true" />
-            <span>{label}</span>
-          </NavLink>
-        ))}
-      </nav>
-      <Modal
-        open={notificationsOpen}
-        title="Notifications"
-        onClose={() => setNotificationsOpen(false)}
+        </div>
+        {menuOpen && (
+          <nav id="site-menu" aria-label="Site menu" className="topbar-menu glass-panel">
+            {[...mainRoutes, null, ...moreRoutes].map((route) =>
+              route === null ? (
+                <hr key="divider" />
+              ) : (
+                <NavLink key={route.path} to={route.path} end={route.path === '/'}>
+                  <route.icon size={19} aria-hidden="true" />
+                  {route.label}
+                  {route.path === '/watch' && live && (
+                    <span className="topbar-live">
+                      <span className="live-dot live-dot--small" aria-hidden="true" />
+                      LIVE
+                    </span>
+                  )}
+                </NavLink>
+              ),
+            )}
+          </nav>
+        )}
+      </header>
+      <StreamNotice />
+      <DailyTotalsTracker />
+      <motion.div
+        key={location.pathname}
+        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.16 }}
+        className="app-page-transition"
       >
-        <p className="text-slate-300">
-          Notifications are not connected in this development preview. Nothing has been fetched from
-          your account.
-        </p>
-        <SecondaryButton className="mt-5" onClick={() => setNotificationsOpen(false)}>
-          Close
-        </SecondaryButton>
-      </Modal>
+        <main id="route-content" tabIndex={-1} className="app-page-container">
+          {children}
+          <footer className="app-page-footer">
+            <span className="wordmark" aria-hidden="true">
+              B24DUL
+            </span>
+            <nav aria-label="More pages">
+              {moreRoutes
+                .filter((route) => route.path !== '/profile')
+                .map((route) => (
+                  <Link key={route.path} to={route.path}>
+                    {route.label}
+                  </Link>
+                ))}
+              <Link to="/privacy">Privacy notice</Link>
+            </nav>
+          </footer>
+        </main>
+      </motion.div>
     </div>
   );
 }

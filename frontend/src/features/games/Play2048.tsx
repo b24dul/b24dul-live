@@ -120,7 +120,7 @@ export function Play2048() {
           <div className="relative">
             <div
               aria-label="2048 board"
-              className="grid gap-2 rounded-xl bg-slate-950/60 p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+              className="grid gap-2 rounded-xl bg-slate-950/60 p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-violet"
               onKeyDown={handleKey}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}

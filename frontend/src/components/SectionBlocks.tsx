@@ -1,7 +1,7 @@
-import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ArrowRight, Play } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { GlassCard, GlassPanel, SectionHeader, StatusIndicator } from './ui';
+import { GlassPanel, SectionHeader, StatusIndicator } from './ui';
 import type { ArchivedVideo } from '../services/videoArchive';
 import { videoDate } from '../services/videoArchive';
 import { usePlayVideo } from '../features/videos/VideoPlayer';
@@ -27,9 +27,9 @@ export function FeatureTile({
       <span className="min-w-0 flex-1">
         <span className="block text-lg font-semibold">{title}</span>
         <span className="mt-1 block text-sm leading-relaxed text-slate-300">{description}</span>
-        {note && <span className="mt-2 block text-xs text-brand-cyan">{note}</span>}
+        {note && <span className="mt-2 block text-xs text-brand-tangerine">{note}</span>}
       </span>
-      <ArrowRight className="shrink-0 text-brand-cyan" size={18} aria-hidden="true" />
+      <ArrowRight className="shrink-0 text-brand-tangerine" size={18} aria-hidden="true" />
     </Link>
   );
 }
@@ -51,7 +51,7 @@ export function EditorialSection({
         <SectionHeader title={title} description={description} />
         {action && (
           <Link
-            className="text-sm font-semibold text-brand-cyan underline underline-offset-4"
+            className="text-sm font-semibold text-brand-tangerine underline underline-offset-4"
             to={action.to}
           >
             {action.label}
@@ -63,43 +63,69 @@ export function EditorialSection({
   );
 }
 
+const thumb = (id: string, size: 'mqdefault' | 'hqdefault') =>
+  `https://i.ytimg.com/vi/${id}/${size}.jpg`;
+
+/**
+ * Video card: 16:9 thumbnail (from YouTube's image server), compact dark info panel. Plays in the
+ * site's player; without the player (e.g. a standalone render) it links to YouTube instead.
+ * If the thumbnail can't load, a branded placeholder is shown instead of a broken image.
+ */
 export function ArchiveTile({ video }: { video: ArchivedVideo }) {
   const play = usePlayVideo();
+  const [thumbFailed, setThumbFailed] = useState(false);
+  const media = (
+    <>
+      {thumbFailed ? (
+        <span className="video-card-fallback" aria-hidden="true">
+          <span className="wordmark">B24DUL</span>
+        </span>
+      ) : (
+        <img
+          className="video-card-thumb"
+          src={thumb(video.id, 'mqdefault')}
+          srcSet={`${thumb(video.id, 'mqdefault')} 320w, ${thumb(video.id, 'hqdefault')} 480w`}
+          sizes="(min-width: 1280px) 330px, (min-width: 640px) 46vw, 92vw"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setThumbFailed(true)}
+        />
+      )}
+      <span className="video-card-play" aria-hidden="true">
+        <Play size={22} fill="currentColor" />
+      </span>
+    </>
+  );
   return (
-    <GlassCard className="flex min-w-0 flex-col gap-3 p-4">
-      <div
-        className={'archive-poster' + (play ? ' cursor-pointer' : '')}
-        aria-hidden="true"
-        onClick={play ? () => play(video) : undefined}
-      >
-        <Play size={30} className="archive-poster-play" />
-        <span className="text-4xl font-black tracking-tight">B24DUL</span>
-        <span className="text-xs tracking-widest text-slate-200 uppercase">Video</span>
-      </div>
-      <h3 className="line-clamp-2 text-base font-semibold">{video.title}</h3>
-      <p className="text-xs text-slate-300">Published {videoDate(video.published)}</p>
+    <article className="video-card">
       {play ? (
         <button
-          className="ui-button ui-button--secondary mt-auto"
+          className="video-card-media"
           onClick={() => play(video)}
           type="button"
           data-play-video={video.id}
           aria-label={'Play video: ' + video.title}
         >
-          <Play size={16} aria-hidden="true" /> Play video
+          {media}
         </button>
       ) : (
         <a
-          className="ui-button ui-button--secondary mt-auto"
+          className="video-card-media"
           href={video.watchUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={'Watch on YouTube: ' + video.title}
         >
-          Watch on YouTube <ArrowUpRight size={16} aria-hidden="true" />
+          {media}
         </a>
       )}
-    </GlassCard>
+      <div className="video-card-info">
+        <h3 className="video-card-title">{video.title}</h3>
+        <p className="video-card-meta">{videoDate(video.published)}</p>
+      </div>
+    </article>
   );
 }
 

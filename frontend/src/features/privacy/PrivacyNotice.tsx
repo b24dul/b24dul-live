@@ -83,8 +83,9 @@ export function PrivacyNotice() {
             <strong>YouTube</strong>: videos play on this site in YouTube’s player, using its
             privacy-enhanced mode. The player loads only when you press Play on a video, or
             automatically on the Watch page while B24DUL is live. The player itself is run by
-            YouTube, so YouTube receives your IP address and the video you watch. “Open on YouTube”
-            and Subscribe take you to YouTube’s own site.
+            YouTube, so YouTube receives your IP address and the video you watch. Video thumbnails
+            are loaded from YouTube’s image server, which also receives your IP address. “Open on
+            YouTube” and Subscribe take you to YouTube’s own site.
           </li>
           <li>
             <strong>GoatCounter</strong> counts visits, without cookies and without tracking you

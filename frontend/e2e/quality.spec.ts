@@ -57,16 +57,17 @@ test('page shell and settings support keyboard and reduced motion', async ({ pag
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('./#/settings');
   await expect(page.locator('.app-layout')).toHaveAttribute('data-motion', 'reduce');
-  const accent = page.getByRole('radio', { name: /Cyan/ });
-  await accent.focus();
+  const compact = page.getByRole('radio', { name: /Compact/ });
+  await compact.focus();
   await page.keyboard.press('Space');
-  await expect(accent).toBeChecked();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
-  await page.getByRole('button', { name: 'Notifications' }).click();
-  await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
+  await expect(compact).toBeChecked();
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'compact');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('navigation', { name: 'Site menu' })).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Notifications' })).toBeFocused();
+  await expect(page.getByRole('navigation', { name: 'Site menu' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeFocused();
 });
 
 test('read-only disconnected states work with external network blocked', async ({ page }) => {

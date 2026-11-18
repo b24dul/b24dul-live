@@ -74,10 +74,22 @@ export const routes: readonly AppRoute[] = [
   { path: '/admin', label: 'Admin', icon: Shield, description: 'Restricted administration' },
 ];
 
-export const mobileRoutes = ['/', '/watch', '/games', '/community', '/explore'].map((path) =>
-  routes.find((route) => route.path === path)!,
-);
+const pick = (paths: string[]) => paths.map((path) => routes.find((route) => route.path === path)!);
 
+/** The five links in the top bar. */
+export const mainRoutes = pick(['/', '/watch', '/videos', '/games', '/community']);
+
+/** Everything else: the phone menu and the page footer. */
+export const moreRoutes = pick([
+  '/explore',
+  '/tools',
+  '/competitions',
+  '/profile',
+  '/settings',
+  '/admin',
+]);
+
+/** Finds a section by name (kept for links and tests). */
 export function findDestination(term: string): AppRoute | undefined {
   const normalized = term.trim().toLowerCase();
   return routes.find(
