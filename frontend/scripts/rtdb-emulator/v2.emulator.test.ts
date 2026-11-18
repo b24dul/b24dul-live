@@ -30,6 +30,7 @@ import { createAdminService } from '../../src/services/adminService.ts';
 import { createLeaderboardService } from '../../src/services/leaderboardService.ts';
 import { BOARDS } from '../../src/features/games/leaderboardBoards.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
+import { addToTotals, METRICS, type TotalsTarget } from '../../src/services/dailyTotals.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
 type Fixture = ReturnType<typeof createRtdbEmulatorFixture>;
@@ -642,6 +643,67 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
       });
       assert.equal(await response.text(), 'null', path);
     }
+  });
+
+  it('daily totals: anyone can add exactly 1; only the admin can read or delete a day', async () => {
+    const DAY = '2026-11-18';
+    const site: TotalsTarget = { databaseURL: 'http://127.0.0.1:9000', ns: NS, fetch };
+    const days = `v2/stats/days`;
+    // A visitor who never signs in, using the site's own request code.
+    assert.equal(await addToTotals(['visits', 'devicePhone', 'sourceYoutube'], site, DAY), true);
+    assert.equal(await addToTotals(['visits', 'siteMinutes', 'liveMinutes'], site, DAY), true);
+    assert.equal(await addToTotals([...METRICS], site, DAY), true);
+    const totals = (await get(ref(admin.database, `${days}/${DAY}`))).val();
+    assert.equal(totals.visits, 3);
+    assert.equal(totals.devicePhone, 2);
+    assert.equal(totals.liveMinutes, 2);
+    assert.equal(totals.subscribeClicks, 1);
+    // Signed in or not, it can't be set, raised by more than 1, lowered, or deleted.
+    const visitor = fixture('v2-stats-visitor');
+    for (const who of [visitor, alice]) {
+      await denied(set(ref(who.database, `${days}/${DAY}/visits`), 100));
+      await denied(set(ref(who.database, `${days}/${DAY}/visits`), 5));
+      await denied(set(ref(who.database, `${days}/${DAY}/visits`), 2));
+      await denied(set(ref(who.database, `${days}/${DAY}/visits`), null));
+      await denied(set(ref(who.database, `${days}/${DAY}`), null));
+      await denied(set(ref(who.database, `${days}/${DAY}/visits`), '4'));
+    }
+    // Only the listed counters, only real dates.
+    const raw = (path: string, body: unknown) =>
+      fetch(`http://127.0.0.1:9000/${path}.json?ns=${NS}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      }).then((response) => response.status);
+    const plusOne = { '.sv': { increment: 1 } };
+    assert.equal(await raw(`${days}/${DAY}`, { visitorName: plusOne }), 401);
+    assert.equal(await raw(`${days}/${DAY}`, { visits: plusOne, uid: 'abc' }), 401);
+    assert.equal(await raw(`${days}/2026-13-01`, { visits: plusOne }), 401);
+    assert.equal(await raw(`${days}/yesterday`, { visits: plusOne }), 401);
+    assert.equal(await raw(`${days}/${DAY}`, { visits: { '.sv': { increment: 2 } } }), 401);
+    assert.equal(await raw(`${days}/${DAY}`, { visits: { '.sv': { increment: -1 } } }), 401);
+    assert.equal(await raw(`v2/stats/other`, { visits: plusOne }), 401);
+    // Reading: admin only, and the admin service sees the newest day first.
+    await denied(get(ref(visitor.database, `${days}/${DAY}`)));
+    await denied(get(ref(alice.database, days)));
+    await addToTotals(['visits'], site, '2026-11-19');
+    const seen = await new Promise<import('../../src/services/adminService.ts').StatsDay[]>(
+      (resolve) => {
+        const stop = createAdminService(admin.database).watchStats((list) => {
+          if (list.length >= 2) {
+            stop();
+            resolve(list);
+          }
+        });
+      },
+    );
+    assert.deepEqual(
+      seen.map((day) => day.day),
+      ['2026-11-19', '2026-11-18'],
+    );
+    // The admin can delete a whole day; nobody else can.
+    await denied(set(ref(alice.database, `${days}/2026-11-19`), null));
+    await set(ref(admin.database, `${days}/2026-11-19`), null);
+    assert.equal((await get(ref(admin.database, `${days}/2026-11-19`))).exists(), false);
   });
 
   it('nothing outside the known /v2/ paths can be read or written', async () => {

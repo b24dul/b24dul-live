@@ -1145,3 +1145,27 @@ input {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.admin-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-stats-table th,
+.admin-stats-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.admin-stats-table th[scope='row'],
+.admin-stats-table thead th:first-child {
+  text-align: left;
+}
+
+.admin-stats-table tfoot {
+  font-weight: 700;
+}
