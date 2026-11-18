@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { GlassPanel } from '../../components/ui';
 import { loadPracticeSudoku, savePracticeSudoku } from './practiceSaves';
+import { useScoreSession } from './useScoreSession';
+import { useScoreSubmission } from './Leaderboards';
+import { sudokuBoard } from './leaderboardBoards';
 import {
   eraseSudoku,
   hintSudoku,
@@ -18,6 +21,22 @@ export function PracticeSudoku() {
   const [message, setMessage] = useState('');
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
   const running = game !== null && !game.done;
+  const scores = useScoreSubmission();
+  const session = useScoreSession();
+  const { submit } = scores;
+  const done = game?.done ?? false;
+
+  // Like the old site: only hint-free solves go on the leaderboard (fastest time wins).
+  useEffect(() => {
+    if (!done || !game || !session.claim('solved')) return;
+    if (game.hints > 0) {
+      setMessage('Solved! Solve without hints to get on the leaderboard.');
+      return;
+    }
+    void submit(sudokuBoard(game.level), game.elapsed, session.flagged()).then(setMessage);
+    // Only the moment of solving matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   useEffect(() => {
     if (!running) return;
@@ -35,7 +54,8 @@ export function PracticeSudoku() {
 
   function start(level: SudokuLevel) {
     setGame(newSudoku(level));
-    setMessage(`New ${level} practice puzzle started.`);
+    session.begin(true);
+    setMessage(`New ${level} puzzle started.`);
   }
 
   function savePractice() {
@@ -59,6 +79,7 @@ export function PracticeSudoku() {
       const saved = loadPracticeSudoku(window.localStorage);
       if (saved.status === 'ready') {
         setGame(saved.game);
+        session.begin(true);
         setMessage('Loaded your Sudoku practice save.');
       } else {
         setMessage(
@@ -77,6 +98,7 @@ export function PracticeSudoku() {
       const saved = readLegacySudoku(window.localStorage.getItem(LEGACY_SUDOKU_STORAGE_KEY));
       if (saved.status === 'ready') {
         setGame(saved.game);
+        session.begin(false);
         setMessage('Loaded a copy of your saved Sudoku game for practice.');
       } else {
         setMessage(
@@ -127,8 +149,9 @@ export function PracticeSudoku() {
           Sudoku practice
         </h2>
         <p className="mt-2 text-sm text-slate-300">
-          Save practice progress separately in this browser, or load a copy of an existing save.
-          Practice times are not sent to leaderboards.
+          Save progress in this browser, or load a copy of an old-site save. When you’re signed in
+          with Google, hint-free solves go on the leaderboard (copies of old-site saves don’t
+          count).
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {(['easy', 'medium', 'hard'] as const).map((level) => (

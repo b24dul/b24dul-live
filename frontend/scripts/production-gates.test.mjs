@@ -5,7 +5,8 @@ import { checkProductionGates, evaluateProductionGates } from './production-gate
 test('production deployment is blocked with currently unverified feature parity', () => {
   const gate = checkProductionGates();
   assert.equal(gate.ready, false);
-  assert.ok(gate.missing.some((entry) => entry.startsWith('chatPresence')));
+  assert.ok(gate.missing.includes('manifest: not marked ready'));
+  assert.ok(gate.missing.some((entry) => entry.startsWith('leaderboards')));
 });
 
 test('every gate must be verified and have a real local evidence path', () => {

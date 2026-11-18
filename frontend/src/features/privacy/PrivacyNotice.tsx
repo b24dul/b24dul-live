@@ -123,10 +123,24 @@ export function PrivacyNotice() {
           personal details. Please don’t share them in any form.
         </p>
       </Section>
+      <Section title="Leaderboards">
+        <p>
+          When you are signed in with Google, your best 2048 score and your fastest hint-free Sudoku
+          time for each level are saved. Each entry holds only your random account ID, the score or
+          time, and when it was saved. Anyone can see the top entries, shown under the same made-up
+          name as in chat. Only you and the site owner can look up your own entry.
+        </p>
+        <p>
+          To help keep the boards fair, a score can carry a private note for the site owner if the
+          browser window looked like developer tools were open during that game. Only the site owner
+          can see it; it is a hint to review, not an accusation, and it never stops a score being
+          saved. The site owner can remove any score.
+        </p>
+      </Section>
       <Section title="Features still to come">
         <p>
-          Leaderboards and visitor statistics are not on the new site yet. Before either goes live,
-          this notice will be updated to say exactly what it stores and who can see it.
+          Visitor statistics are not on the new site yet. Before they go live, this notice will be
+          updated to say exactly what they store and who can see them.
         </p>
       </Section>
       <Section title="Your choices">
@@ -141,8 +155,8 @@ export function PrivacyNotice() {
         <p>
           The site owner keeps a log of deletion requests containing only the account ID, the
           request’s status and dates. Completing a request erases your chat messages, online
-          entries, slow-mode stamp and any timeout or ban, and the site owner deletes your sign-in
-          account from Firebase Authentication.
+          entries, slow-mode stamp, leaderboard entries and any timeout or ban, and the site owner
+          deletes your sign-in account from Firebase Authentication.
         </p>
       </Section>
     </section>

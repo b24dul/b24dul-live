@@ -24,7 +24,7 @@
       "evidence": []
     },
     "chatPresence": {
-      "passed": false,
+      "passed": true,
       "evidence": [
         "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
         "scripts/rtdb-emulator/v2.emulator.test.ts",
@@ -32,8 +32,12 @@
       ]
     },
     "moderation": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "scripts/rtdb-emulator/v2.emulator.test.ts",
+        "src/features/admin/AdminWorkspace.test.tsx"
+      ]
     },
     "streamPlayback": {
       "passed": false,

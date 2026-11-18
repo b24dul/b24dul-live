@@ -12,6 +12,7 @@ import {
 import {
   get,
   goOffline,
+  limitToFirst,
   limitToLast,
   orderByChild,
   equalTo,
@@ -26,6 +27,8 @@ import {
 import { createRtdbEmulatorFixture } from './presenceFixture.ts';
 import { createChatService } from '../../src/services/chatService.ts';
 import { createAdminService } from '../../src/services/adminService.ts';
+import { createLeaderboardService } from '../../src/services/leaderboardService.ts';
+import { BOARDS } from '../../src/features/games/leaderboardBoards.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
@@ -489,6 +492,156 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
     await denied(set(ref(admin.database, `v2/presence/${alice.uid}/fake`), serverTimestamp()));
     await denied(set(ref(admin.database, `v2/chat/lastPost/${alice.uid}`), serverTimestamp()));
     await remove(ref(admin.database, `v2/presence/${alice.uid}`));
+  });
+
+  it('leaderboard limits in the rules match the site', () => {
+    const rules = readFileSync(new URL('../../../firebase/v2.rules.json', import.meta.url), 'utf8');
+    for (const board of BOARDS) {
+      assert.ok(
+        rules.includes(`newData.val() >= ${board.min} && newData.val() <= ${board.max}`),
+        board.id,
+      );
+      assert.ok(rules.includes(`newData.val() % ${board.step} === 0`), board.id);
+    }
+  });
+
+  it('leaderboards: top-50 reads only; your own entry is private', async () => {
+    const reader = fixture('v2-lb-reader');
+    const board = (who: Fixture) => ref(who.database, 'v2/scores/g2048');
+    await get(query(board(reader), orderByChild('value'), limitToLast(10)));
+    await get(query(board(reader), orderByChild('value'), limitToFirst(50)));
+    await denied(get(query(board(reader), orderByChild('value'), limitToLast(51))));
+    await denied(get(board(reader)));
+    await denied(get(query(board(reader), limitToLast(10))));
+    const ivy = await googleUser('v2-ivy');
+    await createLeaderboardService(ivy.database).submit('g2048', ivy.uid, 64, false);
+    assert.equal(await createLeaderboardService(ivy.database).myBest('g2048', ivy.uid), 64);
+    await denied(get(ref(bob.database, `v2/scores/g2048/${ivy.uid}`)));
+    const top = await new Promise<{ uid: string; value: number }[]>((resolve) => {
+      const stop = createLeaderboardService(reader.database).watchTop('g2048', false, (entries) => {
+        stop();
+        resolve(entries);
+      });
+    });
+    assert.ok(top.some((entry) => entry.uid === ivy.uid && entry.value === 64));
+    assert.deepEqual(Object.keys(top[0]!).sort(), ['ts', 'uid', 'value']);
+  });
+
+  it('leaderboards: impossible values, wrong types and extra fields are refused', async () => {
+    const jack = await googleUser('v2-jack');
+    const score = (board: string, value: unknown, extra: Record<string, unknown> = {}) =>
+      set(ref(jack.database, `v2/scores/${board}/${jack.uid}`), {
+        value,
+        ts: serverTimestamp(),
+        ...extra,
+      });
+    for (const value of [-4, 0, 2, 2050, 400004, 1.5, '1024', true]) {
+      await denied(score('g2048', value));
+    }
+    await denied(score('sudoku-easy', 29));
+    await denied(score('sudoku-medium', 44));
+    await denied(score('sudoku-hard', 59));
+    await denied(score('sudoku-easy', 86401));
+    await denied(score('sudoku-easy', 40.5));
+    await denied(score('g2048', 1024, { name: 'Real Name' }));
+    await denied(score('chess', 10));
+    await denied(set(ref(jack.database, `v2/scores/g2048/${jack.uid}`), { value: 1024, ts: 1 }));
+    await denied(
+      set(ref(jack.database, `v2/scores/g2048/${alice.uid}`), {
+        value: 1024,
+        ts: serverTimestamp(),
+      }),
+    );
+    const visitor = await guest('v2-lb-guest');
+    await denied(
+      createLeaderboardService(visitor.database).submit('g2048', visitor.uid, 1024, false),
+    );
+    await score('g2048', 400000);
+    await score('sudoku-easy', 30);
+  });
+
+  it('leaderboards: one best per person, only better scores, at most one write per 10 s', async () => {
+    const kim = await googleUser('v2-kim');
+    const scores = createLeaderboardService(kim.database);
+    await scores.submit('g2048', kim.uid, 1024, false);
+    await denied(scores.submit('g2048', kim.uid, 2048, false)); // too soon
+    await delay(10100);
+    await denied(scores.submit('g2048', kim.uid, 512, false)); // lower
+    await denied(scores.submit('g2048', kim.uid, 1024, false)); // equal
+    await scores.submit('g2048', kim.uid, 2048, false);
+    await scores.submit('sudoku-easy', kim.uid, 300, false); // separate board, separate limit
+    await delay(10100);
+    await denied(scores.submit('sudoku-easy', kim.uid, 400, false)); // slower
+    await scores.submit('sudoku-easy', kim.uid, 200, false);
+    await denied(remove(ref(kim.database, `v2/scores/g2048/${kim.uid}`)));
+    const banned = await googleUser('v2-lb-banned');
+    await createAdminService(admin.database).ban(banned.uid);
+    await denied(createLeaderboardService(banned.database).submit('g2048', banned.uid, 8, false));
+  });
+
+  it('leaderboards: the dev-tools flag is admin-only, tied to the score, never blocks it', async () => {
+    const lee = await googleUser('v2-lee');
+    const scores = createLeaderboardService(lee.database);
+    await scores.submit('g2048', lee.uid, 4096, true);
+    assert.equal(await scores.myBest('g2048', lee.uid), 4096);
+    await denied(get(ref(lee.database, `v2/scoreFlags/g2048/${lee.uid}`)));
+    await denied(get(ref(lee.database, 'v2/scoreFlags')));
+    await denied(remove(ref(lee.database, `v2/scoreFlags/g2048/${lee.uid}`)));
+    await denied(
+      set(ref(lee.database, `v2/scoreFlags/g2048/${lee.uid}`), { value: 8, ts: serverTimestamp() }),
+    );
+    await denied(
+      set(ref(lee.database, `v2/scoreFlags/g2048/${alice.uid}`), {
+        value: 4096,
+        ts: serverTimestamp(),
+      }),
+    );
+    const flags = await new Promise<Record<string, { value: number }>>((resolve) => {
+      const stop = createLeaderboardService(admin.database).watchFlags('g2048', (value) => {
+        if (value[lee.uid]) {
+          stop();
+          resolve(value);
+        }
+      });
+    });
+    assert.equal(flags[lee.uid]!.value, 4096);
+    await denied(createLeaderboardService(bob.database).deleteScore('g2048', lee.uid));
+    await createLeaderboardService(admin.database).deleteScore('g2048', lee.uid);
+    for (const path of [`scores/g2048/${lee.uid}`, `scoreFlags/g2048/${lee.uid}`]) {
+      const response = await fetch(`http://127.0.0.1:9000/v2/${path}.json?ns=${NS}`, {
+        headers: { Authorization: 'Bearer owner' },
+      });
+      assert.equal(await response.text(), 'null', path);
+    }
+  });
+
+  it('privacy erasure also removes leaderboard scores and flags', async () => {
+    const mia = await googleUser('v2-mia');
+    await createLeaderboardService(mia.database).submit('g2048', mia.uid, 256, true);
+    await createLeaderboardService(mia.database).submit('sudoku-hard', mia.uid, 600, false);
+    const tools = createAdminService(admin.database);
+    await tools.recordPrivacyRequest(mia.uid);
+    const all = await new Promise<{ id: string; uid: string }[]>((resolve) => {
+      const stop = tools.watchPrivacyRequests((requests) => {
+        if (requests.some((item) => item.uid === mia.uid)) {
+          stop();
+          resolve(requests);
+        }
+      });
+    });
+    const request = all.find((item) => item.uid === mia.uid)!;
+    await tools.completeAndErase({ ...(request as never), status: 'pending' });
+    const paths = [
+      `scores/g2048/${mia.uid}`,
+      `scoreFlags/g2048/${mia.uid}`,
+      `scores/sudoku-hard/${mia.uid}`,
+    ];
+    for (const path of paths) {
+      const response = await fetch(`http://127.0.0.1:9000/v2/${path}.json?ns=${NS}`, {
+        headers: { Authorization: 'Bearer owner' },
+      });
+      assert.equal(await response.text(), 'null', path);
+    }
   });
 
   it('nothing outside the known /v2/ paths can be read or written', async () => {
