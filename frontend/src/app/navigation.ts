@@ -1,12 +1,9 @@
 import {
-  Compass,
   Gamepad2,
   Home,
   MessageCircle,
   Play,
   Clapperboard,
-  Wrench,
-  Trophy,
   UserRound,
   Settings,
   Shield,
@@ -30,13 +27,6 @@ export const routes: readonly AppRoute[] = [
     mobile: true,
   },
   {
-    path: '/explore',
-    label: 'Explore',
-    icon: Compass,
-    description: 'Find the sections of B24DUL',
-    mobile: true,
-  },
-  {
     path: '/watch',
     label: 'Watch',
     icon: Play,
@@ -57,13 +47,6 @@ export const routes: readonly AppRoute[] = [
     description: 'Community destination',
     mobile: true,
   },
-  { path: '/tools', label: 'Tools', icon: Wrench, description: 'Planned utilities' },
-  {
-    path: '/competitions',
-    label: 'Competitions',
-    icon: Trophy,
-    description: 'Challenges and rankings',
-  },
   { path: '/profile', label: 'Profile', icon: UserRound, description: 'Sign in and account' },
   {
     path: '/settings',
@@ -79,15 +62,8 @@ const pick = (paths: string[]) => paths.map((path) => routes.find((route) => rou
 /** The five links in the top bar. */
 export const mainRoutes = pick(['/', '/watch', '/videos', '/games', '/community']);
 
-/** Everything else: the phone menu and the page footer. */
-export const moreRoutes = pick([
-  '/explore',
-  '/tools',
-  '/competitions',
-  '/profile',
-  '/settings',
-  '/admin',
-]);
+/** Everything else: the phone menu and the page footer (Admin only for admins). */
+export const moreRoutes = pick(['/profile', '/settings', '/admin']);
 
 /** Finds a section by name (kept for links and tests). */
 export function findDestination(term: string): AppRoute | undefined {

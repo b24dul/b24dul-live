@@ -2,21 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { findDestination, mainRoutes, moreRoutes, routes } from './navigation';
 
 describe('navigation registry', () => {
-  it('declares all eleven unique planned routes', () => {
+  it('declares the eight routes', () => {
     expect(routes.map((route) => route.path)).toEqual([
       '/',
-      '/explore',
       '/watch',
       '/videos',
       '/games',
       '/community',
-      '/tools',
-      '/competitions',
       '/profile',
       '/settings',
       '/admin',
     ]);
-    expect(new Set(routes.map((route) => route.path)).size).toBe(11);
+    expect(new Set(routes.map((route) => route.path)).size).toBe(8);
   });
 
   it('puts the five agreed links in the top bar and every other page in the menu', () => {

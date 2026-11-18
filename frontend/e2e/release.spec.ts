@@ -2,13 +2,10 @@ import { expect, test } from '@playwright/test';
 
 const routes: Array<[string, string]> = [
   ['/', 'B24DUL'],
-  ['/explore', 'Explore'],
   ['/watch', 'Watch'],
   ['/videos', 'Videos'],
   ['/games', 'Game Centre'],
   ['/community', 'Community'],
-  ['/tools', 'Tools'],
-  ['/competitions', 'Competitions'],
   ['/profile', 'Your account'],
   ['/privacy', 'Privacy notice'],
   ['/settings', 'Settings'],

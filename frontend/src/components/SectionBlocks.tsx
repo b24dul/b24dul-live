@@ -63,8 +63,9 @@ export function EditorialSection({
   );
 }
 
-const thumb = (id: string, size: 'mqdefault' | 'hqdefault') =>
-  `https://i.ytimg.com/vi/${id}/${size}.jpg`;
+// hqdefault is 4:3 (480x360). Cropped to 16:9 with object-fit: cover it drops YouTube's
+// letterbox bars on 16:9 videos exactly, and 4:3 thumbnails fill the frame: no black bars.
+const thumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 /**
  * Video card: 16:9 thumbnail (from YouTube's image server), compact dark info panel. Plays in the
@@ -83,9 +84,9 @@ export function ArchiveTile({ video }: { video: ArchivedVideo }) {
       ) : (
         <img
           className="video-card-thumb"
-          src={thumb(video.id, 'mqdefault')}
-          srcSet={`${thumb(video.id, 'mqdefault')} 320w, ${thumb(video.id, 'hqdefault')} 480w`}
-          sizes="(min-width: 1280px) 330px, (min-width: 640px) 46vw, 92vw"
+          src={thumb(video.id)}
+          width={480}
+          height={360}
           alt=""
           loading="lazy"
           decoding="async"

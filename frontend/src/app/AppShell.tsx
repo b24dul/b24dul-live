@@ -9,6 +9,7 @@ import { usePreferences } from '../contexts/PreferencesContext';
 import { useLiveStatus } from '../contexts/LiveStatusContext';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { mainRoutes, moreRoutes, routes } from './navigation';
+import { useIsAdmin } from '../features/admin/useIsAdmin';
 
 const titleFor = (pathname: string, label?: string) =>
   label ?? (pathname === '/privacy' ? 'Privacy' : 'Not found');
@@ -21,6 +22,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const systemReducedMotion = useReducedMotion();
   const reducedMotion = preferences.motion === 'reduce' || systemReducedMotion;
   const current = routes.find((route) => route.path === location.pathname);
+  const isAdmin = useIsAdmin();
+  // The Admin link is shown only to admins (the page itself still checks).
+  const extraRoutes = moreRoutes.filter((route) => route.path !== '/admin' || isAdmin);
 
   useEffect(() => {
     document.title = (current?.label ?? 'Page not found') + ' | B24DUL Live';
@@ -118,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         {menuOpen && (
           <nav id="site-menu" aria-label="Site menu" className="topbar-menu glass-panel">
-            {[...mainRoutes, null, ...moreRoutes].map((route) =>
+            {[...mainRoutes, null, ...extraRoutes].map((route) =>
               route === null ? (
                 <hr key="divider" />
               ) : (
@@ -153,7 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               B24DUL
             </span>
             <nav aria-label="More pages">
-              {moreRoutes
+              {extraRoutes
                 .filter((route) => route.path !== '/profile')
                 .map((route) => (
                   <Link key={route.path} to={route.path}>

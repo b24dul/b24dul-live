@@ -2,11 +2,11 @@
 
 /* Self-hosted fonts: Latin subsets, only the weights used. Licences: src/assets/fonts/LICENSES.txt */
 @font-face {
-  font-family: 'Syne';
+  font-family: 'Unbounded';
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url('../assets/fonts/syne-latin-800-normal.woff2') format('woff2');
+  src: url('../assets/fonts/unbounded-latin-800-normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -45,7 +45,7 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  --font-logo: 'Syne', 'Plus Jakarta Sans', sans-serif;
+  --font-logo: 'Unbounded', 'Plus Jakarta Sans', sans-serif;
   --color-brand-coral: #ff4f7a;
   --color-brand-tangerine: #ff8a5b;
   --color-brand-violet: #8b3dff;
@@ -145,9 +145,9 @@ h3 {
   background-clip: text;
   color: transparent;
   font-family: var(--font-logo);
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   line-height: 1;
   text-decoration: none;
   -webkit-text-fill-color: transparent;
@@ -1648,4 +1648,50 @@ main[tabindex='-1']:focus {
   font-family: var(--font-sans);
   letter-spacing: 0;
   text-transform: none;
+}
+
+/* Phone Watch page: the chat stays compact so the sign-in button is close at hand. */
+@media (max-width: 1023px) {
+  .chat-log {
+    height: auto;
+    min-height: 4rem;
+    max-height: min(18rem, 40vh);
+  }
+}
+
+/* Reduced motion: no lifts, zooms or animated glows. */
+@media (prefers-reduced-motion: reduce) {
+  .video-card:hover,
+  .video-card:focus-within,
+  .game-card:hover,
+  .game-card:focus-visible,
+  .ui-button--primary:hover:not(:disabled),
+  .video-card:hover .video-card-thumb,
+  .video-card:focus-within .video-card-thumb {
+    transform: none;
+  }
+}
+
+.app-layout[data-motion='reduce'] .video-card:hover,
+.app-layout[data-motion='reduce'] .video-card:focus-within,
+.app-layout[data-motion='reduce'] .game-card:hover,
+.app-layout[data-motion='reduce'] .game-card:focus-visible,
+.app-layout[data-motion='reduce'] .ui-button--primary:hover:not(:disabled),
+.app-layout[data-motion='reduce'] .video-card:hover .video-card-thumb,
+.app-layout[data-motion='reduce'] .video-card:focus-within .video-card-thumb {
+  transform: none;
+}
+
+/* Keyboard focus stays clearly visible: violet outline, also on cards and pill buttons. */
+.game-card:focus-visible,
+.video-card-media:focus-visible,
+.topbar-link:focus-visible,
+.topbar-account:focus-visible,
+.home-row-link:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 3px;
+}
+
+.video-card-media:focus-visible {
+  outline-offset: -3px;
 }

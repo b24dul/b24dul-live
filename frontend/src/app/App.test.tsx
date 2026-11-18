@@ -37,7 +37,7 @@ describe('application shell', () => {
     renderRoute();
     expect(screen.getByRole('heading', { level: 1, name: 'B24DUL' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'B24DUL Live' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Latest streams' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Latest videos' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Games' })).toBeInTheDocument();
     expect(document.querySelector('a[href*="legacy"]')).toBeNull();
   });
@@ -99,28 +99,16 @@ describe('application shell', () => {
       within(menu)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual([
-      'Home',
-      'Watch',
-      'Videos',
-      'Games',
-      'Community',
-      'Explore',
-      'Tools',
-      'Competitions',
-      'Profile',
-      'Settings',
-      'Admin',
-    ]);
+    ).toEqual(['Home', 'Watch', 'Videos', 'Games', 'Community', 'Profile', 'Settings']);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('navigation', { name: 'Site menu' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Site menu' })).getByRole('link', {
-        name: 'Tools',
+        name: 'Settings',
       }),
     );
-    expect(screen.getByRole('heading', { name: 'Tools' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Site menu' })).not.toBeInTheDocument();
   });
 });

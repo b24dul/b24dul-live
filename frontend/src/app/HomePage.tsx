@@ -125,32 +125,21 @@ function GameCard({ title, detail, art }: { title: string; detail: string; art: 
 export function HomePage() {
   const { videos } = useVideoArchive();
   const { preferences } = usePreferences();
-  const streams = videos.slice(0, 4);
-  const more = videos.slice(4, 12);
+  const latest = videos.slice(0, 8);
   return (
     <div className="flex min-w-0 flex-col gap-[var(--spacing-section)]">
       <HomeHero />
 
-      {streams.length > 0 && (
-        <Row
-          id="row-streams"
-          title="Latest streams"
-          action={{ label: 'All videos', to: '/videos' }}
-        >
-          <div className="video-grid video-row">
-            {streams.map((video) => (
-              <ArchiveTile key={video.id} video={video} />
-            ))}
-          </div>
-        </Row>
-      )}
-
       <div className="home-feature-order" data-layout={preferences.homeLayout}>
         <div className="home-feature-discover">
-          {more.length > 0 && (
-            <Row id="row-videos" title="Videos" action={{ label: 'All videos', to: '/videos' }}>
+          {latest.length > 0 && (
+            <Row
+              id="row-videos"
+              title="Latest videos"
+              action={{ label: 'All videos', to: '/videos' }}
+            >
               <div className="video-grid video-row">
-                {more.map((video) => (
+                {latest.map((video) => (
                   <ArchiveTile key={video.id} video={video} />
                 ))}
               </div>

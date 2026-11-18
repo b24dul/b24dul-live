@@ -2,13 +2,10 @@ import { expect, test } from '@playwright/test';
 
 const paths = [
   '/',
-  '/explore',
   '/watch',
   '/videos',
   '/games',
   '/community',
-  '/tools',
-  '/competitions',
   '/profile',
   '/privacy',
   '/settings',

@@ -2,24 +2,25 @@ import { expect, test } from '@playwright/test';
 
 const destinations: Array<[string, string]> = [
   ['/', 'B24DUL'],
-  ['/explore', 'Explore'],
   ['/watch', 'Watch'],
   ['/videos', 'Videos'],
   ['/games', 'Game Centre'],
   ['/community', 'Community'],
-  ['/tools', 'Tools'],
-  ['/competitions', 'Competitions'],
   ['/profile', 'Your account'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
 ];
 
-test('all eleven HashRouter destinations and unknown-route recovery', async ({ page }) => {
+test('all eight HashRouter destinations; removed and unknown pages recover', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   for (const [route, heading] of destinations) {
     await page.goto('./#' + route);
     await expect(page.locator('#route-content h1')).toHaveText(heading);
     await expect(page).toHaveTitle(new RegExp('B24DUL Live'));
+  }
+  for (const removed of ['/explore', '/tools', '/competitions', '/does-not-exist']) {
+    await page.goto('./#' + removed);
+    await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
   }
   await page.goto('./#/does-not-exist');
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
@@ -27,17 +28,18 @@ test('all eleven HashRouter destinations and unknown-route recovery', async ({ p
   await expect(page).toHaveURL(/#\/$/);
 });
 
-test('direct hash links survive refresh; the footer reaches every other page', async ({ page }) => {
+test('direct hash links survive refresh; the footer has Settings and Privacy, no Admin link for visitors', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('./#/games');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Game Centre' })).toBeVisible();
   const footer = page.getByRole('navigation', { name: 'More pages' });
-  for (const name of ['Explore', 'Tools', 'Competitions', 'Settings', 'Privacy notice']) {
-    await expect(footer.getByRole('link', { name })).toBeVisible();
-  }
-  await footer.getByRole('link', { name: 'Tools' }).click();
-  await expect(page.getByRole('heading', { name: 'Tools', exact: true })).toBeVisible();
+  await expect(footer.getByRole('link')).toHaveText(['Settings', 'Privacy notice']);
+  await expect(footer.getByRole('link', { name: 'Admin' })).toHaveCount(0);
+  await footer.getByRole('link', { name: 'Settings' }).click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
 });
 
 test('phone menu stays usable without overflow on required widths', async ({ page }) => {
@@ -54,7 +56,7 @@ test('phone menu stays usable without overflow on required widths', async ({ pag
     await page.getByRole('button', { name: 'Menu' }).click();
     const menu = page.getByRole('navigation', { name: 'Site menu' });
     await expect(menu).toBeVisible();
-    await expect(menu.getByRole('link')).toHaveCount(11);
+    await expect(menu.getByRole('link')).toHaveCount(7);
     await menu.getByRole('link', { name: 'Games' }).click();
     await expect(page.getByRole('heading', { name: 'Game Centre' })).toBeVisible();
     await expect(menu).toHaveCount(0);

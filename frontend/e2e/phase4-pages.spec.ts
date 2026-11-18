@@ -2,13 +2,10 @@ import { expect, test } from '@playwright/test';
 
 const pages = [
   ['/', 'B24DUL'],
-  ['/explore', 'Explore'],
   ['/watch', 'Watch'],
   ['/videos', 'Videos'],
   ['/games', 'Game Centre'],
   ['/community', 'Community'],
-  ['/tools', 'Tools'],
-  ['/competitions', 'Competitions'],
   ['/profile', 'Your account'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
@@ -41,7 +38,7 @@ test('Phase 4 content renders on every route without broken images or layout ove
   }
 });
 
-test('homepage: banner hero with honest stream state, then streams, videos and games', async ({
+test('homepage: banner hero with honest stream state, then latest videos and games', async ({
   page,
 }) => {
   await page.goto('./#/');
@@ -49,7 +46,7 @@ test('homepage: banner hero with honest stream state, then streams, videos and g
   await expect(
     page.getByText(/LIVE NOW|Offline right now|Checking whether B24DUL is live/).first(),
   ).toBeVisible();
-  for (const name of ['Latest streams', 'Videos', 'Games']) {
+  for (const name of ['Latest videos', 'Games']) {
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   }
   await expect(page.getByRole('link', { name: 'Subscribe' }).first()).toBeVisible();
@@ -86,10 +83,9 @@ test('video archive plays on the site with a safe Open on YouTube link for every
 });
 
 test('unconnected features are honestly labelled without fake data', async ({ page }) => {
-  await page.goto('./#/competitions');
-  await expect(page.getByText(/No live competition, player score or leaderboard/)).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Daily challenges' })).toBeVisible();
+  await page.goto('./#/games');
   await expect(page.getByRole('heading', { name: 'Leaderboards' })).toBeVisible();
+  await expect(page.getByText(/under a made-up name/)).toHaveCount(0);
   await page.goto('./#/admin');
   await expect(page.getByRole('heading', { name: 'Admin only' })).toBeVisible();
   await page.goto('./#/profile');
