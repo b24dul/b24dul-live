@@ -19,6 +19,8 @@
     },
     "identityContinuity": {
       "passed": false,
+      "notApplicable": true,
+      "reason": "owner chose a fresh start on 2026-11-18; legacy accounts are not carried over",
       "evidence": []
     },
     "chatPresence": {

@@ -20,6 +20,12 @@ export function evaluateProductionGates(manifest, evidenceExists) {
   const missing = [];
   for (const name of names) {
     const gate = manifest.gates[name];
+    // An owner decision can retire a gate, but only with a written reason and no pass claim.
+    if (gate && gate.notApplicable === true) {
+      if (typeof gate.reason !== 'string' || gate.reason.trim().length < 10 || gate.passed === true)
+        missing.push(name + ': not applicable without a valid reason');
+      continue;
+    }
     if (!gate || gate.passed !== true) {
       missing.push(name + ': not verified');
       continue;
