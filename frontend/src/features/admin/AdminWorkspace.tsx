@@ -585,8 +585,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
         Record a deletion request by account ID (from the person’s email). Completing it erases
         everything the new site holds for that ID: chat messages, timeouts, bans, online entries,
         the slow-mode stamp and leaderboard scores. The log keeps only the ID, status and dates. To
-        delete the sign-in account itself, use Firebase console → Authentication. Old-site requests
-        stay on the old site.
+        delete the sign-in account itself, use Firebase console → Authentication.
       </p>
       <form
         className="flex flex-wrap items-end gap-2"

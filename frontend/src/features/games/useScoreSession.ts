@@ -7,7 +7,7 @@ type ScoreSession = {
   sent: Set<string>;
 };
 
-/** One leaderboard session per game: copies of old-site saves are not eligible. */
+/** One leaderboard session per game, with its own dev-tools hint. */
 export function useScoreSession() {
   const session = useRef<ScoreSession>({ watch: null, eligible: false, sent: new Set() });
   useEffect(() => () => session.current.watch?.stop(), []);

@@ -25,16 +25,18 @@ const legacySave = JSON.stringify({
   showMistakes: true,
 });
 
-test('plays a copy of a legacy Sudoku save without changing the original', async ({ page }) => {
-  await page.addInitScript(
-    (saved) => window.localStorage.setItem('b24dul_sudoku', saved),
-    legacySave,
-  );
+test('plays a saved Sudoku; an old-site save is never changed', async ({ page }) => {
+  await page.addInitScript((saved) => {
+    window.localStorage.setItem('b24dul_sudoku', saved);
+    if (!window.localStorage.getItem('b24dul.preview.sudoku.v1'))
+      window.localStorage.setItem(
+        'b24dul.preview.sudoku.v1',
+        JSON.stringify({ schemaVersion: 1, kind: 'sudoku', game: JSON.parse(saved) }),
+      );
+  }, legacySave);
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load Sudoku save copy' }).click();
-  await expect(
-    page.getByText('Loaded a copy of your saved Sudoku game for practice.'),
-  ).toBeVisible();
+  await page.getByRole('button', { name: 'Load Sudoku practice' }).click();
+  await expect(page.getByText('Loaded your Sudoku practice save.')).toBeVisible();
   const board = page.getByRole('grid', { name: 'Sudoku board' });
   await expect(board.getByRole('gridcell')).toHaveCount(81);
   const selected = board.getByRole('gridcell', { name: 'Row 1 column 3, empty' });
@@ -65,10 +67,6 @@ test('plays a copy of a legacy Sudoku save without changing the original', async
 test('starts a new Sudoku without overwriting an unreadable legacy save', async ({ page }) => {
   await page.addInitScript(() => window.localStorage.setItem('b24dul_sudoku', 'bad save'));
   await page.goto('./#/games');
-  await page.getByRole('button', { name: 'Load Sudoku save copy' }).click();
-  await expect(
-    page.getByText('This Sudoku save could not be read. It has been left unchanged.'),
-  ).toBeVisible();
   await page.getByRole('button', { name: 'New easy Sudoku' }).click();
   await expect(page.getByRole('grid', { name: 'Sudoku board' }).getByRole('gridcell')).toHaveCount(
     81,

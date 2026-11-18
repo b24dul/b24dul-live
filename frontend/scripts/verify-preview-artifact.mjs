@@ -34,6 +34,7 @@ const forbidden = [
   /(browser|react|presence)Fixture/,
   /synthetic/i,
   /example\.invalid/,
+  /b24dul-live\/legacy/, // the old site is not linked from the new one
 ];
 const SDK_MOCK_TOKEN_DEFAULT = '||"demo-project",';
 const keyPattern = /AIza[0-9A-Za-z_-]{20,}/g;

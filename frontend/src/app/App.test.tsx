@@ -36,10 +36,7 @@ describe('isolated application shell', () => {
   it('identifies the home page as a preview and links to the live site', () => {
     renderRoute();
     expect(screen.getByText('Isolated development preview')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /visit current site/i })).toHaveAttribute(
-      'href',
-      'https://b24dul.github.io/b24dul-live/legacy/',
-    );
+    expect(document.querySelector('a[href*="legacy"]')).toBeNull();
   });
 
   it('offers real sign-in choices on the account page', async () => {

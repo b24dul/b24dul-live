@@ -1,12 +1,4 @@
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Compass,
-  Gamepad2,
-  Settings2,
-  Trophy,
-  Wrench,
-} from 'lucide-react';
+import { ArrowRight, Compass, Settings2, Trophy, Wrench } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -23,7 +15,7 @@ import {
   PageHeader,
   StatusIndicator,
 } from '../components/ui';
-import { games, utilities } from '../data/directory';
+import { utilities } from '../data/directory';
 import { useVideoArchive } from '../contexts/videoArchiveState';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
@@ -58,8 +50,6 @@ function Chat() {
     </Suspense>
   );
 }
-
-const website = 'https://b24dul.github.io/b24dul-live/legacy/';
 
 function RelatedLinks({ paths }: { paths: string[] }) {
   return (
@@ -200,50 +190,19 @@ function VideosPage() {
 
 function GamesPage() {
   return (
-    <PageFrame
-      title="Game Centre"
-      description="Play practice games and find favourites on the current site."
-    >
+    <PageFrame title="Game Centre" description="Play Sudoku and 2048, and climb the leaderboards.">
       <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">New leaderboards — starting fresh</StatusIndicator>
+        <StatusIndicator status="neutral">Leaderboards</StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Sign in with Google and your best 2048 score and hint-free Sudoku times go on the new
-          leaderboards under a made-up name. Old-site scores and saves are not carried over.
+          Sign in with Google and your best 2048 score and hint-free Sudoku times go on the
+          leaderboards under a made-up name.
         </p>
-        <a className="ui-button ui-button--primary mt-4" href={website}>
-          Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
-        </a>
       </GlassPanel>
-      <Suspense fallback={<p role="status">Loading practice games…</p>}>
+      <Suspense fallback={<p role="status">Loading games…</p>}>
         <Leaderboards />
         <Practice2048 />
         <PracticeSudoku />
       </Suspense>
-      <EditorialSection title="Browse games" description="Availability is labelled for every game.">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {games.map((game) => (
-            <GlassPanel className="flex min-w-0 flex-col gap-4 p-5" key={game.name}>
-              <div className="flex items-center justify-between gap-3">
-                <Gamepad2 className="text-brand-cyan" size={24} aria-hidden="true" />
-                <span className="text-xs text-slate-300">{game.category}</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">{game.name}</h3>
-                <p className="mt-1 text-sm text-slate-300">{game.description}</p>
-              </div>
-              <div className="mt-auto">
-                {game.availability === 'existing-site' ? (
-                  <a className="ui-button ui-button--secondary" href={website}>
-                    Open current site <ArrowUpRight size={16} aria-hidden="true" />
-                  </a>
-                ) : (
-                  <StatusIndicator status="neutral">Coming soon</StatusIndicator>
-                )}
-              </div>
-            </GlassPanel>
-          ))}
-        </div>
-      </EditorialSection>
       <RelatedLinks paths={['/competitions', '/explore']} />
     </PageFrame>
   );

@@ -2,7 +2,7 @@ export type DirectoryEntry = Readonly<{
   name: string;
   category: string;
   description: string;
-  availability: 'existing-site' | 'planned' | 'preview';
+  availability: 'available' | 'planned';
   path: string;
 }>;
 
@@ -10,43 +10,15 @@ export const games: readonly DirectoryEntry[] = [
   {
     name: 'Sudoku',
     category: 'Puzzle',
-    description: 'Classic number-grid puzzles on the existing B24DUL site.',
-    availability: 'existing-site',
+    description: 'Classic number-grid puzzles in three levels, with notes, hints and a timer.',
+    availability: 'available',
     path: '/games',
   },
   {
     name: '2048',
     category: 'Puzzle',
-    description: 'Merge tiles and improve your best score on the current site.',
-    availability: 'existing-site',
-    path: '/games',
-  },
-  {
-    name: 'Minesweeper',
-    category: 'Logic',
-    description: 'A future logic-game experience.',
-    availability: 'planned',
-    path: '/games',
-  },
-  {
-    name: 'Snake',
-    category: 'Arcade',
-    description: 'Classic arcade gameplay planned for a later milestone.',
-    availability: 'planned',
-    path: '/games',
-  },
-  {
-    name: 'Memory Match',
-    category: 'Casual',
-    description: 'An upcoming card-matching game.',
-    availability: 'planned',
-    path: '/games',
-  },
-  {
-    name: 'Connect Four',
-    category: 'Strategy',
-    description: 'Turn-based strategy planned for later development.',
-    availability: 'planned',
+    description: 'Merge tiles to reach 2048 and beat your best score.',
+    availability: 'available',
     path: '/games',
   },
 ];

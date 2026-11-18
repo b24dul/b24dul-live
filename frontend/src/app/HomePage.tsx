@@ -1,11 +1,9 @@
 import {
   ArrowRight,
-  ArrowUpRight,
   CalendarClock,
   Clapperboard,
   Gamepad2,
   MessageCircle,
-  Sparkles,
   Trophy,
   Wrench,
 } from 'lucide-react';
@@ -75,10 +73,6 @@ export function HomePage() {
             title="B24DUL"
             description="Your place to watch, play, connect and explore. A whole universe of entertainment, built around one community."
           />
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300">
-            This is the new interface in development, not the published site. Live community and
-            account features remain disconnected.
-          </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link to="/watch" className="ui-button ui-button--primary">
               Watch live section <ArrowRight size={17} aria-hidden="true" />
@@ -118,30 +112,23 @@ export function HomePage() {
         <div className="home-feature-games">
           <EditorialSection
             title="Featured games"
-            description="Sudoku and 2048 exist on the current site; additional games are planned."
+            description="Play Sudoku and 2048 and climb the leaderboards."
             action={{ label: 'Game Centre', to: '/games' }}
           >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FeatureTile
                 title="Sudoku"
-                description="Number puzzles on the current website."
+                description="Number puzzles in three levels."
                 to="/games"
                 icon={<Gamepad2 size={25} />}
-                note="Available on current site"
+                note="Play now"
               />
               <FeatureTile
                 title="2048"
-                description="Classic tile-merging on the current website."
+                description="Classic tile-merging."
                 to="/games"
                 icon={<Gamepad2 size={25} />}
-                note="Available on current site"
-              />
-              <FeatureTile
-                title="More games"
-                description="Arcade, strategy and casual games are planned."
-                to="/games"
-                icon={<Sparkles size={25} />}
-                note="Coming soon"
+                note="Play now"
               />
             </div>
           </EditorialSection>
@@ -213,9 +200,6 @@ export function HomePage() {
           <Link to="/explore">About the platform</Link>
           <Link to="/profile">Guest and privacy information</Link>
           <Link to="/settings">Settings</Link>
-          <a href="https://b24dul.github.io/b24dul-live/legacy/">
-            Current website <ArrowUpRight size={14} className="inline" aria-hidden="true" />
-          </a>
         </nav>
         <p className="text-xs text-slate-400">
           Privacy policy, terms and contact links are not shown until their destinations can be
