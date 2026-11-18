@@ -18,7 +18,7 @@ import {
   StreamPresentation,
 } from '../components/SectionBlocks';
 import { GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
-import { archivedVideos } from '../services/videoArchive';
+import { useVideoArchive } from '../contexts/videoArchiveState';
 import { usePreferences } from '../contexts/PreferencesContext';
 
 const features = [
@@ -61,6 +61,7 @@ const features = [
 ];
 
 export function HomePage() {
+  const { videos, source } = useVideoArchive();
   const { preferences } = usePreferences();
   return (
     <div className="flex min-w-0 flex-col gap-10">
@@ -159,12 +160,16 @@ export function HomePage() {
 
       <EditorialSection
         title="Latest videos"
-        description="Real metadata from the existing repository archive, captured at frontend build time."
+        description={
+          source === 'published'
+            ? 'Read-only metadata from the published archive.'
+            : 'Showing the build-time archive snapshot.'
+        }
         action={{ label: 'All videos', to: '/videos' }}
       >
-        {archivedVideos.length ? (
+        {videos.length ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {archivedVideos.slice(0, 3).map((video) => (
+            {videos.slice(0, 3).map((video) => (
               <ArchiveTile key={video.id} video={video} />
             ))}
           </div>

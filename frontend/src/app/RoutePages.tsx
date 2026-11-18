@@ -22,7 +22,7 @@ import {
 } from '../components/SectionBlocks';
 import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
 import { games, utilities } from '../data/directory';
-import { archivedVideos } from '../services/videoArchive';
+import { useVideoArchive } from '../contexts/videoArchiveState';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
 import { PreferenceControls } from '../components/PreferenceControls';
 import { routes } from './navigation';
@@ -140,6 +140,7 @@ function WatchPage() {
 }
 
 function VideosPage() {
+  const { videos, source } = useVideoArchive();
   return (
     <PageFrame
       title="Videos"
@@ -147,17 +148,21 @@ function VideosPage() {
     >
       <GlassPanel className="p-5 sm:p-7">
         <StatusIndicator status="neutral">
-          Read-only archive snapshot — build time, not a live feed
+          {source === 'published'
+            ? 'Read-only published archive'
+            : source === 'checking'
+              ? 'Read-only archive snapshot — checking for updates'
+              : 'Read-only archive snapshot — latest archive unavailable'}
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Titles, IDs and published dates come from the existing videos.json file. Videos open on
-          YouTube; no embedded player or account connection is active here.
+          Titles, IDs and published dates come from the existing videos.json file. If the published
+          archive cannot be read, the preview shows its build-time snapshot. Videos open on YouTube.
         </p>
       </GlassPanel>
       <EditorialSection title="Archive" description="Open an item to watch it on YouTube.">
-        {archivedVideos.length ? (
+        {videos.length ? (
           <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {archivedVideos.map((video) => (
+            {videos.map((video) => (
               <ArchiveTile key={video.id} video={video} />
             ))}
           </div>

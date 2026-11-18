@@ -65,6 +65,7 @@ test('homepage contains all nine required areas and honest stream state', async 
 test('video archive presents real source metadata and safe outbound YouTube links', async ({
   page,
 }) => {
+  await page.route('https://b24dul.github.io/b24dul-live/videos.json', (route) => route.abort());
   await page.goto('./#/videos');
   await expect(page.getByText(/read-only archive snapshot/i)).toBeVisible();
   const videos = page.getByRole('link', { name: /Watch on YouTube:/ });
