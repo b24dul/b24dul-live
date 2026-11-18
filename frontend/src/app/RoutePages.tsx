@@ -4,7 +4,6 @@ import {
   Compass,
   Gamepad2,
   LockKeyhole,
-  MessageCircle,
   Settings2,
   Shield,
   Trophy,
@@ -19,7 +18,13 @@ import {
   PlannedPanel,
   StreamPresentation,
 } from '../components/SectionBlocks';
-import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
+import {
+  EmptyState,
+  GlassPanel,
+  LoadingSkeleton,
+  PageHeader,
+  StatusIndicator,
+} from '../components/ui';
 import { games, utilities } from '../data/directory';
 import { useVideoArchive } from '../contexts/videoArchiveState';
 import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
@@ -34,6 +39,18 @@ const Practice2048 = lazy(() =>
 const PracticeSudoku = lazy(() =>
   import('../features/games/PracticeSudoku').then((module) => ({ default: module.PracticeSudoku })),
 );
+
+const ChatPanel = lazy(() =>
+  import('../features/chat/ChatPanel').then((module) => ({ default: module.ChatPanel })),
+);
+
+function Chat() {
+  return (
+    <Suspense fallback={<LoadingSkeleton label="Loading chat" className="h-40" />}>
+      <ChatPanel />
+    </Suspense>
+  );
+}
 
 const website = 'https://b24dul.github.io/b24dul-live/legacy/';
 
@@ -125,16 +142,11 @@ function WatchPage() {
     >
       <StreamPresentation />
       <PublishedStreamStatus />
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel
-          title="Stream schedule"
-          description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided."
-        />
-        <PlannedPanel
-          title="Polls and community"
-          description="Live audience interaction will be connected in a later milestone. Chat and current stream features remain on the published website."
-        />
-      </div>
+      <Chat />
+      <PlannedPanel
+        title="Stream schedule"
+        description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided."
+      />
       <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );
@@ -238,20 +250,9 @@ function CommunityPage() {
       description="A home for conversations, announcements and shared experiences."
     >
       <div className="grid gap-5 lg:grid-cols-3">
-        <GlassPanel className="p-6 lg:col-span-2">
-          <StatusIndicator status="neutral">Chat is not connected in this preview</StatusIndicator>
-          <div className="community-placeholder">
-            <MessageCircle size={38} className="text-brand-cyan" aria-hidden="true" />
-            <h2 className="text-xl font-semibold">Your conversations belong here</h2>
-            <p className="max-w-md text-sm text-slate-300">
-              Existing messages, channels and presence remain on the published site. No sample
-              messages or online-user totals are invented.
-            </p>
-            <a className="ui-button ui-button--secondary" href={website}>
-              Visit the current community <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
-          </div>
-        </GlassPanel>
+        <div className="lg:col-span-2">
+          <Chat />
+        </div>
         <div className="flex flex-col gap-5">
           <PlannedPanel
             title="Announcements"

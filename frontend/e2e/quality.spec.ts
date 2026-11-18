@@ -71,11 +71,13 @@ test('page shell and settings support keyboard and reduced motion', async ({ pag
 
 test('read-only disconnected states work with external network blocked', async ({ page }) => {
   await page.route('https://**/*', (route) => route.abort());
+  await page.routeWebSocket(/.*/, (socket) => socket.close());
   await page.goto('./#/watch');
   await expect(page.getByText('Verified playback available when live')).toBeVisible();
   await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
   await page.goto('./#/community');
-  await expect(page.getByText('Chat is not connected in this preview')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Live chat' })).toBeVisible();
+  await expect(page.getByText('Loading chat…')).toBeVisible();
   await page.goto('./#/videos');
   await expect(page.getByText(/Read-only archive snapshot/)).toBeVisible();
   await page.goto('./#/admin');

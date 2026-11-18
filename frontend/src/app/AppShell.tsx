@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <div className="app-preview-banner">
           <StatusIndicator status="neutral">
-            Preview — sign-in works; chat, online games and admin are still on the current site
+            Preview — sign-in and chat work; online games and admin are still on the current site
           </StatusIndicator>
           <a
             href="https://b24dul.github.io/b24dul-live/legacy/"
