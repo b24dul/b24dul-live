@@ -10,8 +10,8 @@ import type { ChatMessage, ChatService } from '../../services/chatService';
 import { chatNameFor } from '../chat/chatPolicy';
 import { AdminWorkspace } from './AdminWorkspace';
 
-vi.mock('../../components/PublishedStreamStatus', () => ({
-  PublishedStreamStatus: () => <p>Stream preview</p>,
+vi.mock('../stream/WatchStream', () => ({
+  WatchStream: () => <p>Stream preview</p>,
 }));
 
 function account(identity: AuthIdentity): AccountRuntime {

@@ -6,7 +6,6 @@ import {
   EditorialSection,
   FeatureTile,
   PlannedPanel,
-  StreamPresentation,
 } from '../components/SectionBlocks';
 import {
   EmptyState,
@@ -17,7 +16,7 @@ import {
 } from '../components/ui';
 import { utilities } from '../data/directory';
 import { useVideoArchive } from '../contexts/videoArchiveState';
-import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
+import { WatchStream } from '../features/stream/WatchStream';
 import { PreferenceControls } from '../components/PreferenceControls';
 import { PrivacyRequest } from '../features/privacy/PrivacyRequest';
 import { AccountPanel } from '../features/account/AccountPanel';
@@ -133,17 +132,8 @@ export function ExplorePage() {
 
 function WatchPage() {
   return (
-    <PageFrame
-      title="Watch"
-      description="The home for broadcasts, highlights and the B24DUL channel."
-    >
-      <StreamPresentation />
-      <PublishedStreamStatus />
-      <Chat />
-      <PlannedPanel
-        title="Stream schedule"
-        description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided."
-      />
+    <PageFrame title="Watch" description="Live streams from B24DUL, with chat beside the stream.">
+      <WatchStream chat={<Chat />} />
       <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );

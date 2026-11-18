@@ -80,8 +80,9 @@ export function PrivacyNotice() {
             live. Your browser asks it for the current status; no account details are sent.
           </li>
           <li>
-            <strong>YouTube</strong>: the embedded player loads only when you choose to open it, and
-            then uses YouTube’s privacy-enhanced mode. Videos in the archive open on YouTube.
+            <strong>YouTube</strong>: while B24DUL is live, the Watch page loads the YouTube player
+            automatically, in YouTube’s privacy-enhanced mode. Videos in the archive and the
+            Subscribe button open on YouTube.
           </li>
           <li>
             <strong>Firebase</strong> (Google) provides sign-in. The chat is stored in its database
