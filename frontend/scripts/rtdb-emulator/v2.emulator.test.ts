@@ -31,6 +31,7 @@ import { createLeaderboardService } from '../../src/services/leaderboardService.
 import { BOARDS } from '../../src/features/games/leaderboardBoards.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
 import { addToTotals, METRICS, type TotalsTarget } from '../../src/services/dailyTotals.ts';
+import { recordSeen } from '../../src/services/seenService.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
 type Fixture = ReturnType<typeof createRtdbEmulatorFixture>;
@@ -643,6 +644,131 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
       });
       assert.equal(await response.text(), 'null', path);
     }
+  });
+
+  it('first/last seen: Google users record only their own times; only the admin reads them', async () => {
+    const nia = await googleUser('v2-nia');
+    const users = 'v2/users';
+    await recordSeen(nia.database, nia.uid);
+    const first = (await get(ref(nia.database, `${users}/${nia.uid}`))).val();
+    assert.deepEqual(Object.keys(first).sort(), ['firstSeen', 'lastSeen']);
+    assert.equal(first.firstSeen, first.lastSeen);
+    // Within a minute the site skips the update, and the rules refuse a direct one.
+    await recordSeen(nia.database, nia.uid);
+    await denied(update(ref(nia.database, `${users}/${nia.uid}`), { lastSeen: serverTimestamp() }));
+    // firstSeen never changes; no other fields (names, emails, devices) can be stored.
+    await denied(update(ref(nia.database, `${users}/${nia.uid}`), { firstSeen: 1 }));
+    await denied(
+      set(ref(nia.database, `${users}/${nia.uid}`), {
+        firstSeen: first.firstSeen,
+        lastSeen: serverTimestamp(),
+        name: 'Nia',
+      }),
+    );
+    // Nobody else can write or read someone's times; guests record nothing; admin reads all.
+    await denied(set(ref(bob.database, `${users}/${nia.uid}`), { firstSeen: 1, lastSeen: 1 }));
+    await denied(get(ref(bob.database, `${users}/${nia.uid}`)));
+    await denied(get(ref(bob.database, users)));
+    const visitor = await guest('v2-seen-guest');
+    await denied(recordSeen(visitor.database, visitor.uid));
+    assert.ok((await get(ref(admin.database, users))).child(nia.uid).exists());
+    await denied(set(ref(nia.database, `${users}/${nia.uid}`), null));
+    await set(ref(admin.database, `${users}/${nia.uid}`), null);
+    assert.equal((await get(ref(admin.database, `${users}/${nia.uid}`))).exists(), false);
+  });
+
+  it('moderation history: written with each action, admin-only, entries never edited', async () => {
+    const ola = await googleUser('v2-ola');
+    const tools = createAdminService(admin.database);
+    await post(ola, 'history test');
+    await tools.mute(ola.uid, 5);
+    await tools.unmute(ola.uid);
+    await tools.ban(ola.uid);
+    await tools.unban(ola.uid);
+    assert.equal(await tools.deleteAllMessagesFrom(ola.uid), 1);
+    const log = await new Promise<import('../../src/services/adminService.ts').ModerationLog>(
+      (resolve) => {
+        const stop = tools.watchModerationLog((entries) => {
+          if ((entries[ola.uid]?.length ?? 0) >= 5) {
+            stop();
+            resolve(entries);
+          }
+        });
+      },
+    );
+    const entries = log[ola.uid]!;
+    assert.deepEqual(entries.map((entry) => entry.action).sort(), [
+      'ban',
+      'deleteMessages',
+      'timeout',
+      'unban',
+      'untimeout',
+    ]);
+    const timeout = entries.find((entry) => entry.action === 'timeout')!;
+    assert.ok(timeout.until! > timeout.at);
+    assert.equal(entries.find((entry) => entry.action === 'deleteMessages')!.count, 1);
+    // Only the admin can read it; nobody can add made-up entries or edit one.
+    const path = `v2/moderationLog/${ola.uid}`;
+    await denied(get(ref(ola.database, path)));
+    await denied(get(ref(bob.database, 'v2/moderationLog')));
+    await denied(set(ref(bob.database, `${path}/fake`), { action: 'ban', at: serverTimestamp() }));
+    await denied(set(ref(admin.database, `${path}/${timeout.id}/action`), 'ban'));
+    await denied(
+      set(ref(admin.database, `${path}/new1`), { action: 'warn', at: serverTimestamp() }),
+    );
+    await denied(
+      set(ref(admin.database, `${path}/new2`), { action: 'ban', at: serverTimestamp(), note: 'x' }),
+    );
+    await denied(
+      set(ref(admin.database, `${path}/new3`), { action: 'ban', at: serverTimestamp(), until: 1 }),
+    );
+    // Privacy erasure removes the history and the seen times too.
+    await recordSeen(ola.database, ola.uid);
+    await tools.recordPrivacyRequest(ola.uid);
+    const all = await new Promise<{ id: string; uid: string }[]>((resolve) => {
+      const stop = tools.watchPrivacyRequests((requests) => {
+        if (requests.some((item) => item.uid === ola.uid)) {
+          stop();
+          resolve(requests);
+        }
+      });
+    });
+    const request = all.find((item) => item.uid === ola.uid)!;
+    await tools.completeAndErase({ ...(request as never), status: 'pending' });
+    for (const erased of [`moderationLog/${ola.uid}`, `users/${ola.uid}`]) {
+      const response = await fetch(`http://127.0.0.1:9000/v2/${erased}.json?ns=${NS}`, {
+        headers: { Authorization: 'Bearer owner' },
+      });
+      assert.equal(await response.text(), 'null', erased);
+    }
+  });
+
+  it('admin readers: users, message counts and everyone’s scores', async () => {
+    const pia = await googleUser('v2-pia');
+    await recordSeen(pia.database, pia.uid);
+    await post(pia, 'count me');
+    await createLeaderboardService(pia.database).submit('g2048', pia.uid, 512, false);
+    const tools = createAdminService(admin.database);
+    const once = <T>(watch: (on: (value: T) => void) => () => void, ready: (value: T) => boolean) =>
+      new Promise<T>((resolve) => {
+        const stop = watch((value) => {
+          if (ready(value)) {
+            stop();
+            resolve(value);
+          }
+        });
+      });
+    const users = await once(tools.watchUsers, (list) => list.some((user) => user.uid === pia.uid));
+    assert.ok(users.find((user) => user.uid === pia.uid)!.firstSeen > 0);
+    const counts = await once(tools.watchMessageCounts, (all) => (all[pia.uid] ?? 0) >= 1);
+    assert.equal(counts[pia.uid], 1);
+    const scores = await once(tools.watchAllScores, (all) => all[pia.uid]?.g2048 === 512);
+    assert.equal(scores[pia.uid]!.g2048, 512);
+    for (const reader of [
+      () => get(ref(pia.database, 'v2/users')),
+      () => get(ref(pia.database, 'v2/scores/g2048')),
+    ])
+      await denied(reader());
   });
 
   it('daily totals: anyone can add exactly 1; only the admin can read or delete a day', async () => {

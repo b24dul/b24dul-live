@@ -311,6 +311,49 @@
             }
           }
         }
+      },
+      "users": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".indexOn": ["lastSeen"],
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+          ".validate": "newData.hasChildren(['firstSeen', 'lastSeen'])",
+          "firstSeen": {
+            ".validate": "data.exists() ? newData.val() === data.val() : newData.val() === now"
+          },
+          "lastSeen": {
+            ".validate": "newData.val() === now && (!data.exists() || now - data.val() >= 60000)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "moderationLog": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$uid": {
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()",
+          "$entry": {
+            ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && (!data.exists() || !newData.exists())",
+            ".validate": "newData.hasChildren(['action', 'at'])",
+            "action": {
+              ".validate": "newData.isString() && newData.val().matches(/^(timeout|untimeout|ban|unban|deleteMessages)$/)"
+            },
+            "at": {
+              ".validate": "newData.val() === now"
+            },
+            "until": {
+              ".validate": "newData.parent().child('action').val() === 'timeout' && newData.isNumber() && newData.val() > now && newData.val() <= now + 86400000"
+            },
+            "count": {
+              ".validate": "newData.parent().child('action').val() === 'deleteMessages' && newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
       }
     }
   }

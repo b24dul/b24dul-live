@@ -125,6 +125,11 @@ export function PrivacyNotice() {
             <strong>Moderation</strong>: if the site owner mutes or bans an account, that is
             recorded against the account ID. Only that person and the site owner can see it.
           </li>
+          <li>
+            <strong>Moderation history</strong>: a dated list of timeouts, bans, unbans and message
+            deletions for the account, so the site owner can see what was done and when. Only the
+            site owner can see it.
+          </li>
         </ul>
         <p>
           Your account ID is a random code created by Firebase. It is not your Google account ID and
@@ -160,6 +165,14 @@ export function PrivacyNotice() {
           linked to you to delete. Only the site owner can see the totals.
         </p>
       </Section>
+      <Section title="If you sign in with Google">
+        <p>
+          The site records <strong>when your account was first and last seen</strong> (two times,
+          against your account ID), so the site owner can see who uses the site. Nothing else is
+          added: no name, email, photo, IP address or device details. Only the site owner can see
+          these times. Guests and visitors who don’t sign in are not recorded.
+        </p>
+      </Section>
       <Section title="Your choices">
         <p>
           You can sign out at any time on the{' '}
@@ -172,8 +185,9 @@ export function PrivacyNotice() {
         <p>
           The site owner keeps a log of deletion requests containing only the account ID, the
           request’s status and dates. Completing a request erases your chat messages, online
-          entries, slow-mode stamp, leaderboard entries and any timeout or ban, and the site owner
-          deletes your sign-in account from Firebase Authentication.
+          entries, slow-mode stamp, leaderboard entries, any timeout or ban, the moderation history
+          and your first/last seen times, and the site owner deletes your sign-in account from
+          Firebase Authentication.
         </p>
       </Section>
     </section>

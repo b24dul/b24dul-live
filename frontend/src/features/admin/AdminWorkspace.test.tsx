@@ -7,6 +7,7 @@ import type { AdminRuntime } from '../../services/adminRuntime';
 import type { AdminService, PrivacyRequest } from '../../services/adminService';
 import type { AuthIdentity } from '../../services/authSession';
 import type { ChatMessage, ChatService } from '../../services/chatService';
+import { statsDay } from '../../services/dailyTotals';
 import { chatNameFor } from '../chat/chatPolicy';
 import { AdminWorkspace } from './AdminWorkspace';
 
@@ -82,7 +83,7 @@ function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
     watchStats: (onDays: AdminCallback<'watchStats'>) => (
       onDays([
         {
-          day: '2026-11-19',
+          day: statsDay(),
           totals: {
             visits: 12,
             siteMinutes: 80,
@@ -91,8 +92,40 @@ function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
             deviceDesktop: 3,
           },
         },
-        { day: '2026-11-18', totals: { visits: 8, videoPlays: 4, sourceYoutube: 8 } },
+        {
+          day: statsDay(new Date(Date.now() - 86_400_000)),
+          totals: { visits: 8, videoPlays: 4, sourceYoutube: 8, sudokuStarts: 2, g2048Starts: 1 },
+        },
       ]),
+      () => {}
+    ),
+    watchUsers: (onUsers: AdminCallback<'watchUsers'>) => (
+      onUsers([
+        { uid: 'visitor1234', firstSeen: Date.UTC(2026, 10, 1), lastSeen: Date.UTC(2026, 10, 18) },
+        { uid: 'online000001', firstSeen: Date.UTC(2026, 10, 2), lastSeen: Date.UTC(2026, 10, 17) },
+      ]),
+      () => {}
+    ),
+    watchMessageCounts: (onCounts: AdminCallback<'watchMessageCounts'>) => (
+      onCounts({ visitor1234: 7, owner: 2 }),
+      () => {}
+    ),
+    watchModerationLog: (onLog: AdminCallback<'watchModerationLog'>) => (
+      onLog({
+        visitor1234: [
+          { id: 'l2', action: 'ban', at: Date.UTC(2026, 10, 18, 9) },
+          {
+            id: 'l1',
+            action: 'timeout',
+            at: Date.UTC(2026, 10, 17, 9),
+            until: Date.UTC(2026, 10, 17, 10),
+          },
+        ],
+      }),
+      () => {}
+    ),
+    watchAllScores: (onScores: AdminCallback<'watchAllScores'>) => (
+      onScores({ visitor1234: { g2048: 4096, 'sudoku-easy': 95 } }),
       () => {}
     ),
     recordPrivacyRequest: vi.fn(async () => {}),
@@ -138,22 +171,69 @@ const click = async (element: HTMLElement) => {
   });
 };
 
+const openTab = async (name: string) => click(await screen.findByRole('tab', { name }));
+
 describe('AdminWorkspace', () => {
+  it('tabs: Users, Analytics, Leaderboards and Privacy requests, with arrow keys', async () => {
+    await renderAdmin({ kind: 'google', uid: 'owner' });
+    const tabs = await screen.findAllByRole('tab');
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      'Users',
+      'Analytics',
+      'Leaderboards',
+      'Privacy requests',
+    ]);
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(tabs[0]!, { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'Analytics' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Analytics' })).toHaveFocus();
+    fireEvent.keyDown(tabs[1]!, { key: 'End' });
+    expect(screen.getByRole('tab', { name: 'Privacy requests' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
   it('is closed to signed-out visitors, guests and non-admin Google users', async () => {
     await renderAdmin({ kind: 'signed-out' });
     expect(await screen.findByRole('heading', { name: 'Admin only' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign in with Google' })).toBeInTheDocument();
   });
 
-  it('shows daily visitor totals for the admin, with a total row and breakdowns', async () => {
+  it('top strip: stream status, viewers (honestly not available), chat switch, visits today', async () => {
+    const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
+    const strip = await screen.findByRole('region', { name: 'Status' });
+    expect(within(strip).getByText('Not available')).toBeInTheDocument();
+    expect(await within(strip).findByText(/1\s*signed in on the site/)).toBeInTheDocument();
+    expect(within(strip).getByText('12')).toBeInTheDocument();
+    const chat = within(strip).getByRole('switch', { name: 'Chat on' });
+    expect(chat).toHaveAttribute('aria-checked', 'true');
+    await click(chat);
+    expect(runtime.admin.setChatEnabled).toHaveBeenCalledWith(false);
+  });
+
+  it('analytics: 7 and 30 day charts, a table view, breakdowns and the GoatCounter link', async () => {
     await renderAdmin({ kind: 'google', uid: 'owner' });
-    const table = await screen.findByRole('table');
-    const rows = within(table).getAllByRole('row');
-    expect(rows[1]).toHaveTextContent('2026-11-19');
-    expect(rows[2]).toHaveTextContent('2026-11-18');
-    expect(rows[3]).toHaveTextContent(/Total\s*20\s*80\s*30\s*4/);
-    expect(screen.getByText('Phone: 9 (75%)')).toBeInTheDocument();
-    expect(screen.getByText('YouTube: 8 (100%)')).toBeInTheDocument();
+    await openTab('Analytics');
+    const visits = screen.getByRole('figure', { name: /Visits/ });
+    expect(visits).toHaveTextContent('20');
+    expect(screen.getByRole('figure', { name: /Game starts/ })).toHaveTextContent('3');
+    expect(screen.getByRole('region', { name: 'Visits by device' })).toHaveTextContent(
+      /Phone\s*9 · 75%/,
+    );
+    expect(screen.getByRole('link', { name: /GoatCounter/ })).toHaveAttribute(
+      'href',
+      'https://b24dul.goatcounter.com',
+    );
+    await click(screen.getByRole('button', { name: 'Last 30 days' }));
+    expect(screen.getByRole('button', { name: 'Last 30 days' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await click(screen.getByRole('button', { name: 'Show table' }));
+    const rows = within(screen.getByRole('table')).getAllByRole('row');
+    expect(rows).toHaveLength(31);
+    expect(rows[1]).toHaveTextContent(statsDay());
   });
 
   it('is closed to a Google user who is not on the admin list', async () => {
@@ -165,9 +245,7 @@ describe('AdminWorkspace', () => {
   it('gives the admin chat controls, with a confirmation before clearing', async () => {
     const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
     expect(await screen.findByRole('heading', { name: 'Chat controls' })).toBeInTheDocument();
-    expect(screen.getByText('Stream preview')).toBeInTheDocument();
-    await click(screen.getByRole('button', { name: 'Turn chat off' }));
-    expect(runtime.admin.setChatEnabled).toHaveBeenCalledWith(false);
+    expect(screen.getByRole('heading', { name: 'Stream' })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Pinned message'), { target: { value: 'Live at 7' } });
     await click(screen.getByRole('button', { name: 'Pin announcement' }));
     expect(runtime.admin.pin).toHaveBeenCalledWith('Live at 7');
@@ -209,21 +287,43 @@ describe('AdminWorkspace', () => {
     expect(runtime.admin.editMessage).toHaveBeenCalledWith('m1', 'oh ****');
   });
 
-  it('lists people (online, recent, banned) with search and filters', async () => {
-    await renderAdmin({ kind: 'google', uid: 'owner' });
-    const people = await screen.findByRole('list', { name: 'People' });
-    expect(await within(people).findByText('online000001')).toBeInTheDocument();
-    expect(within(people).getByText('visitor1234')).toBeInTheDocument();
-    expect(within(people).getByText('banned00001')).toBeInTheDocument();
-    expect(screen.getByText('1 online with chat open')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Show'), { target: { value: 'banned' } });
-    expect(within(people).queryByText('visitor1234')).not.toBeInTheDocument();
-    expect(within(people).getByRole('button', { name: 'Unban' })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Show'), { target: { value: 'all' } });
+  it('online now: lists who is online with quick timeout and ban', async () => {
+    const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
+    const online = await screen.findByRole('list', { name: 'People online now' });
+    const name = chatNameFor('online000001');
+    expect(await within(online).findByText(name)).toBeInTheDocument();
+    await click(within(online).getByRole('button', { name: 'Timeout' }));
+    expect(runtime.admin.mute).toHaveBeenCalledWith('online000001', expect.any(Number));
+    expect(within(online).queryByRole('button', { name: 'Delete all their messages' })).toBeNull();
+  });
+
+  it('users: search, first/last seen, messages, moderation history, scores and details', async () => {
+    const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
+    const table = await screen.findByRole('table');
+    const name = chatNameFor('visitor1234');
+    const row = (
+      await within(table).findByRole('button', { name: `Open details for ${name}` })
+    ).closest('tr')!;
+    expect(row).toHaveTextContent('7');
+    expect(row).toHaveTextContent('1 timeout, 1 ban');
+    expect(row).toHaveTextContent('2048: 4,096');
+    expect(within(table).getByText('banned0000…')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Search name or account ID'), {
-      target: { value: chatNameFor('online000001').slice(0, 6) },
+      target: { value: 'online0000' },
     });
-    expect(within(people).getByText('online000001')).toBeInTheDocument();
+    expect(within(table).queryByText(name)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Search name or account ID'), { target: { value: '' } });
+    await click(within(table).getByRole('button', { name: `Open details for ${name}` }));
+    const detail = screen.getByRole('region', { name });
+    expect(within(detail).getByText('visitor1234')).toBeInTheDocument();
+    const history = within(detail).getByRole('list', { name: 'Moderation history' });
+    expect(within(history).getAllByRole('listitem')[0]).toHaveTextContent('Banned');
+    expect(within(history).getAllByRole('listitem')[1]).toHaveTextContent(/Timed out.*until/);
+    await click(within(detail).getByRole('button', { name: 'Ban' }));
+    await click(within(detail).getByRole('button', { name: `Ban ${name}` }));
+    expect(runtime.admin.ban).toHaveBeenCalledWith('visitor1234');
+    await click(within(detail).getByRole('button', { name: 'Close details' }));
+    expect(screen.queryByRole('region', { name })).not.toBeInTheDocument();
   });
 
   it('records privacy requests by valid account ID and confirms before erasing', async () => {
@@ -238,6 +338,7 @@ describe('AdminWorkspace', () => {
       { kind: 'google', uid: 'owner' },
       fakeRuntime({ requests: [pending] }),
     );
+    await openTab('Privacy requests');
     const field = await screen.findByLabelText('Account ID');
     fireEvent.change(field, { target: { value: 'bad id!' } });
     await click(screen.getByRole('button', { name: 'Record request' }));
@@ -275,6 +376,7 @@ describe('AdminWorkspace leaderboards', () => {
   it('shows the dev-tools hint only on the flagged current score and deletes after confirming', async () => {
     const runtime = fakeRuntime();
     await renderAdmin({ kind: 'google', uid: 'owner' }, runtime);
+    await openTab('Leaderboards');
     const list = await screen.findByRole('list', { name: '2048 scores' });
     await within(list).findByText('1,024');
     const [first, second] = within(list).getAllByRole('listitem');

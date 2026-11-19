@@ -10,6 +10,7 @@ import { useLiveStatus } from '../contexts/LiveStatusContext';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { mainRoutes, moreRoutes, routes } from './navigation';
 import { useIsAdmin } from '../features/admin/useIsAdmin';
+import { useRecordSeen } from '../features/account/useRecordSeen';
 
 const titleFor = (pathname: string, label?: string) =>
   label ?? (pathname === '/privacy' ? 'Privacy' : 'Not found');
@@ -23,6 +24,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const reducedMotion = preferences.motion === 'reduce' || systemReducedMotion;
   const current = routes.find((route) => route.path === location.pathname);
   const isAdmin = useIsAdmin();
+  useRecordSeen();
   // The Admin link is shown only to admins (the page itself still checks).
   const extraRoutes = moreRoutes.filter((route) => route.path !== '/admin' || isAdmin);
 
