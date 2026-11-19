@@ -559,7 +559,15 @@ export function AdminWorkspace({
         run={run}
       />
       <div className="admin-columns">
-        <StreamPreview />
+        <div className="admin-side-column">
+          <StreamPreview />
+          <ChatControls
+            runtime={runtime}
+            settings={settings}
+            messageCount={messages.length}
+            run={run}
+          />
+        </div>
         <div className="admin-chat-column">
           <ChatPanel
             loadService={chatService}
@@ -575,12 +583,6 @@ export function AdminWorkspace({
                 run={run}
               />
             )}
-          />
-          <ChatControls
-            runtime={runtime}
-            settings={settings}
-            messageCount={messages.length}
-            run={run}
           />
         </div>
         <OnlineNow

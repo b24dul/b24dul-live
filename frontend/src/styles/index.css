@@ -1820,7 +1820,8 @@ main[tabindex='-1']:focus {
   gap: 0.75rem;
 }
 
-.admin-chat-column {
+.admin-chat-column,
+.admin-side-column {
   display: flex;
   min-width: 0;
   flex-direction: column;
