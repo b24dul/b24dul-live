@@ -330,6 +330,23 @@
           }
         }
       },
+      "userEmails": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".indexOn": ["email"],
+        "$uid": {
+          ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+          ".validate": "newData.hasChildren(['email', 'updatedAt'])",
+          "email": {
+            ".validate": "newData.isString() && auth.token.email != null && newData.val() === auth.token.email"
+          },
+          "updatedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
       "moderationLog": {
         ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
         "$uid": {

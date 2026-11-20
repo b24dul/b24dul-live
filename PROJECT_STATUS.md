@@ -31,7 +31,7 @@ These come from the Master Plan v2, section 3. Do not change them without the ow
 
 1. Fresh start: old users, scores and saves are not carried over (`identityContinuity` not applicable).
 2. The new site never links to the old site.
-3. Users are anonymous to each other, with generated names. Google name, email and photo are never stored or shown. The owner shows as "B24DUL" with an Admin badge.
+3. Users are anonymous to each other with generated names. The Google email is saved automatically to an admin-only path and shown only in the admin user details view, for moderation and privacy requests. Google name and photo are never stored. Nothing personal is shown to other users.
 4. Guests can read and browse. Only Google sign-ins can chat or save scores.
 5. Google sign-in always shows the account chooser. No real-name entry gate.
 6. Videos play on the site, with an "Open on YouTube" link.

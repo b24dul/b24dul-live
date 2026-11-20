@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { GlassPanel, PageHeader } from '../../components/ui';
 
-export const PRIVACY_NOTICE_UPDATED = '18 November 2026';
+export const PRIVACY_NOTICE_UPDATED = '20 November 2026';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -25,8 +25,9 @@ export function PrivacyNotice() {
           <li>You can use the site without signing in.</li>
           <li>
             If you sign in with Google, your name, email address and photo are{' '}
-            <strong>never shown to other people</strong> and are{' '}
-            <strong>not copied into the site’s database</strong>.
+            <strong>never shown to other people</strong>. Your name and photo are{' '}
+            <strong>not copied into the site’s database</strong>; your email address is kept for the
+            site admin only (see “Signing in”).
           </li>
           <li>
             In chat, other visitors only see a name made up automatically from your random account
@@ -48,7 +49,13 @@ export function PrivacyNotice() {
           When you sign in with Google, Google tells Firebase Authentication your account ID, name,
           email address and profile photo. Firebase Authentication keeps these in the site’s account
           list so that you can sign in again. Only the site owner can see that list. The site does
-          not copy them into its database, and they are never shown to other visitors.
+          not copy your name or photo into its database, and they are never shown to other visitors.
+        </p>
+        <p>
+          Your Google email address. If you sign in with Google, we store the email address of your
+          Google account. Only the site admin can see it. We use it to identify accounts for
+          moderation and privacy requests. It is never shown to other users, and it is deleted when
+          you ask us to erase your data.
         </p>
         <p>
           Your own name and email appear on your Account page only for you. They are read from the
@@ -133,7 +140,7 @@ export function PrivacyNotice() {
         </ul>
         <p>
           Your account ID is a random code created by Firebase. It is not your Google account ID and
-          does not reveal who you are. The database has no place for names, emails or photos: a
+          does not reveal who you are. The database has no place for names or photos, and a chat
           message can only hold the account ID, the text and the time.
         </p>
         <p>
@@ -168,9 +175,10 @@ export function PrivacyNotice() {
       <Section title="If you sign in with Google">
         <p>
           The site records <strong>when your account was first and last seen</strong> (two times,
-          against your account ID), so the site owner can see who uses the site. Nothing else is
-          added: no name, email, photo, IP address or device details. Only the site owner can see
-          these times. Guests and visitors who don’t sign in are not recorded.
+          against your account ID), so the site owner can see who uses the site. Apart from your
+          email address (see “Signing in”), nothing else is added: no name, photo, IP address or
+          device details. Only the site owner can see these times. Guests and visitors who don’t
+          sign in are not recorded.
         </p>
       </Section>
       <Section title="Your choices">
@@ -185,9 +193,9 @@ export function PrivacyNotice() {
         <p>
           The site owner keeps a log of deletion requests containing only the account ID, the
           request’s status and dates. Completing a request erases your chat messages, online
-          entries, slow-mode stamp, leaderboard entries, any timeout or ban, the moderation history
-          and your first/last seen times, and the site owner deletes your sign-in account from
-          Firebase Authentication.
+          entries, slow-mode stamp, leaderboard entries, any timeout or ban, the moderation history,
+          your first/last seen times and your stored Google email address, and the site owner
+          deletes your sign-in account from Firebase Authentication.
         </p>
       </Section>
     </section>

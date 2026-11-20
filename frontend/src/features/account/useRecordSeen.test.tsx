@@ -7,7 +7,8 @@ import type { AuthIdentity } from '../../services/authSession';
 import { useEffect } from 'react';
 
 const recordSeenNow = vi.fn(async () => {});
-vi.mock('../../services/seenRuntime', () => ({ recordSeenNow }));
+const recordEmailNow = vi.fn(async () => {});
+vi.mock('../../services/seenRuntime', () => ({ recordSeenNow, recordEmailNow }));
 const { useRecordSeen } = await import('./useRecordSeen');
 
 function Probe() {
@@ -42,6 +43,24 @@ describe('first/last seen', () => {
   it('is recorded for Google sign-ins, by account ID only', async () => {
     renderAs({ kind: 'google', uid: 'member' });
     await vi.waitFor(() => expect(recordSeenNow).toHaveBeenCalledWith('member'));
+  });
+
+  it('saves the Google email in the background for Google sign-ins only', async () => {
+    recordEmailNow.mockClear();
+    renderAs({ kind: 'anonymous', uid: 'guest' });
+    renderAs({ kind: 'signed-out' });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(recordEmailNow).not.toHaveBeenCalled();
+    renderAs({ kind: 'google', uid: 'member' });
+    await vi.waitFor(() => expect(recordEmailNow).toHaveBeenCalledWith('member'));
+    expect(recordEmailNow).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failed email save never stops first/last seen', async () => {
+    recordSeenNow.mockClear();
+    recordEmailNow.mockRejectedValueOnce(new Error('denied'));
+    renderAs({ kind: 'google', uid: 'other' });
+    await vi.waitFor(() => expect(recordSeenNow).toHaveBeenCalledWith('other'));
   });
 
   it('is never recorded for guests or signed-out visitors', async () => {

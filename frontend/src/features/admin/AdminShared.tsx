@@ -308,3 +308,44 @@ export function ChatControls({
     </GlassPanel>
   );
 }
+
+/** Opens a person's details in the Users tab. */
+export type OpenUser = (uid: string) => void;
+
+/** A generated name that opens that person's details (admin only). */
+export function UserLink({ uid, name, onOpen }: { uid: string; name: string; onOpen: OpenUser }) {
+  return (
+    <button
+      type="button"
+      className="admin-user-open"
+      aria-label={`Open details for ${name}`}
+      onClick={() => onOpen(uid)}
+    >
+      {name}
+    </button>
+  );
+}
+
+/** Copies a value to the clipboard and says so. */
+export function CopyButton({ value, label }: { value: string; label: string }) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  return (
+    <span className="inline-flex items-center gap-2">
+      <SecondaryButton
+        className="admin-small-button"
+        aria-label={`Copy ${label}`}
+        onClick={() =>
+          navigator.clipboard
+            ?.writeText(value)
+            .then(() => setState('copied'))
+            .catch(() => setState('failed')) ?? setState('failed')
+        }
+      >
+        Copy
+      </SecondaryButton>
+      <span role="status" className="text-xs text-slate-300">
+        {state === 'copied' ? 'Copied' : state === 'failed' ? 'Copy failed' : ''}
+      </span>
+    </span>
+  );
+}

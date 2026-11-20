@@ -32,6 +32,7 @@ import { BOARDS } from '../../src/features/games/leaderboardBoards.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
 import { addToTotals, METRICS, type TotalsTarget } from '../../src/services/dailyTotals.ts';
 import { recordSeen } from '../../src/services/seenService.ts';
+import { recordEmail, tokenEmail } from '../../src/services/userEmailService.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
 type Fixture = ReturnType<typeof createRtdbEmulatorFixture>;
@@ -830,6 +831,103 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
     await denied(set(ref(alice.database, `${days}/2026-11-19`), null));
     await set(ref(admin.database, `${days}/2026-11-19`), null);
     assert.equal((await get(ref(admin.database, `${days}/2026-11-19`))).exists(), false);
+  });
+
+  it('Google emails: own entry only, exact token email, Google sign-ins only', async () => {
+    const quinn = await googleUser('v2-quinn');
+    const own = `v2/userEmails/${quinn.uid}`;
+    // Test accounts only: the emulator's synthetic tokens carry fake example.invalid emails.
+    const address = 'v2-quinn@example.invalid';
+    assert.equal(await tokenEmail(quinn.auth.currentUser!), address);
+    // The site's own code saves it, and saves it again on the next sign-in.
+    await recordEmail(quinn.database, quinn.uid, address);
+    await recordEmail(quinn.database, quinn.uid, address);
+    // It must be exactly the email in the sign-in token, so it cannot be faked.
+    await denied(recordEmail(quinn.database, quinn.uid, 'someone.else@example.invalid'));
+    await denied(recordEmail(quinn.database, quinn.uid, address.toUpperCase()));
+    await denied(set(ref(quinn.database, `${own}/email`), 'someone.else@example.invalid'));
+    // updatedAt must be the server's time now; nothing else may be stored (no name or photo).
+    await denied(set(ref(quinn.database, own), { email: address, updatedAt: 1 }));
+    await denied(set(ref(quinn.database, own), { email: address }));
+    await denied(
+      set(ref(quinn.database, own), {
+        email: address,
+        updatedAt: serverTimestamp(),
+        name: 'Quinn',
+      }),
+    );
+    await denied(
+      set(ref(quinn.database, own), {
+        email: address,
+        updatedAt: serverTimestamp(),
+        photo: 'x',
+      }),
+    );
+    // Only the user's own entry: nobody writes someone else's, not even the admin.
+    await denied(recordEmail(bob.database, quinn.uid, 'v2-bob@example.invalid'));
+    await denied(recordEmail(admin.database, quinn.uid, 'v2-admin@example.invalid'));
+    await denied(set(ref(quinn.database, `v2/userEmails/${bob.uid}`), null));
+    // Guests and signed-out visitors save nothing.
+    const visitor = await guest('v2-email-guest');
+    assert.equal(await tokenEmail(visitor.auth.currentUser!), null);
+    await denied(recordEmail(visitor.database, visitor.uid, 'guest@example.invalid'));
+    const nobody = fixture('v2-email-signed-out');
+    await denied(recordEmail(nobody.database, 'signedOutUser01', 'x@example.invalid'));
+    // A guest who links Google keeps the account ID and can then save the Google email.
+    const linked = await guest('v2-email-linked');
+    await linkWithCredential(linked.auth.currentUser!, googleCredential('v2-email-linked'));
+    await linked.auth.currentUser!.getIdToken(true);
+    await recordEmail(linked.database, linked.uid, 'v2-email-linked@example.invalid');
+    // The user cannot delete or read it back.
+    await denied(set(ref(quinn.database, own), null));
+    for (const reader of [quinn, bob, visitor, nobody, linked]) {
+      await denied(get(ref(reader.database, own)));
+      await denied(get(ref(reader.database, `${own}/email`)));
+      await denied(get(ref(reader.database, 'v2/userEmails')));
+    }
+  });
+
+  it('Google emails: only admins read and search them, and admins can delete any entry', async () => {
+    const rae = await googleUser('v2-rae');
+    await recordEmail(rae.database, rae.uid, 'v2-rae@example.invalid');
+    const tools = createAdminService(admin.database);
+    assert.equal(await tools.userEmail(rae.uid), 'v2-rae@example.invalid');
+    assert.equal(await tools.userEmail('neverSignedIn01'), null);
+    assert.deepEqual(await tools.findByEmail('V2-RA'), [rae.uid]);
+    assert.deepEqual(await tools.findByEmail('nobody'), []);
+    await denied(createAdminService(bob.database).userEmail(rae.uid));
+    await denied(createAdminService(bob.database).findByEmail('v2-'));
+    await denied(createAdminService(rae.database).findByEmail('v2-'));
+    // Delete (for erase requests): admins only.
+    await denied(set(ref(bob.database, `v2/userEmails/${rae.uid}`), null));
+    await set(ref(admin.database, `v2/userEmails/${rae.uid}`), null);
+    assert.equal(await tools.userEmail(rae.uid), null);
+  });
+
+  it('privacy erasure ("Complete and erase") deletes the stored Google email', async () => {
+    const sam = await googleUser('v2-sam');
+    await recordEmail(sam.database, sam.uid, 'v2-sam@example.invalid');
+    await recordSeen(sam.database, sam.uid);
+    const tools = createAdminService(admin.database);
+    assert.equal(await tools.userEmail(sam.uid), 'v2-sam@example.invalid');
+    await tools.recordPrivacyRequest(sam.uid);
+    const all = await new Promise<{ id: string; uid: string }[]>((resolve) => {
+      const stop = tools.watchPrivacyRequests((requests) => {
+        if (requests.some((item) => item.uid === sam.uid)) {
+          stop();
+          resolve(requests);
+        }
+      });
+    });
+    const request = all.find((item) => item.uid === sam.uid)!;
+    await tools.completeAndErase({ ...(request as never), status: 'pending' });
+    for (const erased of [`userEmails/${sam.uid}`, `users/${sam.uid}`]) {
+      const response = await fetch(`http://127.0.0.1:9000/v2/${erased}.json?ns=${NS}`, {
+        headers: { Authorization: 'Bearer owner' },
+      });
+      assert.equal(await response.text(), 'null', erased);
+    }
+    assert.equal(await tools.userEmail(sam.uid), null);
   });
 
   it('nothing outside the known /v2/ paths can be read or written', async () => {

@@ -1,6 +1,9 @@
-// Screenshot harness for the admin control centre: renders the real AdminWorkspace with made-up
-// sample data (no Firebase). Not part of the published site; run with
+// Screenshot and browser-test harness for the admin control centre: renders the real
+// AdminWorkspace with made-up sample data (no Firebase). Not part of the published site; run with
 //   npx vite --config scripts/admin-screens/vite.config.ts
+// Query options: ?as=member (a signed-in Google user who is not the admin), ?view=public (the
+// public chat as shown on Watch and Community), ?tab=... (screenshot label only).
+// Test accounts only: every email here is fake (example.invalid).
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,6 +11,7 @@ import './harness.css';
 import { AccountProvider } from '../../src/contexts/AccountContext';
 import { LiveStatusProvider } from '../../src/contexts/LiveStatusContext';
 import { AdminWorkspace } from '../../src/features/admin/AdminWorkspace';
+import { ChatPanel } from '../../src/features/chat/ChatPanel';
 import type { AdminRuntime } from '../../src/services/adminRuntime';
 import type { StatsDay } from '../../src/services/adminService';
 import { statsDay } from '../../src/services/dailyTotals';
@@ -18,6 +22,23 @@ const D = 24 * H;
 const uids = Array.from({ length: 14 }, (_, i) => `sampleUser${String(i + 1).padStart(4, '0')}x`);
 const owner = 'sampleOwner000001';
 const online = uids.slice(0, 5);
+// Fake Google emails for test accounts (the last two accounts have none recorded yet).
+const fakeEmails: Record<string, string> = Object.fromEntries(
+  uids
+    .slice(0, 12)
+    .map((uid, i) => [uid, `test.user${String(i + 1).padStart(2, '0')}@example.invalid`]),
+);
+const params = new URLSearchParams(location.search);
+const asMember = params.get('as') === 'member';
+const publicView = params.get('view') === 'public';
+const signedIn = asMember ? uids[0]! : owner;
+const ownProfile = {
+  displayName: asMember ? 'Test Member' : 'Test Owner',
+  email: asMember ? 'member.tester@example.invalid' : 'owner.tester@example.invalid',
+};
+// Calls the page made, so browser tests can check that emails are loaded only on demand.
+const emailCalls: string[] = [];
+(window as unknown as { emailCalls: string[] }).emailCalls = emailCalls;
 
 const texts = [
   'evening all!',
@@ -142,6 +163,14 @@ const runtime = {
     recordPrivacyRequest: ok,
     markProcessing: ok,
     completeAndErase: async () => 0,
+    userEmail: async (uid: string) => {
+      emailCalls.push(`userEmail:${uid}`);
+      return fakeEmails[uid] ?? null;
+    },
+    findByEmail: async (text: string) => {
+      emailCalls.push(`findByEmail:${text}`);
+      return Object.keys(fakeEmails).filter((uid) => fakeEmails[uid]!.startsWith(text));
+    },
   },
   leaderboards: {
     watchTop: (_b: string, _l: boolean, on: (e: unknown[]) => void) => (
@@ -158,7 +187,7 @@ const runtime = {
   },
 } as unknown as AdminRuntime;
 
-const tab = new URLSearchParams(location.search).get('tab');
+const tab = params.get('tab');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -166,7 +195,7 @@ createRoot(document.getElementById('root')!).render(
       <AccountProvider
         loadRuntime={async () => ({
           subscribe: (onSession) => {
-            onSession({ status: 'ready', identity: { kind: 'google', uid: owner } }, null);
+            onSession({ status: 'ready', identity: { kind: 'google', uid: signedIn } }, ownProfile);
             return () => {};
           },
           transitions: {
@@ -181,9 +210,20 @@ createRoot(document.getElementById('root')!).render(
         >
           <div className="app-layout" data-tab={tab ?? 'users'}>
             <main id="route-content" className="app-page-container">
-              <p className="sample-banner">Sample data for screenshots — not real users.</p>
-              <h1 className="mb-6">Admin</h1>
-              <AdminWorkspace loadRuntime={async () => runtime} />
+              <p className="sample-banner">
+                Sample data for screenshots — test accounts with fake emails, not real users.
+              </p>
+              {publicView ? (
+                <>
+                  <h1 className="mb-6">Community</h1>
+                  <ChatPanel loadService={async () => runtime.chat} />
+                </>
+              ) : (
+                <>
+                  <h1 className="mb-6">Admin</h1>
+                  <AdminWorkspace loadRuntime={async () => runtime} />
+                </>
+              )}
             </main>
           </div>
         </LiveStatusProvider>
