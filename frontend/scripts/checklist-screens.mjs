@@ -25,7 +25,7 @@ for (const [device, size] of Object.entries(sizes)) {
     if (!element) return page.screenshot({ path: path(name), animations: 'disabled' });
     await element.scrollIntoViewIfNeeded();
     const box = await element.boundingBox();
-    const scroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
+    const scroll = await page.evaluate(() => ({ x: globalThis.scrollX, y: globalThis.scrollY }));
     const margin = 12;
     await page.screenshot({
       path: path(name),
