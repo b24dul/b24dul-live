@@ -13,7 +13,7 @@ The repository currently has the legacy site at root `index.html` and `styles.cs
 1. `npm ci` from committed lockfile.
 2. ESLint, strict TypeScript, all Vitest unit/component tests, Prettier.
 3. Vite production build using the actual `/b24dul-live/` base path.
-4. `frontend/scripts/verify-release.mjs` validates React root, compiled JS presence, all HTML-linked assets and their subpath; `js-budget.mjs` checks compressed JavaScript remains under 260 KB (raised from 250 KB on 2026-11-20 with the owner's approval).
+4. `frontend/scripts/verify-release.mjs` validates React root, compiled JS presence, all HTML-linked assets and their subpath; `js-budget.mjs` checks compressed JavaScript remains under 250 KB.
 5. Chromium Playwright tests execute **Vite's compiled dist through `vite preview`**, not the development server. All eleven hash routes, refresh, mobile nav/preferences, base-aware favicon/assets, offline external-service fallback and 404 recovery are verified.
 6. Uploads two artifacts: `b24dul-react-release-candidate` (downloadable site files) and official `github-pages` formatted tar artifact. **This workflow does not contain `actions/deploy-pages` and has no `pages:write` permission.**
 

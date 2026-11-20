@@ -9,7 +9,7 @@
 - Existing suites continue to check navigation, refresh, page content, 404 handling, preferences/invalid storage, modal focus, demo-state honesty and video data parsing.
 - `.github/workflows/frontend-quality.yml`: creates a **production build locally in CI**, serves it at `http://127.0.0.1:4174/b24dul-live/`, runs mobile and desktop Lighthouse and uploads JSON evidence. Only `frontend/` and workflow changes trigger the job. This job **does not deploy anything**.
 - The Lighthouse report script records Performance, Accessibility, Best Practices, SEO, CLS, LCP, total blocking time and estimated transfer; enforces the master targets 90+/95+/95+/90+ and CLS below 0.1, subject to run-to-run measurement variability.
-- `frontend/scripts/js-budget.mjs` checks total gzipped JavaScript from built assets against a 260,000-byte budget (250,000 until 2026-11-20; raised with the owner's approval for the stream checklist). Lighthouse's transfer-byte metric is distinct from compressed JS.
+- `frontend/scripts/js-budget.mjs` checks total gzipped JavaScript from built assets against an initial 250,000-byte budget. Lighthouse's transfer-byte metric is distinct from compressed JS.
 
 ## Actual initial measurements and fixes
 

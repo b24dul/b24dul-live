@@ -9,7 +9,7 @@ is kept in [`docs/status-history.md`](docs/status-history.md).
 | Item                   | State                                                                                                                                                                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Live site              | https://b24dul.github.io/b24dul-live/, built from `release/react-preview` by `deploy-pages-preview.yml` (Pages source: GitHub Actions)                                                                                                 |
-| Latest feature release | PR #50 (stream progress checklist), merge commit `562e420`, deploy run 44660171730 succeeded                                                                                                                                           |
+| Latest feature release | PR #48 (admin control centre), merge commit `bbce8c5`, deploy run 44445083571 succeeded. PR #50 (stream checklist) was reverted by PR #52, see Parked                                                                                  |
 | `main`                 | Old site's files (backup) plus `videos.yml` (every 3 hours) and `auto-live.yml` (manual). Both run `gh workflow run deploy-pages-preview.yml --ref release/react-preview` after committing data                                        |
 | Legacy backup tag      | `legacy-pre-react-2026-11-18`, points to commit `71b26e6`                                                                                                                                                                              |
 | `/legacy/`             | No longer published. The page there sends visitors to the home page straight away                                                                                                                                                      |
@@ -23,7 +23,7 @@ is kept in [`docs/status-history.md`](docs/status-history.md).
 Sign-in (guest and Google, account chooser), privacy notice, chat on Watch and Community, Watch page
 with live player and chat, on-site video player, 2048 and Sudoku with saves, leaderboards with the
 dev-tools flag, visitor statistics (GoatCounter plus daily totals), the admin control centre
-(PR #48), the sunset restyle (PR #47) and the stream progress checklist (PR #50).
+(PR #48) and the sunset restyle (PR #47).
 
 ## Decisions that stand
 
@@ -54,6 +54,18 @@ From `frontend/production-gates.json` (checked 2026-11-19; it matches the plan):
 - **Not applicable:** identityContinuity (fresh start).
 - **Open, needs evidence:** firebaseRules, gamesAndSaves, leaderboards, privacyAndAdmin, visitorAnalytics, crossBrowser, rollbackReady, stagingSmokeTests.
 
+## Parked
+
+Work that is finished or started but deliberately off the site. Nothing here is deleted.
+
+- **Stream progress checklist** (parked by the owner on 20 Nov 2026 to focus on polishing 2048 and
+  Sudoku). Branch `feature/stream-checklist`, PR #50 (merged 2026-11-20, then reverted by PR #52).
+  An admin "Up next" card, list import, guide prompt helper and viewer progress panel. Its rules
+  paths `/v2/checklists`, `/v2/checklistsPrivate` and `/v2/checklistPrompt` are still deployed and
+  still in `firebase/v2.rules.json` with their emulator tests, but nothing on the site uses them (empty,
+  unused). "Show upcoming" off hides upcoming item titles only in the viewer panel, not
+  in the public data. To bring it back, revert PR #52's revert commit.
+
 ## Open items
 
 1. **Owner tests not done yet:** control centre with real data; leaderboards; privacy request end to end; 2048 and Sudoku win and game-over screens.
@@ -66,11 +78,6 @@ From `frontend/production-gates.json` (checked 2026-11-19; it matches the plan):
 
 - **Phase A, housekeeping (now):** the open items above; owner tests, then record evidence and update gates.
 - **Phase B, streaming extras:** stream schedule, chat polls, Q&A, floating mini-player, highlights.
-  - **Done: stream progress checklist** (PR #50, 2026-11-20). Admin imports a pasted list, ticks items
-    from an "Up next" card (server tick times), and copies a guide prompt; viewers see a progress panel
-    on Watch (and on Home while live). Rules under `/v2/checklists` (public: the active list only),
-    `/v2/checklistsPrivate` and `/v2/checklistPrompt` (admin only), deployed and probed 2026-11-20.
-    Note: "show upcoming" off hides upcoming item titles only in the viewer panel, not in the public data.
 - **Phase C, new games one at a time:** Snake, Memory Match, Minesweeper, Connect Four, each with a leaderboard rules summary for approval.
 - **Phase D, community:** report button and queue, moderator role, notifications, rooms if needed.
 - **Phase E, accounts:** "Delete my account", preset avatars, favourites.

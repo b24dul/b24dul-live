@@ -9,7 +9,6 @@ import type { AuthIdentity } from '../../services/authSession';
 import type { ChatMessage, ChatService } from '../../services/chatService';
 import { statsDay } from '../../services/dailyTotals';
 import { chatNameFor } from '../chat/chatPolicy';
-import type { PrivateList, PublicList } from '../checklist/checklistModel';
 import { AdminWorkspace } from './AdminWorkspace';
 
 vi.mock('../stream/WatchStream', () => ({
@@ -43,18 +42,7 @@ type AdminCallback<K extends keyof AdminService> = Parameters<AdminService[K]>[0
     : never
   : never;
 
-const sampleList: PublicList = {
-  id: 'l00',
-  title: 'Part 1 progress',
-  sections: { s00: { title: 'During the first job', order: 0 } },
-  items: {
-    i00: { title: 'Grab the keys', section: 's00', order: 0, done: true, doneAt: 1 },
-    i01: { title: 'Open the safe', section: 's00', order: 1, missable: true },
-    i02: { title: 'Leave by boat', section: 's00', order: 2 },
-  },
-};
-
-function fakeRuntime({ requests = [] as PrivacyRequest[], active = null as string | null } = {}) {
+function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
   const messages = [message('m1', 'visitor1234', 'hello'), message('m2', 'owner', 'welcome')];
   const chat: ChatService = {
     watchMessages: (onMessages) => (onMessages(messages), () => {}),
@@ -160,25 +148,9 @@ function fakeRuntime({ requests = [] as PrivacyRequest[], active = null as strin
     myBest: vi.fn(async () => null),
     submit: vi.fn(async () => {}),
   };
-  const checklists = {
-    watchLists: (onLists: (lists: PublicList[]) => void) => (onLists([sampleList]), () => {}),
-    watchPrivate: (onPrivate: (lists: Record<string, PrivateList>) => void) => (
-      onPrivate({
-        l00: {
-          gameName: 'Sample',
-          items: { i01: { steps: ['Find the code', 'Turn the dial'], deadline: 'before dawn' } },
-        },
-      }),
-      () => {}
-    ),
-    watchActive: (onActive: (id: string | null) => void) => (onActive(active), () => {}),
-    watchPrompt: (onTemplate: (template: string | null) => void) => (onTemplate(null), () => {}),
-    tick: vi.fn(async () => {}),
-  };
-  return { chat, admin, leaderboards, checklists } as unknown as AdminRuntime & {
+  return { chat, admin, leaderboards } as unknown as AdminRuntime & {
     admin: typeof admin;
     leaderboards: typeof leaderboards;
-    checklists: typeof checklists;
   };
 }
 
@@ -202,11 +174,10 @@ const click = async (element: HTMLElement) => {
 const openTab = async (name: string) => click(await screen.findByRole('tab', { name }));
 
 describe('AdminWorkspace', () => {
-  it('tabs: Checklist, Users, Analytics, Leaderboards and Privacy requests, with arrow keys', async () => {
+  it('tabs: Users, Analytics, Leaderboards and Privacy requests, with arrow keys', async () => {
     await renderAdmin({ kind: 'google', uid: 'owner' });
     const tabs = await screen.findAllByRole('tab');
     expect(tabs.map((tab) => tab.textContent)).toEqual([
-      'Checklist',
       'Users',
       'Analytics',
       'Leaderboards',
@@ -214,39 +185,13 @@ describe('AdminWorkspace', () => {
     ]);
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
     fireEvent.keyDown(tabs[0]!, { key: 'ArrowRight' });
-    fireEvent.keyDown(tabs[1]!, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: 'Analytics' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Analytics' })).toHaveFocus();
-    fireEvent.keyDown(tabs[2]!, { key: 'End' });
+    fireEvent.keyDown(tabs[1]!, { key: 'End' });
     expect(screen.getByRole('tab', { name: 'Privacy requests' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-  });
-
-  it('shows the Up next card first when a checklist is active, and ticks with Done', async () => {
-    const runtime = await renderAdmin(
-      { kind: 'google', uid: 'owner' },
-      fakeRuntime({ active: 'l00' }),
-    );
-    const card = await screen.findByRole('region', { name: /Up next/ });
-    expect(card.compareDocumentPosition(screen.getByRole('region', { name: 'Status' }))).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-    expect(within(card).getByText('1/3')).toBeInTheDocument();
-    expect(within(card).getByText(/Open the safe/)).toBeInTheDocument();
-    expect(within(card).getByText('Missable')).toBeInTheDocument();
-    expect(within(card).getByText('Turn the dial')).toBeInTheDocument();
-    expect(within(card).getByText('before dawn')).toBeInTheDocument();
-    expect(within(card).getByText(/Leave by boat/)).toBeInTheDocument();
-    await click(within(card).getByRole('button', { name: 'Done' }));
-    expect(runtime.checklists.tick).toHaveBeenCalledWith('l00', 'i01');
-  });
-
-  it('shows no Up next card when no checklist is active', async () => {
-    await renderAdmin({ kind: 'google', uid: 'owner' });
-    await screen.findByRole('region', { name: 'Status' });
-    expect(screen.queryByRole('region', { name: /Up next/ })).not.toBeInTheDocument();
   });
 
   it('is closed to signed-out visitors, guests and non-admin Google users', async () => {
@@ -354,7 +299,6 @@ describe('AdminWorkspace', () => {
 
   it('users: search, first/last seen, messages, moderation history, scores and details', async () => {
     const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
-    await openTab('Users');
     const table = await screen.findByRole('table');
     const name = chatNameFor('visitor1234');
     const row = (
