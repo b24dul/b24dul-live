@@ -37,7 +37,6 @@ import {
   type Run,
 } from './AdminShared';
 import { AdminUsers } from './AdminUsers';
-import { ChecklistTab, UpNextCard, type ChecklistData } from '../checklist/ChecklistAdmin';
 
 export type LoadAdminRuntime = () => Promise<AdminRuntime>;
 const loadFirebaseAdmin: LoadAdminRuntime = () =>
@@ -203,9 +202,8 @@ function TopStrip({
   );
 }
 
-type Tab = 'checklist' | 'users' | 'analytics' | 'leaderboards' | 'privacy';
+type Tab = 'users' | 'analytics' | 'leaderboards' | 'privacy';
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'checklist', label: 'Checklist' },
   { id: 'users', label: 'Users' },
   { id: 'analytics', label: 'Analytics' },
   { id: 'leaderboards', label: 'Leaderboards' },
@@ -213,7 +211,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 function Tabs({ panels }: { panels: Record<Tab, ReactNode> }) {
-  const [tab, setTab] = useState<Tab>('checklist');
+  const [tab, setTab] = useState<Tab>('users');
   const buttons = useRef<Record<string, HTMLButtonElement | null>>({});
   function onKey(event: KeyboardEvent<HTMLDivElement>) {
     const index = TABS.findIndex((item) => item.id === tab);
@@ -468,12 +466,6 @@ export function AdminWorkspace({
   const [scores, setScores] = useState<UserScores>({});
   const [days, setDays] = useState<StatsDay[] | null>(null);
   const [notice, setNotice] = useState('');
-  const [checklists, setChecklists] = useState<ChecklistData>({
-    lists: [],
-    privates: {},
-    active: null,
-    template: null,
-  });
 
   useEffect(() => start(), [start]);
   useEffect(() => {
@@ -504,14 +496,6 @@ export function AdminWorkspace({
       runtime.admin.watchModerationLog(setLog),
       runtime.admin.watchAllScores(setScores),
       runtime.admin.watchStats(setDays, 30),
-      runtime.checklists.watchLists((lists) => setChecklists((data) => ({ ...data, lists }))),
-      runtime.checklists.watchPrivate((privates) =>
-        setChecklists((data) => ({ ...data, privates })),
-      ),
-      runtime.checklists.watchActive((active) => setChecklists((data) => ({ ...data, active }))),
-      runtime.checklists.watchPrompt((template) =>
-        setChecklists((data) => ({ ...data, template })),
-      ),
     ];
     return () => stops.forEach((stop) => stop());
   }, [runtime, isAdmin]);
@@ -567,7 +551,6 @@ export function AdminWorkspace({
       <p role="status" className="admin-notice" aria-live="polite">
         {notice || 'Signed in as admin. Changes apply immediately for everyone.'}
       </p>
-      <UpNextCard data={checklists} tools={runtime.checklists} run={run} />
       <TopStrip
         settings={settings}
         onlineCount={Object.keys(presence).length}
@@ -612,7 +595,6 @@ export function AdminWorkspace({
       </div>
       <Tabs
         panels={{
-          checklist: <ChecklistTab data={checklists} tools={runtime.checklists} run={run} />,
           users: <AdminUsers data={usersData} runtime={runtime} run={run} />,
           analytics: <AdminAnalytics days={days} />,
           leaderboards: <AdminLeaderboards runtime={runtime} run={run} />,

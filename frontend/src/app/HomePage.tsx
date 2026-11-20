@@ -8,7 +8,6 @@ import { useVideoArchive } from '../contexts/videoArchiveState';
 import { usePreferences } from '../contexts/PreferencesContext';
 import { SubscribeButton } from '../features/stream/WatchStream';
 import { usePlayVideo } from '../features/videos/VideoPlayer';
-import { Checklist } from './RoutePages';
 
 function Row({
   id,
@@ -127,11 +126,9 @@ export function HomePage() {
   const { videos } = useVideoArchive();
   const { preferences } = usePreferences();
   const latest = videos.slice(0, 8);
-  const live = useLiveStatus().state === 'live';
   return (
     <div className="flex min-w-0 flex-col gap-[var(--spacing-section)]">
       <HomeHero />
-      {live && <Checklist />}
 
       <div className="home-feature-order" data-layout={preferences.homeLayout}>
         <div className="home-feature-discover">

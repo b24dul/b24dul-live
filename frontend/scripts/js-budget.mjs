@@ -13,8 +13,7 @@ const bytes = javascript.reduce(
 process.stdout.write(
   `Total production JS gzip transfer estimate: ${bytes} bytes across ${javascript.length} file(s)\n`,
 );
-// Raised from 250 KB to 260 KB on 2026-11-20 with the owner's approval (stream checklist).
-if (bytes > 260_000) {
-  process.stderr.write('Compressed JavaScript exceeds the 260 KB transfer budget.\n');
+if (bytes > 250_000) {
+  process.stderr.write('Compressed JavaScript exceeds the 250 KB initial transfer budget.\n');
   process.exitCode = 1;
 }

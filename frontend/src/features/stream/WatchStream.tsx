@@ -69,7 +69,7 @@ function LatestVideos() {
  * on phones. Offline: a clear message and the latest videos. Unknown: says so honestly and offers
  * the player anyway.
  */
-export function WatchStream({ chat, checklist }: { chat?: ReactNode; checklist?: ReactNode }) {
+export function WatchStream({ chat }: { chat?: ReactNode }) {
   const status = useLiveStatus();
   const [tryAnyway, setTryAnyway] = useState(false);
 
@@ -109,7 +109,6 @@ export function WatchStream({ chat, checklist }: { chat?: ReactNode; checklist?:
           />
           {chat && <div className="min-w-0">{chat}</div>}
         </div>
-        {checklist}
       </section>
     );
 
@@ -159,7 +158,6 @@ export function WatchStream({ chat, checklist }: { chat?: ReactNode; checklist?:
           </div>
         )}
       </GlassPanel>
-      {checklist}
       <LatestVideos />
     </div>
   );

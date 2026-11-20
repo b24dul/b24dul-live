@@ -32,11 +32,6 @@ import { BOARDS } from '../../src/features/games/leaderboardBoards.ts';
 import { BLOCKED_WORDS } from '../../src/features/chat/chatPolicy.ts';
 import { addToTotals, METRICS, type TotalsTarget } from '../../src/services/dailyTotals.ts';
 import { recordSeen } from '../../src/services/seenService.ts';
-import {
-  createChecklistAdmin,
-  createChecklistViewer,
-} from '../../src/services/checklistService.ts';
-import { parseChecklist } from '../../src/features/checklist/checklistParser.ts';
 
 const NS = 'demo-b24dul-rtdb-default-rtdb';
 type Fixture = ReturnType<typeof createRtdbEmulatorFixture>;
@@ -845,30 +840,60 @@ describe('/v2/ rules', { timeout: 120000 }, () => {
   });
 });
 
-describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
-  const fixtureText = readFileSync(
-    new URL('../../src/features/checklist/fixtures/gta6-chapter1-checklist.txt', import.meta.url),
-    'utf8',
-  );
+// The stream checklist feature is parked (see PROJECT_STATUS.md), but its rules are still deployed,
+// so they stay tested here with plain database writes.
+describe('/v2/ stream progress checklist rules (feature parked)', { timeout: 120000 }, () => {
   const lists = 'v2/checklists/lists';
   const privatePath = 'v2/checklistsPrivate';
-  let listId: string;
+  const listId = 'l00';
   let viewer: User;
+
+  /** A sample list: 3 sections of 4 items, with steps and deadlines on the private side. */
+  function sampleList(title: string) {
+    const sections: Record<string, unknown> = {};
+    const items: Record<string, unknown> = {};
+    const hidden: Record<string, unknown> = {};
+    for (let s = 0; s < 3; s += 1) {
+      sections[`s0${s}`] = { title: `Section ${s}`, order: s, note: `Note ${s}` };
+      for (let i = 0; i < 4; i += 1) {
+        const id = `i${String(s * 4 + i).padStart(2, '0')}`;
+        items[id] = { title: `Item ${id}`, section: `s0${s}`, order: i, missable: i === 0 || null };
+        hidden[id] = { steps: [`Secret step for ${id}`], deadline: `Secret deadline ${id}` };
+      }
+    }
+    return {
+      public: { title, showUpcoming: false, sections, items },
+      private: { gameName: 'Sample Game', items: hidden },
+    };
+  }
+  const createList = (id: string, title: string) => {
+    const list = sampleList(title);
+    return update(ref(admin.database, 'v2'), {
+      [`checklists/lists/${id}`]: list.public,
+      [`checklistsPrivate/${id}`]: list.private,
+    });
+  };
+  const deleteList = (id: string) =>
+    update(ref(admin.database, 'v2'), {
+      [`checklists/lists/${id}`]: null,
+      [`checklistsPrivate/${id}`]: null,
+    });
+  const tick = (item: string) =>
+    update(ref(admin.database, 'v2'), {
+      [`checklists/lists/${listId}/items/${item}/done`]: true,
+      [`checklists/lists/${listId}/items/${item}/doneAt`]: serverTimestamp(),
+      [`checklistsPrivate/${listId}/lastTick`]: item,
+    });
 
   before(async () => {
     viewer = await guest('v2-checklist-guest');
     await seed('v2/checklists', null);
     await seed('v2/checklistsPrivate', null);
     await seed('v2/checklistPrompt', null);
-    listId = await createChecklistAdmin(admin.database).createList(parseChecklist(fixtureText), {
-      gameName: 'Sample Game',
-      showUpcoming: false,
-      existing: [],
-    });
+    await createList(listId, 'Chapter 1 progress');
   });
 
   it('only admins can create, activate and edit lists', async () => {
-    assert.equal(listId, 'l00');
     for (const who of [alice, viewer]) {
       await denied(set(ref(who.database, `${lists}/l01`), { title: 'Mine' }));
       await denied(set(ref(who.database, 'v2/checklists/active'), listId));
@@ -876,36 +901,30 @@ describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
       await denied(set(ref(who.database, `${privatePath}/${listId}/gameName`), 'x'));
       await denied(set(ref(who.database, 'v2/checklistPrompt/template'), 'x'));
     }
-    await createChecklistAdmin(admin.database).setActive(listId);
+    await set(ref(admin.database, 'v2/checklists/active'), listId);
     assert.equal((await get(ref(viewer.database, 'v2/checklists/active'))).val(), listId);
   });
 
   it('viewers can read the active list, but not the lists node or inactive lists', async () => {
-    const tools = createChecklistAdmin(admin.database);
     const list = (await get(ref(viewer.database, `${lists}/${listId}`))).val();
     assert.equal(list.title, 'Chapter 1 progress');
-    assert.equal(Object.keys(list.sections).length, 16);
-    assert.equal(Object.keys(list.items).length, 21);
+    assert.equal(Object.keys(list.sections).length, 3);
+    assert.equal(Object.keys(list.items).length, 12);
     // Steps, deadlines and the game name are not in the public data at all.
     const publicText = JSON.stringify(list);
     assert.ok(!publicText.includes('Sample Game'));
-    assert.ok(!publicText.includes('Game > Save Game'));
-    assert.ok(!publicText.includes("before leaving Mandy's property"));
+    assert.ok(!publicText.includes('Secret'));
     await denied(get(ref(viewer.database, lists)));
     await denied(get(ref(alice.database, lists)));
     // A second list exists but is not active: viewers cannot read it.
-    const second = await tools.createList(parseChecklist('Other\n## S\n- I\n  step'), {
-      showUpcoming: true,
-      existing: [listId],
-    });
-    await denied(get(ref(viewer.database, `${lists}/${second}`)));
+    await createList('l01', 'Other');
+    await denied(get(ref(viewer.database, `${lists}/l01`)));
     assert.equal((await get(ref(admin.database, lists))).size, 2);
-    await tools.deleteList(second, listId);
+    await deleteList('l01');
   });
 
   it('viewers can never read steps, deadlines, the game name or the prompt template', async () => {
-    const tools = createChecklistAdmin(admin.database);
-    await tools.savePrompt('GAME: {GAME}');
+    await set(ref(admin.database, 'v2/checklistPrompt/template'), 'GAME: {GAME}');
     for (const who of [viewer, alice]) {
       await denied(get(ref(who.database, privatePath)));
       await denied(get(ref(who.database, `${privatePath}/${listId}`)));
@@ -917,16 +936,13 @@ describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
     }
     const hidden = (await get(ref(admin.database, `${privatePath}/${listId}`))).val();
     assert.equal(hidden.gameName, 'Sample Game');
-    const items = Object.values(hidden.items as Record<string, { deadline?: string }>);
-    assert.equal(items.length, 21);
-    assert.equal(items.filter((item) => item.deadline).length, 20);
+    assert.equal(Object.keys(hidden.items).length, 12);
     const template = await get(ref(admin.database, 'v2/checklistPrompt/template'));
     assert.equal(template.val(), 'GAME: {GAME}');
-    await tools.resetPrompt();
+    await remove(ref(admin.database, 'v2/checklistPrompt'));
   });
 
   it('a tick stores the server time; a time chosen by the client is rejected', async () => {
-    const tools = createChecklistAdmin(admin.database);
     const item = `${lists}/${listId}/items/i00`;
     const lastTick = `${privatePath}/${listId}/lastTick`;
     await denied(update(ref(admin.database, item), { done: true, doneAt: Date.now() - 60000 }));
@@ -934,7 +950,7 @@ describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
     await denied(update(ref(admin.database, item), { done: true, doneAt: 'now' }));
     await denied(update(ref(admin.database, item), { doneAt: serverTimestamp() })); // not done
     const started = Date.now();
-    await tools.tick(listId, 'i00');
+    await tick('i00');
     const ticked = (await get(ref(viewer.database, item))).val();
     assert.equal(ticked.done, true);
     assert.ok(Math.abs(ticked.doneAt - started) < 30000);
@@ -943,7 +959,11 @@ describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
     await denied(set(ref(admin.database, `${item}/doneAt`), ticked.doneAt - 1000));
     assert.equal((await get(ref(admin.database, lastTick))).val(), 'i00');
     // Undo clears the tick, its time and the last-tick marker.
-    await tools.untick(listId, 'i00', true);
+    await update(ref(admin.database, 'v2'), {
+      [`checklists/lists/${listId}/items/i00/done`]: null,
+      [`checklists/lists/${listId}/items/i00/doneAt`]: null,
+      [`checklistsPrivate/${listId}/lastTick`]: null,
+    });
     const undone = (await get(ref(viewer.database, item))).val();
     assert.equal(undone.done, undefined);
     assert.equal(undone.doneAt, undefined);
@@ -987,28 +1007,19 @@ describe('/v2/ stream progress checklist rules', { timeout: 120000 }, () => {
     await set(ref(admin.database, `${hidden}/items/i00/deadline`), 'd'.repeat(120));
     await set(ref(admin.database, `${list}/sections/s00/note`), 'N'.repeat(150));
     await set(ref(admin.database, 'v2/checklistPrompt/template'), 't'.repeat(4000));
-    await createChecklistAdmin(admin.database).resetPrompt();
+    await remove(ref(admin.database, 'v2/checklistPrompt'));
   });
 
-  it('viewers follow the active list live and see nothing when none is active', async () => {
-    const tools = createChecklistAdmin(admin.database);
-    const seen: (string | null)[] = [];
-    let finish!: () => void;
-    const finished = new Promise<void>((resolve) => (finish = resolve));
-    const stop = createChecklistViewer(viewer.database).watchActiveList((list) => {
-      const done = list ? Object.values(list.items).filter((item) => item.done).length : null;
-      seen.push(list ? `${list.title}:${done}` : null);
-      if (list === null && seen.length > 1) finish();
-    });
-    await delay(500);
-    await tools.tick(listId, 'i01');
-    await delay(500);
-    await tools.setActive(null);
-    await finished;
-    stop();
-    assert.deepEqual(seen.slice(0, 2), ['Chapter 1 progress:0', 'Chapter 1 progress:1']);
-    assert.equal(seen.at(-1), null);
-    await tools.deleteList(listId, null);
+  it('the active list can be cleared, after which viewers cannot read it', async () => {
+    await tick('i01');
+    assert.equal(
+      (await get(ref(viewer.database, `${lists}/${listId}/items/i01/done`))).val(),
+      true,
+    );
+    await remove(ref(admin.database, 'v2/checklists/active'));
+    assert.equal((await get(ref(viewer.database, 'v2/checklists/active'))).exists(), false);
+    await denied(get(ref(viewer.database, `${lists}/${listId}`)));
+    await deleteList(listId);
     assert.equal((await get(ref(admin.database, `${privatePath}/${listId}`))).exists(), false);
   });
 });
