@@ -354,6 +354,117 @@
             }
           }
         }
+      },
+      "checklists": {
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "active": {
+          ".read": true,
+          ".validate": "newData.isString() && newData.val().matches(/^l[01][0-9]$/) && newData.parent().child('lists').child(newData.val()).exists()"
+        },
+        "lists": {
+          ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          "$listId": {
+            ".read": "root.child('v2').child('checklists').child('active').val() === $listId",
+            ".validate": "$listId.matches(/^l[01][0-9]$/) && newData.hasChildren(['title'])",
+            "title": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "showUpcoming": {
+              ".validate": "newData.isBoolean()"
+            },
+            "sections": {
+              "$sectionId": {
+                ".validate": "$sectionId.matches(/^s[0-5][0-9]$/) && newData.hasChildren(['title', 'order'])",
+                "title": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+                },
+                "note": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150"
+                },
+                "order": {
+                  ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 59"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "items": {
+              "$itemId": {
+                ".validate": "$itemId.matches(/^i[0-5][0-9]$/) && newData.hasChildren(['title', 'section', 'order'])",
+                "title": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+                },
+                "section": {
+                  ".validate": "newData.isString() && newData.parent().parent().parent().child('sections').child(newData.val()).exists()"
+                },
+                "order": {
+                  ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 59"
+                },
+                "missable": {
+                  ".validate": "newData.isBoolean()"
+                },
+                "done": {
+                  ".validate": "newData.isBoolean()"
+                },
+                "doneAt": {
+                  ".validate": "newData.parent().child('done').val() === true && (newData.val() === now || newData.val() === data.val())"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "checklistsPrivate": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$listId": {
+          ".validate": "$listId.matches(/^l[01][0-9]$/)",
+          "gameName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+          },
+          "lastTick": {
+            ".validate": "newData.isString() && newData.val().matches(/^i[0-5][0-9]$/)"
+          },
+          "items": {
+            "$itemId": {
+              ".validate": "$itemId.matches(/^i[0-5][0-9]$/)",
+              "steps": {
+                "$step": {
+                  ".validate": "$step.matches(/^[0-4]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 150"
+                }
+              },
+              "deadline": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "checklistPrompt": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "template": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 4000"
+        },
+        "$other": {
+          ".validate": false
+        }
       }
     }
   }

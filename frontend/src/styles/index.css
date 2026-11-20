@@ -2127,3 +2127,334 @@ main[tabindex='-1']:focus {
   border-radius: 4px;
   background: var(--coral);
 }
+
+/* ===== Stream progress checklist (viewer panel and admin) ===== */
+/* Coral marks Missable tags and deadlines; cyan stays reserved for LIVE. */
+.checklist-missable {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid rgb(255 79 122 / 55%);
+  border-radius: 999px;
+  background: rgb(255 79 122 / 14%);
+  color: #ff9cb4;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.checklist-deadline {
+  margin-top: 0.5rem;
+  color: #ff9cb4;
+  font-size: 0.9rem;
+}
+
+.checklist-deadline strong {
+  color: var(--coral);
+}
+
+.checklist-count {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tangerine);
+}
+
+.checklist-bar {
+  overflow: hidden;
+  height: 8px;
+  margin-top: 0.6rem;
+  border-radius: 4px;
+  background: rgb(245 243 250 / 8%);
+}
+
+.checklist-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--sunset);
+  transition: width 400ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checklist-bar span {
+    transition: none;
+  }
+}
+
+.checklist-section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.checklist-section-count {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.checklist-viewer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.checklist-viewer-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.checklist-viewer-item--done {
+  color: var(--muted);
+}
+
+.checklist-viewer-item--done svg {
+  flex: none;
+  color: var(--tangerine);
+}
+
+.checklist-viewer-item--now {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgb(255 138 91 / 40%);
+  border-radius: 10px;
+  background: rgb(255 138 91 / 10%);
+  font-weight: 700;
+}
+
+.checklist-now-label {
+  color: var(--tangerine);
+}
+
+.checklist-viewer-item--upcoming {
+  padding-left: 1.4rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.checklist-earlier {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.checklist-earlier summary,
+.checklist-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Admin: Up next card (first on phones) */
+.checklist-upnext {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-color: rgb(255 79 122 / 35%);
+}
+
+.checklist-kicker {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.checklist-upnext-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.checklist-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 1.3rem;
+  list-style: decimal;
+  font-size: 0.95rem;
+}
+
+.checklist-steps li::marker {
+  color: var(--tangerine);
+  font-weight: 700;
+}
+
+.checklist-done-button {
+  width: 100%;
+  min-height: 3.5rem;
+  font-size: 1.2rem;
+}
+
+.checklist-then {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.checklist-then span {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Admin: full list */
+.checklist-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.checklist-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.checklist-row {
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.checklist-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.checklist-tick {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--coral);
+}
+
+.checklist-row-title {
+  min-height: 2.25rem;
+  flex: 1;
+  text-align: left;
+}
+
+.checklist-row--done .checklist-row-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.checklist-row-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.25rem 0 0.5rem 2rem;
+}
+
+.checklist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.checklist-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.checklist-form .checklist-check,
+.checklist-check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checklist-problems {
+  color: #ffb4c6;
+  font-size: 0.9rem;
+}
+
+.checklist-problems code {
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.checklist-warnings {
+  color: #fde68a;
+  font-size: 0.9rem;
+}
+
+.checklist-error-count {
+  color: #ffb4c6;
+  font-weight: 700;
+}
+
+.checklist-tools {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .checklist-tools {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.checklist-textarea {
+  width: 100%;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.checklist-guide-fields {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+}
+
+.checklist-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 32rem;
+  overflow-y: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.checklist-preview-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.checklist-preview-item {
+  margin-top: 0.4rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgb(255 138 91 / 40%);
+}
+
+.checklist-preview-item .checklist-steps {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
