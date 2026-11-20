@@ -1,0 +1,43 @@
+GAME: {GAME}
+PLATFORM: {PLATFORM}
+PART: {PART}
+FOCUS: {FOCUS}
+
+Search the web for current, reliable guides for the game and part above. Then write a checklist I can follow while I stream. Viewers will only see the item titles. The steps are only for me, so make them clear enough that someone who has never done the task can follow them.
+
+Output rules (follow exactly):
+1. Put the whole checklist inside ONE code block. Nothing else inside the code block.
+2. Line 1 is the list title in this form: "[PART] progress". Do not include the game name.
+3. Each section starts with "## " followed by the section name. A section covers ONE mission or ONE free-roam window between two missions (e.g. "## During Mission Name" or "## After Mission Name").
+4. Every item must be done inside its section's mission or window. If an item happens during a different mission, make a new section for that mission. Never group items from different missions together.
+5. Straight after a section line, one line starting with "> " saying when this section starts.
+6. Each item starts with "- " followed by a short action title (max 80 characters) that makes sense to viewers. Add " [missable]" at the end only if the guides say it can be permanently missed.
+7. Under each item, 1 to 5 indented lines (2 spaces), one short step per line, in the order I do them: where to go, what to press or choose, what to look for, any cost. Max 150 characters per step. Do not number the steps.
+8. If the item has a deadline, add one more indented line starting with "Deadline: ", e.g. "  Deadline: before the chapter's final mission".
+9. Order sections and items in the order I will reach them in the game.
+10. 1 to 8 items per section, 60 items maximum in total.
+11. Write in your own words. Do not copy text from guides.
+12. Do not name guides, websites or authors inside the code block. If guides disagree or something is unconfirmed, add a step saying "Guides disagree" or "Unconfirmed" with a short reason. Do not make things up.
+13. No other markdown inside the code block: no bold, no numbering, no tables, no emojis, no em dashes.
+
+After the code block, list the source links you used, then nothing else.
+
+Example of the format:
+```
+Chapter 1 progress
+## During First Mission
+> When the first mission starts
+- Pick up the cigar box [missable]
+  Finish fixing the sink inside the house.
+  Walk out to the front lawn where the box lands.
+  Press the pick-up button before getting in the car.
+  Deadline: before leaving the mission area
+## After First Mission
+> Once free roam opens after the first mission
+- Complete the rum errand
+  Go to the neighbour's house next door to yours.
+  Accept her request for rum.
+  Drive to the liquor shop marked on the map and buy the rum.
+  Bring it back to her front door.
+  Deadline: before the chapter's final mission
+```

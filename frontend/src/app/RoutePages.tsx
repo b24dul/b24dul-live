@@ -36,6 +36,21 @@ const AdminWorkspace = lazy(() =>
   })),
 );
 
+const StreamChecklist = lazy(() =>
+  import('../features/checklist/ChecklistViewer').then((module) => ({
+    default: module.StreamChecklist,
+  })),
+);
+
+/** The active stream checklist, or nothing when no list is active. */
+export function Checklist() {
+  return (
+    <Suspense fallback={null}>
+      <StreamChecklist />
+    </Suspense>
+  );
+}
+
 function Chat() {
   return (
     <Suspense fallback={<LoadingSkeleton label="Loading chat" className="h-40" />}>
@@ -79,7 +94,7 @@ function PageFrame({
 function WatchPage() {
   return (
     <PageFrame title="Watch" description="Live streams from B24DUL, with chat beside the stream.">
-      <WatchStream chat={<Chat />} />
+      <WatchStream chat={<Chat />} checklist={<Checklist />} />
       <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );
