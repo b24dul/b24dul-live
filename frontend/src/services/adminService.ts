@@ -2,8 +2,10 @@
 // this module adds no access of its own.
 import type { DayTotals } from './dailyTotals';
 import {
+  endAt,
   equalTo,
   get,
+  limitToFirst,
   limitToLast,
   onValue,
   orderByKey,
@@ -14,6 +16,7 @@ import {
   remove,
   serverTimestamp,
   set,
+  startAt,
   update,
   type Database,
 } from 'firebase/database';
@@ -206,6 +209,31 @@ export function createAdminService(database: Database) {
       );
     },
 
+    // Google emails (admin-only path). Read one at a time, only when the admin opens a person.
+    /** The stored Google email for one account, or null if none is recorded yet. */
+    async userEmail(uid: string) {
+      const value = (await get(at(`userEmails/${uid}/email`))).val() as unknown;
+      return typeof value === 'string' ? value : null;
+    },
+    /**
+     * Account IDs whose Google email starts with the search text (lower case, like Google
+     * addresses). Returns IDs only: emails are shown after the admin opens a person.
+     */
+    async findByEmail(text: string, limit = 20) {
+      const term = text.trim().toLowerCase();
+      if (!term) return [];
+      const snapshot = await get(
+        query(
+          at('userEmails'),
+          orderByChild('email'),
+          startAt(term),
+          endAt(term + '\uf8ff'),
+          limitToFirst(limit),
+        ),
+      );
+      return Object.keys(snapshot.val() ?? {});
+    },
+
     // Privacy requests: a log of account IDs and statuses only (no names, emails or notes).
     watchPrivacyRequests(onRequests: (requests: PrivacyRequest[]) => void) {
       return onValue(
@@ -232,7 +260,8 @@ export function createAdminService(database: Database) {
 
     /**
      * Erases everything /v2/ holds for an account (messages, moderation records and history,
-     * first/last seen, online entries, slow-mode stamp, leaderboard scores and review flags) and completes the request, in one atomic write. The sign-in account itself
+     * first/last seen, stored Google email, online entries, slow-mode stamp, leaderboard scores and
+     * review flags) and completes the request, in one atomic write. The sign-in account itself
      * can only be deleted in the Firebase console.
      */
     async completeAndErase(request: PrivacyRequest) {
@@ -244,6 +273,7 @@ export function createAdminService(database: Database) {
         [`presence/${request.uid}`]: null,
         [`chat/lastPost/${request.uid}`]: null,
         [`users/${request.uid}`]: null,
+        [`userEmails/${request.uid}`]: null,
         [`moderationLog/${request.uid}`]: null,
         ...Object.fromEntries(
           ERASE_BOARD_IDS.flatMap((board) => [

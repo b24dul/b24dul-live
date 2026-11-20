@@ -34,6 +34,8 @@ import {
   dateTime,
   MessageActions,
   PersonActions,
+  UserLink,
+  type OpenUser,
   type Run,
 } from './AdminShared';
 import { AdminUsers } from './AdminUsers';
@@ -49,12 +51,14 @@ function OnlineNow({
   admins,
   runtime,
   run,
+  onOpen,
 }: {
   presence: Presence;
   moderation: Moderation;
   admins: Set<string>;
   runtime: AdminRuntime;
   run: Run;
+  onOpen: OpenUser;
 }) {
   const online = Object.entries(presence).sort((a, b) => b[1] - a[1]);
   return (
@@ -70,7 +74,7 @@ function OnlineNow({
           return (
             <li key={uid} className="admin-person">
               <div className="flex flex-wrap items-center gap-2">
-                <strong>{name}</strong>
+                <UserLink uid={uid} name={name} onOpen={onOpen} />
                 {(moderation.mutes[uid] ?? 0) > Date.now() && (
                   <StatusIndicator status="warning">Timed out</StatusIndicator>
                 )}
@@ -210,8 +214,15 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'privacy', label: 'Privacy requests' },
 ];
 
-function Tabs({ panels }: { panels: Record<Tab, ReactNode> }) {
-  const [tab, setTab] = useState<Tab>('users');
+function Tabs({
+  panels,
+  tab,
+  setTab,
+}: {
+  panels: Record<Tab, ReactNode>;
+  tab: Tab;
+  setTab: (tab: Tab) => void;
+}) {
   const buttons = useRef<Record<string, HTMLButtonElement | null>>({});
   function onKey(event: KeyboardEvent<HTMLDivElement>) {
     const index = TABS.findIndex((item) => item.id === tab);
@@ -258,7 +269,15 @@ function Tabs({ panels }: { panels: Record<Tab, ReactNode> }) {
   );
 }
 
-function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
+function AdminLeaderboards({
+  runtime,
+  run,
+  onOpen,
+}: {
+  runtime: AdminRuntime;
+  run: Run;
+  onOpen: OpenUser;
+}) {
   const [boardId, setBoardId] = useState<BoardId>('g2048');
   const [entries, setEntries] = useState<ScoreEntry[] | null>(null);
   const [flags, setFlags] = useState<Record<string, ScoreFlag>>({});
@@ -306,7 +325,7 @@ function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }
             <li key={entry.uid} className="admin-person">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="leaderboard-rank">{index + 1}</span>
-                <strong>{name}</strong>
+                <UserLink uid={entry.uid} name={name} onOpen={onOpen} />
                 <span className="font-semibold">{formatScore(board, entry.value)}</span>
                 <code className="break-all text-xs text-slate-400">{entry.uid}</code>
                 {flagged && (
@@ -335,7 +354,15 @@ function AdminLeaderboards({ runtime, run }: { runtime: AdminRuntime; run: Run }
 
 const ACCOUNT_ID = /^[A-Za-z0-9]{10,128}$/;
 
-function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
+function PrivacyLog({
+  runtime,
+  run,
+  onOpen,
+}: {
+  runtime: AdminRuntime;
+  run: Run;
+  onOpen: OpenUser;
+}) {
   const [requests, setRequests] = useState<PrivacyRequest[]>([]);
   const [uid, setUid] = useState('');
   const [error, setError] = useState('');
@@ -348,9 +375,9 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
       <p className="text-sm text-slate-300">
         Record a deletion request by account ID (from the person’s email). Completing it erases
         everything the new site holds for that ID: chat messages, timeouts, bans, online entries,
-        the slow-mode stamp, leaderboard scores, first/last seen times and moderation history. The
-        log keeps only the ID, status and dates. To delete the sign-in account itself, use Firebase
-        console → Authentication.
+        the slow-mode stamp, leaderboard scores, first/last seen times, the stored Google email and
+        moderation history. The log keeps only the ID, status and dates. To delete the sign-in
+        account itself, use Firebase console → Authentication.
       </p>
       <form
         className="flex flex-wrap items-end gap-2"
@@ -384,6 +411,7 @@ function PrivacyLog({ runtime, run }: { runtime: AdminRuntime; run: Run }) {
         {requests.map((request) => (
           <li key={request.id} className="admin-person">
             <div className="flex flex-wrap items-center gap-2">
+              <UserLink uid={request.uid} name={chatNameFor(request.uid)} onOpen={onOpen} />
               <code className="break-all text-xs">{request.uid}</code>
               <StatusIndicator
                 status={
@@ -466,6 +494,13 @@ export function AdminWorkspace({
   const [scores, setScores] = useState<UserScores>({});
   const [days, setDays] = useState<StatsDay[] | null>(null);
   const [notice, setNotice] = useState('');
+  const [tab, setTab] = useState<Tab>('users');
+  const [openedUser, setOpenedUser] = useState<string | null>(null);
+  /** Clicking a generated name anywhere in admin opens that person in the Users tab. */
+  const openUser = useCallback<OpenUser>((uid) => {
+    setTab('users');
+    setOpenedUser(uid);
+  }, []);
 
   useEffect(() => start(), [start]);
   useEffect(() => {
@@ -571,6 +606,9 @@ export function AdminWorkspace({
         <div className="admin-chat-column">
           <ChatPanel
             loadService={chatService}
+            renderName={(message, name) => (
+              <UserLink uid={message.uid} name={name} onOpen={openUser} />
+            )}
             renderActions={(message, name) => (
               <MessageActions
                 key={message.id + message.text}
@@ -591,14 +629,25 @@ export function AdminWorkspace({
           admins={admins}
           runtime={runtime}
           run={run}
+          onOpen={openUser}
         />
       </div>
       <Tabs
+        tab={tab}
+        setTab={setTab}
         panels={{
-          users: <AdminUsers data={usersData} runtime={runtime} run={run} />,
+          users: (
+            <AdminUsers
+              data={usersData}
+              runtime={runtime}
+              run={run}
+              selected={openedUser}
+              onSelect={setOpenedUser}
+            />
+          ),
           analytics: <AdminAnalytics days={days} />,
-          leaderboards: <AdminLeaderboards runtime={runtime} run={run} />,
-          privacy: <PrivacyLog runtime={runtime} run={run} />,
+          leaderboards: <AdminLeaderboards runtime={runtime} run={run} onOpen={openUser} />,
+          privacy: <PrivacyLog runtime={runtime} run={run} onOpen={openUser} />,
         }}
       />
     </div>

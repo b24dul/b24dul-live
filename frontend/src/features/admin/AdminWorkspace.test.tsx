@@ -42,6 +42,13 @@ type AdminCallback<K extends keyof AdminService> = Parameters<AdminService[K]>[0
     : never
   : never;
 
+const FAKE_EMAILS: Record<string, string> = {
+  visitor1234: 'visitor.tester@example.invalid',
+  online000001: 'online.tester@example.invalid',
+  player00001: 'player.tester@example.invalid',
+};
+const anyEmail = /@example\.invalid/;
+
 function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
   const messages = [message('m1', 'visitor1234', 'hello'), message('m2', 'owner', 'welcome')];
   const chat: ChatService = {
@@ -131,6 +138,13 @@ function fakeRuntime({ requests = [] as PrivacyRequest[] } = {}) {
     recordPrivacyRequest: vi.fn(async () => {}),
     markProcessing: vi.fn(async () => {}),
     completeAndErase: vi.fn(async () => 0),
+    // Test accounts with fake emails only.
+    userEmail: vi.fn(async (uid: string) => FAKE_EMAILS[uid] ?? null),
+    findByEmail: vi.fn(async (text: string) =>
+      Object.entries(FAKE_EMAILS)
+        .filter(([, email]) => email.startsWith(text))
+        .map(([uid]) => uid),
+    ),
   } as unknown as AdminService & Record<string, ReturnType<typeof vi.fn>>;
   const leaderboards = {
     watchTop: (_board: string, _lower: boolean, onEntries: (entries: unknown[]) => void) => (
@@ -388,5 +402,147 @@ describe('AdminWorkspace leaderboards', () => {
     expect(runtime.leaderboards.deleteScore).not.toHaveBeenCalled();
     await click(within(first!).getByRole('button', { name: /^Delete .*’s score$/ }));
     expect(runtime.leaderboards.deleteScore).toHaveBeenCalledWith('g2048', 'player00001');
+  });
+});
+
+describe('AdminWorkspace Google email', () => {
+  it('a name in the control panel chat opens the details with the email, loaded only then', async () => {
+    const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
+    const name = chatNameFor('visitor1234');
+    const chat = await screen.findByRole('log', { name: 'Chat messages' });
+    await within(chat).findByText('hello');
+    // Nothing loads or shows an email before a person is opened.
+    expect(runtime.admin.userEmail).not.toHaveBeenCalled();
+    expect(document.body.textContent).not.toMatch(anyEmail);
+    await openTab('Analytics');
+    await click(within(chat).getByRole('button', { name: `Open details for ${name}` }));
+    expect(screen.getByRole('tab', { name: 'Users' })).toHaveAttribute('aria-selected', 'true');
+    const detail = screen.getByRole('region', { name });
+    expect(await within(detail).findByText('visitor.tester@example.invalid')).toBeInTheDocument();
+    expect(within(detail).getByText('Google email')).toBeInTheDocument();
+    expect(within(detail).getByText('visitor1234')).toBeInTheDocument();
+    expect(runtime.admin.userEmail).toHaveBeenCalledTimes(1);
+    expect(runtime.admin.userEmail).toHaveBeenCalledWith('visitor1234');
+    expect(within(detail).getByRole('heading', { name })).toHaveFocus();
+    // The email appears only in the details view, never in the chat or the lists.
+    expect(chat.textContent).not.toMatch(anyEmail);
+    expect(screen.getByRole('table').textContent).not.toMatch(anyEmail);
+    expect(screen.getByRole('list', { name: 'People online now' }).textContent).not.toMatch(
+      anyEmail,
+    );
+  });
+
+  it('copies the email and the account ID', async () => {
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await renderAdmin({ kind: 'google', uid: 'owner' });
+    const name = chatNameFor('visitor1234');
+    await click(await screen.findByRole('button', { name: `Open details for ${name}` }, {}));
+    const detail = screen.getByRole('region', { name });
+    await within(detail).findByText('visitor.tester@example.invalid');
+    await click(within(detail).getByRole('button', { name: 'Copy Google email' }));
+    expect(writeText).toHaveBeenLastCalledWith('visitor.tester@example.invalid');
+    await click(within(detail).getByRole('button', { name: 'Copy account ID' }));
+    expect(writeText).toHaveBeenLastCalledWith('visitor1234');
+    expect(within(detail).getAllByText('Copied').length).toBeGreaterThan(0);
+  });
+
+  it('says when no email is stored yet', async () => {
+    await renderAdmin({ kind: 'google', uid: 'owner' });
+    const name = chatNameFor('banned00001');
+    await click(await screen.findByRole('button', { name: `Open details for ${name}` }));
+    const detail = screen.getByRole('region', { name });
+    expect(
+      await within(detail).findByText('Not recorded yet (updates on next sign-in)'),
+    ).toBeInTheDocument();
+    expect(within(detail).queryByRole('button', { name: 'Copy Google email' })).toBeNull();
+  });
+
+  it('names in Online now, Leaderboards and Privacy requests open the details too', async () => {
+    const pending: PrivacyRequest = {
+      id: 'r1',
+      uid: 'unknownuser01',
+      status: 'pending',
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const runtime = await renderAdmin(
+      { kind: 'google', uid: 'owner' },
+      fakeRuntime({ requests: [pending] }),
+    );
+    const online = await screen.findByRole('list', { name: 'People online now' });
+    const onlineName = chatNameFor('online000001');
+    await click(
+      await within(online).findByRole('button', { name: `Open details for ${onlineName}` }),
+    );
+    expect(
+      await within(screen.getByRole('region', { name: onlineName })).findByText(
+        'online.tester@example.invalid',
+      ),
+    ).toBeInTheDocument();
+
+    await openTab('Leaderboards');
+    const board = await screen.findByRole('list', { name: '2048 scores' });
+    const playerName = chatNameFor('player00001');
+    await click(
+      await within(board).findByRole('button', { name: `Open details for ${playerName}` }),
+    );
+    expect(screen.getByRole('tab', { name: 'Users' })).toHaveAttribute('aria-selected', 'true');
+    expect(
+      await within(screen.getByRole('region', { name: playerName })).findByText(
+        'player.tester@example.invalid',
+      ),
+    ).toBeInTheDocument();
+
+    await openTab('Privacy requests');
+    const requests = screen.getByRole('list', { name: 'Privacy requests' });
+    const requestName = chatNameFor('unknownuser01');
+    await click(within(requests).getByRole('button', { name: `Open details for ${requestName}` }));
+    const detail = screen.getByRole('region', { name: requestName });
+    expect(within(detail).getByText('unknownuser01')).toBeInTheDocument();
+    expect(
+      await within(detail).findByText('Not recorded yet (updates on next sign-in)'),
+    ).toBeInTheDocument();
+    expect(vi.mocked(runtime.admin.userEmail).mock.calls.map(([uid]) => uid)).toEqual([
+      'online000001',
+      'player00001',
+      'unknownuser01',
+    ]);
+  });
+
+  it('search by email runs only when typing and shows names, not emails', async () => {
+    const runtime = await renderAdmin({ kind: 'google', uid: 'owner' });
+    const field = await screen.findByLabelText('Search by Google email');
+    expect(runtime.admin.findByEmail).not.toHaveBeenCalled();
+    fireEvent.change(field, { target: { value: 'vi' } });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+    expect(runtime.admin.findByEmail).not.toHaveBeenCalled();
+    fireEvent.change(field, { target: { value: 'Visitor.T' } });
+    const results = await screen.findByRole('list', { name: 'Email search results' });
+    expect(runtime.admin.findByEmail).toHaveBeenCalledWith('visitor.t');
+    const name = chatNameFor('visitor1234');
+    expect(results).toHaveTextContent(name);
+    expect(results.textContent).not.toMatch(anyEmail);
+    expect(runtime.admin.userEmail).not.toHaveBeenCalled();
+    await click(within(results).getByRole('button', { name: `Open details for ${name}` }));
+    expect(
+      await within(screen.getByRole('region', { name })).findByText(
+        'visitor.tester@example.invalid',
+      ),
+    ).toBeInTheDocument();
+    fireEvent.change(field, { target: { value: 'nobody' } });
+    expect(
+      await screen.findByText('No account has an email starting with that.'),
+    ).toBeInTheDocument();
+  });
+
+  it('non-admins never get the email tools', async () => {
+    const runtime = fakeRuntime();
+    await renderAdmin({ kind: 'google', uid: 'visitor1234' }, runtime);
+    expect(await screen.findByRole('heading', { name: 'Admin only' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Search by Google email')).toBeNull();
+    expect(document.body.textContent).not.toMatch(anyEmail);
+    expect(runtime.admin.userEmail).not.toHaveBeenCalled();
+    expect(runtime.admin.findByEmail).not.toHaveBeenCalled();
   });
 });

@@ -99,10 +99,13 @@ const timeFormat = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute:
 export function ChatPanel({
   loadService = loadFirebaseChat,
   renderActions,
+  renderName,
 }: {
   loadService?: LoadChatService;
   /** Admin workspace only: moderation controls shown under each message. */
   renderActions?: (message: ChatMessage, name: string) => React.ReactNode;
+  /** Admin workspace only: shows the generated name as a link to that person's details. */
+  renderName?: (message: ChatMessage, name: string) => React.ReactNode;
 }) {
   const account = useAccount();
   const { start } = account;
@@ -236,7 +239,7 @@ export function ChatPanel({
                     <Shield size={12} aria-hidden="true" /> Admin
                   </span>
                 )}
-                {nameFor(message.uid)}
+                {renderName ? renderName(message, nameFor(message.uid)) : nameFor(message.uid)}
               </span>{' '}
               <span className="chat-text">{message.text}</span>
               {message.edited && <span className="text-xs text-slate-400"> (edited)</span>}{' '}

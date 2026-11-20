@@ -2515,6 +2515,19 @@ main[tabindex='-1']:focus {
   margin: 0;
 }
 
+.admin-copy-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+}
+
+/* Opened from a name elsewhere in admin: keep the heading clear of the sticky top bar. */
+.admin-user-detail h3 {
+  scroll-margin-top: 6rem;
+}
+
 /* Analytics tab */
 .admin-segmented {
   display: inline-flex;
