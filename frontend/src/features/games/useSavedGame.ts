@@ -3,7 +3,7 @@ import type { LoadResult, SaveResult, StorageAccess } from './gameSaves';
 
 export type SaveProblem = 'unreadable' | 'unavailable' | null;
 
-function storage(): StorageAccess | null {
+function storage(): Storage | null {
   try {
     return window.localStorage;
   } catch {
@@ -18,6 +18,8 @@ function storage(): StorageAccess | null {
 export function useSavedGame<T>(
   load: (storage: StorageAccess) => LoadResult<T>,
   save: (storage: StorageAccess, game: T) => SaveResult,
+  /** A game this matches (e.g. a lost Sudoku) is removed from the browser instead of saved. */
+  discard?: { when: (game: T) => boolean; clear: (storage: Storage) => void },
 ) {
   const [initial] = useState(() => {
     const store = storage();
@@ -31,12 +33,20 @@ export function useSavedGame<T>(
   useEffect(() => {
     if (game === null || problem === 'unreadable') return;
     const store = storage();
+    if (discard?.when(game)) {
+      try {
+        if (store) discard.clear(store);
+      } catch {
+        // Nothing more to do: the game is over either way.
+      }
+      return;
+    }
     const result = store ? save(store, game) : 'unavailable';
     const next: SaveProblem =
       result === 'saved' ? null : result === 'unrecognized' ? 'unreadable' : 'unavailable';
     // Only changes when saving starts or stops working, so this can't loop.
     if (next !== problem) setProblem(next);
-  }, [game, problem, save]);
+  }, [game, problem, save, discard]);
 
   return { game, setGame, restored: initial.status === 'ready', problem };
 }

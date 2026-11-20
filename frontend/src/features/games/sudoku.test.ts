@@ -5,7 +5,10 @@ import {
   hintSudoku,
   inputSudoku,
   LEGACY_SUDOKU_STORAGE_KEY,
+  MAX_MISTAKES,
+  newlyCompleted,
   newSudoku,
+  sudokuLost,
   readLegacySudoku,
   undoSudoku,
   type SudokuGame,
@@ -119,5 +122,38 @@ describe('Sudoku games and legacy save compatibility', () => {
     expect(undone.grid[2]).toBe(0);
     expect(undone.hinted).not.toContain(2);
     expect(undone.hints).toBe(1);
+  });
+});
+
+describe('three-mistake rule', () => {
+  it('ends the puzzle at the third wrong number and then blocks every change', () => {
+    let game: SudokuGame = { ...saved(), sel: 2 }; // empty cell, answer 4
+    for (const wrong of [1, 2, 3]) {
+      expect(sudokuLost(game)).toBe(false);
+      game = inputSudoku(game, wrong);
+    }
+    expect(MAX_MISTAKES).toBe(3);
+    expect(game.mistakes).toBe(3);
+    expect(sudokuLost(game)).toBe(true);
+    expect(inputSudoku(game, 4)).toBe(game);
+    expect(eraseSudoku(game)).toBe(game);
+    expect(undoSudoku(game)).toBe(game);
+    expect(hintSudoku(game, () => 0)).toBe(game);
+  });
+
+  it('a solved puzzle is never lost, whatever its mistakes', () => {
+    expect(sudokuLost({ ...saved(), done: true, mistakes: 5 })).toBe(false);
+  });
+});
+
+describe('newlyCompleted', () => {
+  it('lists the cells of each row, column and box the move completes', () => {
+    const grid = [...solution];
+    grid[2] = 0;
+    const before: SudokuGame = { ...saved(), grid, sel: 2 };
+    const after = inputSudoku(before, 4);
+    const cells = newlyCompleted(before, after);
+    expect(cells).toHaveLength(27); // row 1, column 3 and the top-left box
+    expect(newlyCompleted(after, after)).toEqual([]);
   });
 });

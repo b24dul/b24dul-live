@@ -82,7 +82,8 @@ export function new2048(random: () => number = Math.random): Game2048 {
   return { grid, score: 0, best: 0, won: false, over: false };
 }
 
-function indices(direction: Direction, line: number): number[] {
+/** The four cells of one line, in the order tiles slide through them. */
+export function indices(direction: Direction, line: number): number[] {
   return [0, 1, 2, 3].map((step) => {
     if (direction === 'left') return line * 4 + step;
     if (direction === 'right') return line * 4 + (3 - step);
