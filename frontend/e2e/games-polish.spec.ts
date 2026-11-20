@@ -103,16 +103,20 @@ test.describe('2048 controls', () => {
   });
 
   test('arrow keys and WASD both move the tiles', async ({ page }) => {
-    await open(page, KEY_2048, save2048(twos));
+    // One tile in the middle can always move, whichever key is pressed.
+    const middle = save2048([0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    await open(page, KEY_2048, middle);
     const board = board2048(page);
-    await board.focus();
-    await page.keyboard.press('d');
-    await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
-    await expect(page.getByText(/^Score: 1004/)).toBeVisible();
-    for (const key of ['ArrowLeft', 'w', 'ArrowDown', 'a', 'ArrowUp', 's', 'ArrowRight']) {
-      const before = await cells(page);
+    // Where the tile at cell 5 ends up for each key (a new tile can never land there).
+    const ends: Record<string, number> = { ArrowUp: 1, w: 1, ArrowDown: 13, s: 13 };
+    Object.assign(ends, { ArrowLeft: 4, a: 4, ArrowRight: 7, d: 7 });
+    for (const [key, end] of Object.entries(ends)) {
+      await page.evaluate(([k, v]) => localStorage.setItem(k, v), [KEY_2048, middle]);
+      await page.reload();
+      await expect(board.getByRole('gridcell').nth(5)).toHaveText('2');
+      await board.focus();
       await page.keyboard.press(key);
-      await expect.poll(() => cells(page)).not.toEqual(before);
+      await expect(board.getByRole('gridcell').nth(end), `key ${key}`).toHaveText('2');
     }
   });
 });
