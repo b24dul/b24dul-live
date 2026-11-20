@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { touchSwipe } from './gameInput';
 
 const legacySave = JSON.stringify({
   grid: [2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -78,14 +79,8 @@ test('moves the board with a swipe', async ({ page }) => {
   await page.addInitScript(seed, [SAVE_KEY, legacySave]);
   await page.goto('./#/games');
   const board = page.getByRole('grid', { name: '2048 board' });
-  await board.evaluate((element) => {
-    const start = new Event('touchstart', { bubbles: true });
-    Object.defineProperty(start, 'touches', { value: [{ clientX: 20, clientY: 40 }] });
-    const end = new Event('touchend', { bubbles: true });
-    Object.defineProperty(end, 'changedTouches', { value: [{ clientX: 100, clientY: 40 }] });
-    element.dispatchEvent(start);
-    element.dispatchEvent(end);
-  });
+  // A real touch swipe (the board now uses pointer events, which a browser sends for touch).
+  await touchSwipe(page, board, 80, 0);
   await expect(board.getByRole('gridcell').nth(3)).toHaveText('4');
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_2048'))).toBe(legacySave);
 });

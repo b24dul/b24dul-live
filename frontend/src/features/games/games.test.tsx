@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SAVE_2048_KEY, SAVE_SUDOKU_KEY } from './gameSaves';
 
@@ -160,5 +160,174 @@ describe('Sudoku', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enter 4' }));
     expect(screen.getByText(/Solve without hints to get on the leaderboard/)).toBeInTheDocument();
     expect(submit).not.toHaveBeenCalled();
+  });
+});
+
+describe('2048 controls and screens', () => {
+  // jsdom has no PointerEvent; a MouseEvent with the pointer fields is enough here.
+  if (!('PointerEvent' in window))
+    Object.defineProperty(window, 'PointerEvent', {
+      configurable: true,
+      value: class extends MouseEvent {
+        pointerId: number;
+        pointerType: string;
+        constructor(type: string, init: PointerEventInit = {}) {
+          super(type, init);
+          this.pointerId = init.pointerId ?? 0;
+          this.pointerType = init.pointerType ?? '';
+        }
+      },
+    });
+  const board = () => screen.getByRole('grid', { name: '2048 board' });
+  const cells = () => screen.getAllByRole('gridcell').map((cell) => cell.textContent);
+  const drag = (dx: number, dy: number, pointerType = 'mouse') => {
+    const init = { pointerId: 1, button: 0, pointerType };
+    fireEvent.pointerDown(board(), { ...init, clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(board(), { ...init, clientX: 100 + dx, clientY: 100 + dy });
+    fireEvent.pointerUp(board(), { ...init, clientX: 100 + dx, clientY: 100 + dy });
+  };
+
+  it('moves with WASD as well as the arrow keys', () => {
+    save2048({ grid: [2, 2, ...empty], score: 0, best: 0, won: false, over: false });
+    render(<Play2048 />);
+    fireEvent.keyDown(board(), { key: 'd' });
+    expect(cells()[3]).toBe('4');
+    expect(saved2048().score).toBe(4);
+  });
+
+  it('a mouse, touch or pen drag moves once; a short tap moves nothing', () => {
+    save2048({ grid: [2, 2, ...empty], score: 0, best: 0, won: false, over: false });
+    render(<Play2048 />);
+    drag(10, 5);
+    expect(saved2048().score).toBe(0);
+    drag(120, 10);
+    expect(cells()[3]).toBe('4');
+    expect(saved2048().score).toBe(4);
+    for (const type of ['touch', 'pen']) {
+      const before = saved2048().grid.join();
+      drag(-5, 90, type);
+      drag(5, -90, type);
+      expect(saved2048().grid.join()).not.toBe(before);
+    }
+  });
+
+  it('shows the points gained and draws one tile per number', () => {
+    save2048({ grid: [2, 2, ...empty], score: 0, best: 0, won: false, over: false });
+    const { container } = render(<Play2048 />);
+    fireEvent.keyDown(board(), { key: 'ArrowLeft' });
+    expect(container.querySelector('.g2-gain')).toHaveTextContent('+4');
+    const visible = container.querySelectorAll('.g2-tile:not(.is-gone)');
+    expect([...visible].map((tile) => tile.textContent).sort()).toEqual(
+      saved2048().grid.filter(Boolean).map(String).sort(),
+    );
+    expect(container.querySelector('.g2-tile.is-merged')).toHaveAttribute('data-v', '4');
+  });
+
+  const nearOver = [2, 4, 2, 4, 4, 2, 4, 2, 2, 4, 2, 8, 0, 16, 8, 16];
+
+  it('game over shows the final score, the best and "New best!" when beaten', async () => {
+    save2048({ grid: nearOver, score: 900, best: 500, won: false, over: false });
+    render(<Play2048 />);
+    fireEvent.keyDown(board(), { key: 'ArrowLeft' });
+    const over = screen.getByRole('dialog', { name: 'Game over' });
+    expect(over).toHaveTextContent('Score: 900');
+    expect(over).toHaveTextContent('Your best: 900');
+    expect(over).toHaveTextContent('New best!');
+    expect(await screen.findByText('Score sent.')).toBeInTheDocument();
+    expect(submit).toHaveBeenCalledWith('g2048', 900, false);
+  });
+
+  it('game over without a new best says nothing about one', () => {
+    save2048({ grid: nearOver, score: 900, best: 5000, won: false, over: false });
+    render(<Play2048 />);
+    fireEvent.keyDown(board(), { key: 'ArrowLeft' });
+    const over = screen.getByRole('dialog', { name: 'Game over' });
+    expect(over).toHaveTextContent('Your best: 5000');
+    expect(over).not.toHaveTextContent('New best!');
+  });
+
+  it('the win screen celebrates and offers Keep going', () => {
+    save2048({ grid: [1024, 1024, ...empty], score: 0, best: 0, won: false, over: false });
+    const { container } = render(<Play2048 />);
+    fireEvent.keyDown(board(), { key: 'ArrowLeft' });
+    const win = screen.getByRole('dialog', { name: 'You made 2048!' });
+    expect(win).toHaveTextContent('New best!');
+    expect(container.querySelector('.game-confetti')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Keep going' })).toBeInTheDocument();
+  });
+});
+
+describe('Sudoku: three mistakes, highlights and number pad', () => {
+  it('shows Mistakes n/3 and ends on the third mistake without saving or scoring', () => {
+    saveSudoku({ mistakes: 2 });
+    render(<PlaySudoku />);
+    expect(screen.getByText(/Mistakes: 2\/3/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 1' }));
+    const over = screen.getByRole('group', { name: 'Game over' });
+    expect(over).toHaveTextContent('3 mistakes');
+    expect(over).toHaveTextContent('No hint-free easy solve yet');
+    expect(screen.getByText(/Mistakes: 3\/3/)).toBeInTheDocument();
+    expect(window.localStorage.getItem(SAVE_SUDOKU_KEY)).toBeNull();
+    expect(submit).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Enter 4' })).toBeDisabled();
+    fireEvent.click(within(over).getByRole('button', { name: 'New easy Sudoku' }));
+    expect(screen.queryByRole('group', { name: 'Game over' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Mistakes: 0\/3/)).toBeInTheDocument();
+  });
+
+  it('the first and second mistakes do not end the puzzle', () => {
+    saveSudoku();
+    render(<PlaySudoku />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 2' }));
+    expect(screen.getByText(/Mistakes: 2\/3/)).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Game over' })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem(SAVE_SUDOKU_KEY)).not.toBeNull();
+  });
+
+  it('highlights the row, column, box and same numbers, and shows how many are left', () => {
+    saveSudoku();
+    render(<PlaySudoku />);
+    const cell = (r: number, c: number) =>
+      screen.getByRole('gridcell', { name: new RegExp(`^Row ${r} column ${c},`) });
+    fireEvent.click(cell(1, 1)); // a given 5
+    expect(cell(1, 1)).toHaveClass('is-selected');
+    expect(cell(1, 9)).toHaveClass('is-peer');
+    expect(cell(9, 1)).toHaveClass('is-peer');
+    expect(cell(3, 3)).toHaveClass('is-peer');
+    expect(cell(5, 5)).not.toHaveClass('is-peer');
+    expect(cell(3, 7)).toHaveClass('is-same'); // another 5
+    expect(cell(1, 1)).toHaveClass('is-given');
+    expect(screen.getByRole('button', { name: 'Enter 4' })).toHaveAccessibleDescription('1 left');
+    expect(screen.getByRole('button', { name: 'Enter 5' })).toHaveAccessibleDescription('0 left');
+  });
+
+  it('completing a row, column and box makes them glow', () => {
+    saveSudoku();
+    const { container } = render(<PlaySudoku />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 4' }));
+    expect(container.querySelectorAll('.sd-cell.is-glow').length).toBeGreaterThanOrEqual(9);
+  });
+
+  it('a hint-free solve records the personal best and says "New best!"', () => {
+    saveSudoku();
+    render(<PlaySudoku />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 4' }));
+    const solved = screen.getByRole('group', { name: 'Puzzle solved!' });
+    expect(solved).toHaveTextContent('New best!');
+    expect(solved).toHaveTextContent('Your best (easy): 1:35');
+    expect(JSON.parse(window.localStorage.getItem('b24dul.sudoku-best.v1')!)).toEqual({
+      easy: 95,
+    });
+  });
+
+  it('a slower solve keeps the old best and no "New best!"', () => {
+    window.localStorage.setItem('b24dul.sudoku-best.v1', JSON.stringify({ easy: 60 }));
+    saveSudoku();
+    render(<PlaySudoku />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter 4' }));
+    const solved = screen.getByRole('group', { name: 'Puzzle solved!' });
+    expect(solved).not.toHaveTextContent('New best!');
+    expect(solved).toHaveTextContent('Your best (easy): 1:00');
   });
 });

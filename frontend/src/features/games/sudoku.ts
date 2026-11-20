@@ -185,8 +185,29 @@ const snapshot = (game: SudokuGame): Snapshot => ({
   notes: [...game.notes],
   hinted: [...game.hinted],
 });
+/** A puzzle ends at the third wrong number (owner decision, 20 Nov 2026). */
+export const MAX_MISTAKES = 3;
+/** True once a puzzle has ended without being solved. */
+export const sudokuLost = (game: SudokuGame) => !game.done && game.mistakes >= MAX_MISTAKES;
+
+/** The 27 rows, columns and 3x3 boxes, as lists of cell indexes. */
+export const SUDOKU_UNITS = [row, col, box].flatMap((unitOf) =>
+  Array.from({ length: 9 }, (_, unit) =>
+    Array.from({ length: 81 }, (__, i) => i).filter((i) => unitOf(i) === unit),
+  ),
+);
+/** Cells of every row, column or box that `next` completes correctly and `previous` didn't. */
+export function newlyCompleted(previous: SudokuGame, next: SudokuGame): number[] {
+  const complete = (grid: readonly number[], unit: number[]) =>
+    unit.every((i) => grid[i] === next.solution[i]);
+  return SUDOKU_UNITS.filter(
+    (unit) => complete(next.grid, unit) && !complete(previous.grid, unit),
+  ).flat();
+}
+
 const editable = (game: SudokuGame) =>
   !game.done &&
+  game.mistakes < MAX_MISTAKES &&
   game.sel >= 0 &&
   game.sel < 81 &&
   !game.puzzle[game.sel] &&
@@ -230,7 +251,7 @@ export function eraseSudoku(game: SudokuGame): SudokuGame {
 }
 
 export function undoSudoku(game: SudokuGame): SudokuGame {
-  if (game.done || !game.history.length) return game;
+  if (game.done || sudokuLost(game) || !game.history.length) return game;
   const last = game.history[game.history.length - 1]!;
   return {
     ...game,
@@ -242,7 +263,7 @@ export function undoSudoku(game: SudokuGame): SudokuGame {
 }
 
 export function hintSudoku(game: SudokuGame, random: () => number = Math.random): SudokuGame {
-  if (game.done) return game;
+  if (game.done || sudokuLost(game)) return game;
   let index = game.sel;
   if (index < 0 || game.puzzle[index] || game.grid[index] === game.solution[index]) {
     const open = game.grid.flatMap((value, i) => (value !== game.solution[i] ? [i] : []));

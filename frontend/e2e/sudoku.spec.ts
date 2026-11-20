@@ -58,7 +58,7 @@ test('restores a saved Sudoku and saves as you play; an old-site save is never c
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
   await page.reload();
   await expect(board.getByRole('gridcell', { name: 'Row 1 column 3, hint 4' })).toBeVisible();
-  await expect(page.getByText(/Mistakes: 1 · Hints: 1/)).toBeVisible();
+  await expect(page.getByText(/Mistakes: 1\/3 · Hints: 1/)).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem('b24dul_sudoku'))).toBe(legacySave);
 });
 

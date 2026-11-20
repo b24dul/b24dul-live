@@ -1,5 +1,5 @@
 import { readLegacy2048, type Game2048 } from './game2048';
-import { readLegacySudoku, type SudokuGame } from './sudoku';
+import { readLegacySudoku, type SudokuGame, type SudokuLevel } from './sudoku';
 
 /**
  * This site's own save keys, separate from the old site's keys (which are never written).
@@ -78,4 +78,36 @@ export function saveSudoku(storage: StorageAccess, game: SudokuGame): SaveResult
     { ...game, history: [] },
     readLegacySudoku,
   );
+}
+
+/** Removes this site's Sudoku save (never the old site's), unless it's one we can't read. */
+export function clearSudoku(storage: StorageAccess & Pick<Storage, 'removeItem'>) {
+  if (loadSudoku(storage).status === 'ready') storage.removeItem(SAVE_SUDOKU_KEY);
+}
+
+/** Fastest solve time in seconds for each Sudoku level, kept in this browser only. */
+export const SUDOKU_BEST_KEY = 'b24dul.sudoku-best.v1';
+export type SudokuBests = Partial<Record<SudokuLevel, number>>;
+
+export function loadSudokuBests(): SudokuBests {
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem(SUDOKU_BEST_KEY) ?? '{}');
+    if (typeof value !== 'object' || value === null) return {};
+    return Object.fromEntries(
+      Object.entries(value).filter(
+        ([level, time]) =>
+          ['easy', 'medium', 'hard'].includes(level) && Number.isSafeInteger(time) && time >= 0,
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
+
+export function saveSudokuBests(bests: SudokuBests) {
+  try {
+    window.localStorage.setItem(SUDOKU_BEST_KEY, JSON.stringify(bests));
+  } catch {
+    // Not saved in this browser; the game still works.
+  }
 }
