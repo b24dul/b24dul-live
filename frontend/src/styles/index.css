@@ -1692,6 +1692,15 @@ h3 {
   align-items: flex-start;
   gap: 0.85rem;
   margin: -4.5rem 0 0 clamp(1.25rem, 4vw, 3rem);
+  /* Reserve the height of the "Latest video" layout (status pill, kicker, one title line,
+     buttons) so the rows below do not jump when the live check answers and the shorter
+     "Live now" layout replaces it. Sizes match .offline-pill, .hero-kicker, .hero-title,
+     .hero-actions and .hero-cta. */
+  --hero-actions-height: 50px;
+  min-height: calc(
+    (0.78rem * 1.2 + 0.7rem + 2px) + 0.8rem * 1.5 + 0.95 * clamp(2rem, 5vw, 3.75rem) + 0.4rem +
+      var(--hero-actions-height) + 3 * 0.85rem
+  );
 }
 
 .hero-title {
@@ -1778,6 +1787,13 @@ h3 {
 
   .hero-content {
     margin: -1.75rem 0.25rem 0;
+  }
+}
+
+/* "Play latest video" and "Subscribe" (369.7px together) wrap onto two rows below a 410px viewport. */
+@media (max-width: 409.98px) {
+  .hero-content {
+    --hero-actions-height: calc(50px + 0.75rem + 44px);
   }
 }
 
