@@ -39,7 +39,12 @@ for (const width of [360, 390, 430, 1280])
     });
     await page.goto('./#/');
     await expect(page.getByText('Checking whether B24DUL is live')).toBeVisible();
-    await page.evaluate(() => document.fonts.ready);
+    // Load every web font first, so a late font swap is not mistaken for the live switch.
+    await page.evaluate(async () => {
+      await Promise.all([...document.fonts].map((font) => font.load().catch(() => undefined)));
+      await document.fonts.ready;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
     const rowTop = () =>
       page
         .locator('.home-feature-order')
