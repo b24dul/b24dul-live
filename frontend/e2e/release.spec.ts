@@ -2,14 +2,12 @@ import { expect, test } from '@playwright/test';
 
 const routes: Array<[string, string]> = [
   ['/', 'B24DUL'],
-  ['/explore', 'Explore'],
   ['/watch', 'Watch'],
   ['/videos', 'Videos'],
   ['/games', 'Game Centre'],
   ['/community', 'Community'],
-  ['/tools', 'Tools'],
-  ['/competitions', 'Competitions'],
-  ['/profile', 'Guest profile'],
+  ['/profile', 'Your account'],
+  ['/privacy', 'Privacy notice'],
   ['/settings', 'Settings'],
   ['/admin', 'Admin'],
 ];
@@ -38,16 +36,18 @@ test('static Vite production release candidate loads assets and every hash route
   expect(errors).toEqual([]);
 });
 
-test('production build preserves mobile navigation and local settings', async ({ page }) => {
+test('production build preserves the phone menu and local settings', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('./#/settings');
-  const mobile = page.getByRole('navigation', { name: 'Mobile navigation' });
-  await expect(mobile).toBeVisible();
-  await page.getByRole('radio', { name: /Cyan/ }).check();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
+  await page.getByRole('radio', { name: /Compact/ }).check();
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'compact');
   await page.reload();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
-  await mobile.getByRole('link', { name: 'Games' }).click();
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'compact');
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page
+    .getByRole('navigation', { name: 'Site menu' })
+    .getByRole('link', { name: 'Games' })
+    .click();
   await expect(page.getByRole('heading', { name: 'Game Centre' })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   expect(overflow).toBe(false);
@@ -76,4 +76,11 @@ test('unknown routes recover on the built static site', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
   await page.getByRole('link', { name: 'Return home' }).click();
   await expect(page).toHaveURL(/#\/$/);
+});
+
+test('the old /legacy/ address sends visitors to the new home page', async ({ page }) => {
+  await page.goto('./legacy/');
+  await expect(page).toHaveURL(/\/b24dul-live\/(#\/)?$/);
+  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  await expect(page.locator('#gateForm')).toHaveCount(0);
 });

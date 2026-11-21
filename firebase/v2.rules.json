@@ -1,0 +1,488 @@
+{
+  "rules": {
+    "v2": {
+      ".read": false,
+      ".write": false,
+      "admins": {
+        ".read": true,
+        "$uid": {
+          ".validate": "newData.val() === true"
+        }
+      },
+      "chat": {
+        "settings": {
+          ".read": true,
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          "enabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "pinned": {
+            ".validate": "newData.hasChildren(['text', 'ts'])",
+            "text": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "messages": {
+          ".read": "(query.limitToLast != null && query.limitToLast <= 100) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          ".indexOn": ["uid"],
+          "$id": {
+            ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid && auth.token.firebase.sign_in_provider === 'google.com' && root.child('v2').child('chat').child('settings').child('enabled').val() !== false && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!root.child('v2').child('moderation').child('mutes').child(auth.uid).exists() || root.child('v2').child('moderation').child('mutes').child(auth.uid).val() <= now) && newData.parent().parent().child('lastPost').child(auth.uid).val() === now",
+            ".validate": "newData.hasChildren(['uid', 'text', 'ts'])",
+            "uid": {
+              ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200 && !newData.val().toLowerCase().matches(/(fuck|shit|cunt|bitch|wanker|twat|dickhead|nigg|faggot|retard|whore|slut|pussy)/) && !newData.val().toLowerCase().matches(/(https?:|www\\.|\\.com|\\.co\\.uk)/) && !newData.val().toLowerCase().matches(/[a-z0-9._-]+@[a-z0-9-]+\\.[a-z][a-z]/) && !newData.val().matches(/[0-9]([ .-]?[0-9]){9}/)"
+            },
+            "ts": {
+              ".validate": "(!data.exists() && newData.val() === now) || (data.exists() && newData.val() === data.val())"
+            },
+            "edited": {
+              ".validate": "newData.val() === true && data.parent().exists()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "lastPost": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && ((auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()))",
+            ".validate": "newData.val() === now && (!data.exists() || now - data.val() >= 5000)"
+          }
+        }
+      },
+      "moderation": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "bans": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".validate": "newData.val() === now"
+          }
+        },
+        "mutes": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".validate": "newData.isNumber() && newData.val() > now && newData.val() <= now + 86400000"
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "presence": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$uid": {
+          "$connection": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.val() === now"
+          },
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()"
+        }
+      },
+      "privacyRequests": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$id": {
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && newData.exists() && (!data.exists() || data.child('status').val() !== 'completed')",
+          ".validate": "newData.hasChildren(['uid', 'status', 'createdAt', 'updatedAt'])",
+          "uid": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{10,128}$/) && (!data.exists() || newData.val() === data.val())"
+          },
+          "status": {
+            ".validate": "(!data.exists() && newData.val() === 'pending') || (data.val() === 'pending' && (newData.val() === 'processing' || newData.val() === 'completed')) || (data.val() === 'processing' && newData.val() === 'completed')"
+          },
+          "createdAt": {
+            ".validate": "(!data.exists() && newData.val() === now) || (data.exists() && newData.val() === data.val())"
+          },
+          "updatedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "scores": {
+        "sudoku-easy": {
+          ".read": "(query.orderByChild === 'value' && ((query.limitToFirst != null && query.limitToFirst <= 50) || (query.limitToLast != null && query.limitToLast <= 50))) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
+          ".indexOn": ["value"],
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists() && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!data.exists() || now - data.child('ts').val() >= 10000)) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts'])",
+            "value": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 30 && newData.val() <= 86400 && (!data.exists() || newData.val() < data.val())"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sudoku-medium": {
+          ".read": "(query.orderByChild === 'value' && ((query.limitToFirst != null && query.limitToFirst <= 50) || (query.limitToLast != null && query.limitToLast <= 50))) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
+          ".indexOn": ["value"],
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists() && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!data.exists() || now - data.child('ts').val() >= 10000)) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts'])",
+            "value": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 45 && newData.val() <= 86400 && (!data.exists() || newData.val() < data.val())"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sudoku-hard": {
+          ".read": "(query.orderByChild === 'value' && ((query.limitToFirst != null && query.limitToFirst <= 50) || (query.limitToLast != null && query.limitToLast <= 50))) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
+          ".indexOn": ["value"],
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists() && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!data.exists() || now - data.child('ts').val() >= 10000)) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts'])",
+            "value": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 60 && newData.val() <= 86400 && (!data.exists() || newData.val() < data.val())"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "g2048": {
+          ".read": "(query.orderByChild === 'value' && ((query.limitToFirst != null && query.limitToFirst <= 50) || (query.limitToLast != null && query.limitToLast <= 50))) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true)",
+          ".indexOn": ["value"],
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists() && !root.child('v2').child('moderation').child('bans').child(auth.uid).exists() && (!data.exists() || now - data.child('ts').val() >= 10000)) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts'])",
+            "value": {
+              ".validate": "newData.isNumber() && newData.val() % 4 === 0 && newData.val() >= 4 && newData.val() <= 400000 && (!data.exists() || newData.val() > data.val())"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "scoreFlags": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "sudoku-easy": {
+          "$uid": {
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts']) && newData.child('value').val() === newData.parent().parent().parent().child('scores').child('sudoku-easy').child($uid).child('value').val()",
+            "value": {
+              ".validate": "newData.isNumber()"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sudoku-medium": {
+          "$uid": {
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts']) && newData.child('value').val() === newData.parent().parent().parent().child('scores').child('sudoku-medium').child($uid).child('value').val()",
+            "value": {
+              ".validate": "newData.isNumber()"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sudoku-hard": {
+          "$uid": {
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts']) && newData.child('value').val() === newData.parent().parent().parent().child('scores').child('sudoku-hard').child($uid).child('value').val()",
+            "value": {
+              ".validate": "newData.isNumber()"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "g2048": {
+          "$uid": {
+            ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+            ".validate": "newData.hasChildren(['value', 'ts']) && newData.child('value').val() === newData.parent().parent().parent().child('scores').child('g2048').child($uid).child('value').val()",
+            "value": {
+              ".validate": "newData.isNumber()"
+            },
+            "ts": {
+              ".validate": "newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "stats": {
+        "days": {
+          ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          "$day": {
+            ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()",
+            ".validate": "$day.matches(/^20[0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)",
+            "$other": {
+              ".validate": false
+            },
+            "visits": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "siteMinutes": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "liveMinutes": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "videoPlays": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sudokuStarts": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "g2048Starts": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "subscribeClicks": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "devicePhone": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "deviceTablet": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "deviceDesktop": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceYoutube": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceSearch": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceDirect": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            },
+            "sourceOther": {
+              ".write": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+            }
+          }
+        }
+      },
+      "users": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".indexOn": ["lastSeen"],
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+          ".validate": "newData.hasChildren(['firstSeen', 'lastSeen'])",
+          "firstSeen": {
+            ".validate": "data.exists() ? newData.val() === data.val() : newData.val() === now"
+          },
+          "lastSeen": {
+            ".validate": "newData.val() === now && (!data.exists() || now - data.val() >= 60000)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "userEmails": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".indexOn": ["email"],
+        "$uid": {
+          ".write": "(auth != null && auth.uid === $uid && auth.token.firebase.sign_in_provider === 'google.com' && newData.exists()) || (auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists())",
+          ".validate": "newData.hasChildren(['email', 'updatedAt'])",
+          "email": {
+            ".validate": "newData.isString() && auth.token.email != null && newData.val() === auth.token.email"
+          },
+          "updatedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "moderationLog": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$uid": {
+          ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && !newData.exists()",
+          "$entry": {
+            ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true && (!data.exists() || !newData.exists())",
+            ".validate": "newData.hasChildren(['action', 'at'])",
+            "action": {
+              ".validate": "newData.isString() && newData.val().matches(/^(timeout|untimeout|ban|unban|deleteMessages)$/)"
+            },
+            "at": {
+              ".validate": "newData.val() === now"
+            },
+            "until": {
+              ".validate": "newData.parent().child('action').val() === 'timeout' && newData.isNumber() && newData.val() > now && newData.val() <= now + 86400000"
+            },
+            "count": {
+              ".validate": "newData.parent().child('action').val() === 'deleteMessages' && newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "checklists": {
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "active": {
+          ".read": true,
+          ".validate": "newData.isString() && newData.val().matches(/^l[01][0-9]$/) && newData.parent().child('lists').child(newData.val()).exists()"
+        },
+        "lists": {
+          ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+          "$listId": {
+            ".read": "root.child('v2').child('checklists').child('active').val() === $listId",
+            ".validate": "$listId.matches(/^l[01][0-9]$/) && newData.hasChildren(['title'])",
+            "title": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "showUpcoming": {
+              ".validate": "newData.isBoolean()"
+            },
+            "sections": {
+              "$sectionId": {
+                ".validate": "$sectionId.matches(/^s[0-5][0-9]$/) && newData.hasChildren(['title', 'order'])",
+                "title": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+                },
+                "note": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150"
+                },
+                "order": {
+                  ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 59"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "items": {
+              "$itemId": {
+                ".validate": "$itemId.matches(/^i[0-5][0-9]$/) && newData.hasChildren(['title', 'section', 'order'])",
+                "title": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+                },
+                "section": {
+                  ".validate": "newData.isString() && newData.parent().parent().parent().child('sections').child(newData.val()).exists()"
+                },
+                "order": {
+                  ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 59"
+                },
+                "missable": {
+                  ".validate": "newData.isBoolean()"
+                },
+                "done": {
+                  ".validate": "newData.isBoolean()"
+                },
+                "doneAt": {
+                  ".validate": "newData.parent().child('done').val() === true && (newData.val() === now || newData.val() === data.val())"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      },
+      "checklistsPrivate": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "$listId": {
+          ".validate": "$listId.matches(/^l[01][0-9]$/)",
+          "gameName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+          },
+          "lastTick": {
+            ".validate": "newData.isString() && newData.val().matches(/^i[0-5][0-9]$/)"
+          },
+          "items": {
+            "$itemId": {
+              ".validate": "$itemId.matches(/^i[0-5][0-9]$/)",
+              "steps": {
+                "$step": {
+                  ".validate": "$step.matches(/^[0-4]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 150"
+                }
+              },
+              "deadline": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "checklistPrompt": {
+        ".read": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('v2').child('admins').child(auth.uid).val() === true",
+        "template": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 4000"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,8 @@
-name: M1 frontend foundation verification
+name: PR checks (build, types, lint, unit, Chromium, artifact scan)
+
+# Runs on every PR. Firefox/WebKit and Lighthouse run daily and on demand
+# (frontend-crossbrowser.yml, frontend-quality.yml); Firebase emulator and rules tests run when
+# rules, Firebase code or their tests change (rtdb-synthetic-emulator.yml, auth-emulator.yml).
 
 on:
   push:
@@ -7,25 +11,38 @@ on:
       - 'frontend/**'
       - '.github/workflows/frontend-foundation.yml'
   pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-foundation.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   foundation:
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v5
+      - name: Check out the data files kept on main (video list, share image)
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          path: main-data
+          sparse-checkout: |
+            videos.json
+            og.png
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Install from lockfile
         run: npm ci --no-audit --no-fund
       - name: ESLint
@@ -34,14 +51,31 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
-      - name: Production build (not deployed)
-        run: npm run build
       - name: Formatting check
         run: npm run format:check
+      - name: Production build
+        run: npm run build
+      - name: Validate static assets and Pages base path
+        run: node scripts/verify-release.mjs
+      - name: Check gzip JavaScript budget
+        run: node scripts/js-budget.mjs
+      - name: Assemble the site exactly as deployed
+        run: bash scripts/assemble-pages.sh ../main-data
+      - name: Artifact safety scan (no emulator, demo or test material)
+        run: node scripts/verify-preview-artifact.mjs dist
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Browser smoke test
+        timeout-minutes: 8
+        run: |
+          # Hosted runners may select a slow regional Ubuntu mirror.
+          sudo find /etc/apt -type f \( -name '*.list' -o -name '*.sources' -o -name 'apt-mirrors.txt' \) -exec sed -i -E 's|http://[a-z0-9.-]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' {} +
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf 'http://archive.ubuntu.com/ubuntu\n' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
+          npx playwright install --with-deps chromium
+      - name: Chromium browser tests (dev server)
         run: npm run test:e2e
+      - name: Chromium tests against the BUILT site
+        run: npx playwright test --config=playwright.release.config.ts
       - name: Upload browser reports on failure
         if: failure()
         uses: actions/upload-artifact@v5

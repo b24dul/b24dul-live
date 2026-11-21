@@ -5,7 +5,8 @@ import { checkProductionGates, evaluateProductionGates } from './production-gate
 test('production deployment is blocked with currently unverified feature parity', () => {
   const gate = checkProductionGates();
   assert.equal(gate.ready, false);
-  assert.ok(gate.missing.some((entry) => entry.startsWith('chatPresence')));
+  assert.ok(gate.missing.includes('manifest: not marked ready'));
+  assert.ok(gate.missing.some((entry) => entry.startsWith('leaderboards')));
 });
 
 test('every gate must be verified and have a real local evidence path', () => {
@@ -33,4 +34,25 @@ test('a false gate or unsupported evidence never unlocks production', () => {
   assert.equal(evaluateProductionGates(base, () => true).ready, false);
   base.gates.chat.evidence = ['../secrets.txt'];
   assert.equal(evaluateProductionGates(base, () => true).ready, false);
+});
+
+test('a gate can be marked not applicable only with a written reason', () => {
+  const manifest = (gate) => ({
+    schemaVersion: 1,
+    status: 'ready',
+    gates: { chat: { passed: true, evidence: ['e2e/chat.spec.ts'] }, old: gate },
+  });
+  const reason = 'owner chose a fresh start on 2026-11-18';
+  assert.equal(
+    evaluateProductionGates(manifest({ notApplicable: true, reason }), () => true).ready,
+    true,
+  );
+  for (const gate of [
+    { notApplicable: true },
+    { notApplicable: true, reason: ' ' },
+    { notApplicable: 'yes', reason },
+    { notApplicable: true, reason, passed: true },
+  ]) {
+    assert.equal(evaluateProductionGates(manifest(gate), () => true).ready, false);
+  }
 });

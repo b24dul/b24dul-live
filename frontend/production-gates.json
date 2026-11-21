@@ -9,24 +9,43 @@
       "evidence": []
     },
     "anonymousGoogleAuth": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "src/services/identityTransitions.test.ts",
+        "src/features/account/AccountPanel.test.tsx",
+        "scripts/auth-emulator/identity.browser.spec.ts"
+      ]
     },
     "identityContinuity": {
       "passed": false,
+      "notApplicable": true,
+      "reason": "owner chose a fresh start on 2026-11-18; legacy accounts are not carried over",
       "evidence": []
     },
     "chatPresence": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "scripts/rtdb-emulator/v2.emulator.test.ts",
+        "src/features/chat/ChatPanel.test.tsx"
+      ]
     },
     "moderation": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-sign-in-and-chat.md",
+        "scripts/rtdb-emulator/v2.emulator.test.ts",
+        "src/features/admin/AdminWorkspace.test.tsx"
+      ]
     },
     "streamPlayback": {
-      "passed": false,
-      "evidence": []
+      "passed": true,
+      "evidence": [
+        "tests/manual/2026-11-18-owner-test-stream.md",
+        "e2e/live-status.spec.ts",
+        "src/features/stream/stream.test.tsx"
+      ]
     },
     "gamesAndSaves": {
       "passed": false,

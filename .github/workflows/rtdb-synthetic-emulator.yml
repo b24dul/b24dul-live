@@ -1,0 +1,103 @@
+name: Synthetic RTDB chat and presence emulator verification
+
+# Firebase rules and emulator tests: run when rules, Firebase code or their tests change.
+# Any rules deploy must first pass these in full against the merged rules (docs/testing.md).
+on:
+  pull_request:
+    paths:
+      - 'firebase/**'
+      - 'frontend/scripts/rtdb-emulator/**'
+      - 'frontend/scripts/merge-v2-rules*'
+      - 'frontend/src/services/*Service.ts'
+      - 'frontend/src/services/*Runtime.ts'
+      - 'frontend/src/services/firebase*.ts'
+      - 'frontend/src/features/chat/chatPolicy.ts'
+      - 'frontend/src/features/games/leaderboardBoards.ts'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - '.github/workflows/rtdb-synthetic-emulator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      # Policy: security/dependency-audit.md. Every finding is reported; nothing is suppressed.
+      - name: Full audit report, all dependencies (kept as an artifact)
+        run: npm audit --package-lock-only --json --fetch-timeout=30000 --fetch-retries=0 > dependency-audit.json || true
+      - name: List every finding; fail if a high dev finding has a published fix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/audit-summary.mjs dependency-audit.json package-lock.json
+      - name: Fail on high or critical findings in production dependencies
+        if: success() || failure()
+        run: npm audit --package-lock-only --omit=dev --audit-level=high --fetch-timeout=30000 --fetch-retries=0
+      - name: Preserve audit findings including failures
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: dependency-audit
+          path: frontend/dependency-audit.json
+          if-no-files-found: error
+  rtdb-synthetic-emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test synthetic chat and presence in local emulators
+        run: >-
+          npx --yes firebase-tools@15.36.0 emulators:exec
+          --project demo-b24dul-rtdb --config scripts/rtdb-emulator/firebase.json --only auth,database
+          'node --experimental-strip-types --test --test-force-exit scripts/rtdb-emulator/presence.emulator.test.ts'
+  v2-rules-emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install committed dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test the rules merge script
+        run: node --test scripts/merge-v2-rules.test.mjs
+      # Synthetic stand-in for the legacy rules (the real ones are private and never in CI logs).
+      - name: Merge /v2/ rules alongside the synthetic legacy rules
+        run: |
+          node scripts/merge-v2-rules.mjs scripts/rtdb-emulator/synthetic.rules.json ../firebase/v2.rules.json ../firebase/combined.synthetic.rules.json
+          sed 's#"v2.rules.json"#"combined.synthetic.rules.json"#' ../firebase/v2.emulator.json > ../firebase/combined.emulator.json
+      - name: Legacy-style and /v2/ tests against the merged rules
+        run: >-
+          npx --yes firebase-tools@15.36.0 emulators:exec
+          --project demo-b24dul-rtdb --config ../firebase/combined.emulator.json --only auth,database
+          'node --experimental-strip-types --test --test-force-exit --test-reporter=spec scripts/rtdb-emulator/presence.emulator.test.ts scripts/rtdb-emulator/v2.emulator.test.ts'

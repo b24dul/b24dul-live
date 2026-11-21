@@ -44,10 +44,32 @@ describe('non-destructive Firebase auth observer adapter', () => {
     const sessions: AuthSession[] = [];
     subscribeToAuthSession(harness.observer, (session) => sessions.push(session));
     harness.emitUser(null);
-    harness.emitUser({ uid: 'google-uid', isAnonymous: false });
+    harness.emitUser({
+      uid: 'google-uid',
+      isAnonymous: false,
+      providerData: [{ providerId: 'google.com' }],
+    });
+    harness.emitUser({ uid: 'unknown-uid', isAnonymous: false });
     expect(sessions.slice(1)).toEqual([
       { status: 'ready', identity: { kind: 'signed-out' } },
       { status: 'ready', identity: { kind: 'google', uid: 'google-uid' } },
+      { status: 'ready', identity: { kind: 'authenticated', uid: 'unknown-uid' } },
+    ]);
+  });
+
+  it('updates provider classification when linking keeps the same UID', () => {
+    const harness = createObserverHarness();
+    const sessions: AuthSession[] = [];
+    subscribeToAuthSession(harness.observer, (session) => sessions.push(session));
+    harness.emitUser({ uid: 'same-uid', isAnonymous: true });
+    harness.emitUser({
+      uid: 'same-uid',
+      isAnonymous: false,
+      providerData: [{ providerId: 'google.com' }],
+    });
+    expect(sessions.slice(1)).toEqual([
+      { status: 'ready', identity: { kind: 'anonymous', uid: 'same-uid' } },
+      { status: 'ready', identity: { kind: 'google', uid: 'same-uid' } },
     ]);
   });
 

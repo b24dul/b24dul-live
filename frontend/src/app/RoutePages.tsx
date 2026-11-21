@@ -1,32 +1,48 @@
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Compass,
-  Gamepad2,
-  LockKeyhole,
-  MessageCircle,
-  Settings2,
-  Shield,
-  Trophy,
-  UserRound,
-  Wrench,
-} from 'lucide-react';
+import { ArrowRight, Settings2 } from 'lucide-react';
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
+import { ArchiveTile, EditorialSection, PlannedPanel } from '../components/SectionBlocks';
 import {
-  ArchiveTile,
-  EditorialSection,
-  FeatureTile,
-  PlannedPanel,
-  StreamPresentation,
-} from '../components/SectionBlocks';
-import { EmptyState, GlassPanel, PageHeader, StatusIndicator } from '../components/ui';
-import { games, utilities } from '../data/directory';
-import { archivedVideos } from '../services/videoArchive';
-import { PublishedStreamStatus } from '../components/PublishedStreamStatus';
+  EmptyState,
+  GlassPanel,
+  LoadingSkeleton,
+  PageHeader,
+  StatusIndicator,
+} from '../components/ui';
+import { useVideoArchive } from '../contexts/videoArchiveState';
+import { WatchStream } from '../features/stream/WatchStream';
 import { PreferenceControls } from '../components/PreferenceControls';
+import { PrivacyRequest } from '../features/privacy/PrivacyRequest';
+import { AccountPanel } from '../features/account/AccountPanel';
 import { routes } from './navigation';
 
-const website = 'https://b24dul.github.io/b24dul-live/';
+const Play2048 = lazy(() =>
+  import('../features/games/Play2048').then((module) => ({ default: module.Play2048 })),
+);
+const Leaderboards = lazy(() =>
+  import('../features/games/Leaderboards').then((module) => ({ default: module.Leaderboards })),
+);
+const PlaySudoku = lazy(() =>
+  import('../features/games/PlaySudoku').then((module) => ({ default: module.PlaySudoku })),
+);
+
+const ChatPanel = lazy(() =>
+  import('../features/chat/ChatPanel').then((module) => ({ default: module.ChatPanel })),
+);
+
+const AdminWorkspace = lazy(() =>
+  import('../features/admin/AdminWorkspace').then((module) => ({
+    default: module.AdminWorkspace,
+  })),
+);
+
+function Chat() {
+  return (
+    <Suspense fallback={<LoadingSkeleton label="Loading chat" className="h-40" />}>
+      <ChatPanel />
+    </Suspense>
+  );
+}
 
 function RelatedLinks({ paths }: { paths: string[] }) {
   return (
@@ -60,78 +76,17 @@ function PageFrame({
   );
 }
 
-export function ExplorePage() {
-  return (
-    <PageFrame
-      title="Explore"
-      description="Discover the destinations, entertainment and community spaces B24DUL is building."
-    >
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">
-          Platform directory — not a live content search
-        </StatusIndicator>
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {routes
-            .filter((route) => route.path !== '/explore')
-            .map(({ path, label, description, icon: Icon }) => (
-              <Link to={path} key={path} className="explore-destination">
-                <Icon size={22} aria-hidden="true" />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{label}</span>
-                  <span className="block text-sm text-slate-300">{description}</span>
-                </span>
-                <ArrowRight size={16} aria-hidden="true" className="shrink-0" />
-              </Link>
-            ))}
-        </div>
-      </GlassPanel>
-      <EditorialSection
-        title="Find your next experience"
-        description="Follow the routes to preview what each part of B24DUL will become."
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FeatureTile
-            title="Watch and discover"
-            description="Streams, archive and entertainment."
-            icon={<Compass size={23} />}
-            to="/watch"
-          />
-          <FeatureTile
-            title="Play and compete"
-            description="Existing games and future community challenges."
-            icon={<Trophy size={23} />}
-            to="/games"
-          />
-        </div>
-      </EditorialSection>
-    </PageFrame>
-  );
-}
-
 function WatchPage() {
   return (
-    <PageFrame
-      title="Watch"
-      description="The home for broadcasts, highlights and the B24DUL channel."
-    >
-      <StreamPresentation />
-      <PublishedStreamStatus />
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel
-          title="Stream schedule"
-          description="A calendar will appear when verified schedule data is available. No broadcast time is currently provided."
-        />
-        <PlannedPanel
-          title="Polls and community"
-          description="Live audience interaction will be connected in a later milestone. Chat and current stream features remain on the published website."
-        />
-      </div>
+    <PageFrame title="Watch" description="Live streams from B24DUL, with chat beside the stream.">
+      <WatchStream chat={<Chat />} />
       <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );
 }
 
 function VideosPage() {
+  const { videos, source } = useVideoArchive();
   return (
     <PageFrame
       title="Videos"
@@ -139,17 +94,21 @@ function VideosPage() {
     >
       <GlassPanel className="p-5 sm:p-7">
         <StatusIndicator status="neutral">
-          Read-only archive snapshot — build time, not a live feed
+          {source === 'published'
+            ? 'Read-only published archive'
+            : source === 'checking'
+              ? 'Read-only archive snapshot — checking for updates'
+              : 'Read-only archive snapshot — latest archive unavailable'}
         </StatusIndicator>
         <p className="mt-3 text-sm text-slate-300">
-          Titles, IDs and published dates come from the existing videos.json file. Videos open on
-          YouTube; no embedded player or account connection is active here.
+          Titles, IDs and published dates come from the existing videos.json file. If the published
+          archive cannot be read, the site shows its build-time snapshot. Videos play right here.
         </p>
       </GlassPanel>
-      <EditorialSection title="Archive" description="Open an item to watch it on YouTube.">
-        {archivedVideos.length ? (
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {archivedVideos.map((video) => (
+      <EditorialSection title="Archive" description="Press a video to play it here.">
+        {videos.length ? (
+          <div className="video-grid">
+            {videos.map((video) => (
               <ArchiveTile key={video.id} video={video} />
             ))}
           </div>
@@ -160,55 +119,20 @@ function VideosPage() {
           />
         )}
       </EditorialSection>
-      <RelatedLinks paths={['/watch', '/explore']} />
+      <RelatedLinks paths={['/watch', '/games']} />
     </PageFrame>
   );
 }
 
 function GamesPage() {
   return (
-    <PageFrame
-      title="Game Centre"
-      description="Play favourites on the current site and see what is planned for B24DUL."
-    >
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">
-          Existing games preserved — not migrated into this preview
-        </StatusIndicator>
-        <p className="mt-3 text-sm text-slate-300">
-          Sudoku and 2048 still run on the published site. The React preview does not modify their
-          scores, saves, leaderboard records or game logic.
-        </p>
-        <a className="ui-button ui-button--primary mt-4" href={website}>
-          Play on the current website <ArrowUpRight size={16} aria-hidden="true" />
-        </a>
-      </GlassPanel>
-      <EditorialSection title="Browse games" description="Availability is labelled for every game.">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {games.map((game) => (
-            <GlassPanel className="flex min-w-0 flex-col gap-4 p-5" key={game.name}>
-              <div className="flex items-center justify-between gap-3">
-                <Gamepad2 className="text-brand-cyan" size={24} aria-hidden="true" />
-                <span className="text-xs text-slate-300">{game.category}</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">{game.name}</h3>
-                <p className="mt-1 text-sm text-slate-300">{game.description}</p>
-              </div>
-              <div className="mt-auto">
-                {game.availability === 'existing-site' ? (
-                  <a className="ui-button ui-button--secondary" href={website}>
-                    Open current site <ArrowUpRight size={16} aria-hidden="true" />
-                  </a>
-                ) : (
-                  <StatusIndicator status="neutral">Coming soon</StatusIndicator>
-                )}
-              </div>
-            </GlassPanel>
-          ))}
-        </div>
-      </EditorialSection>
-      <RelatedLinks paths={['/competitions', '/explore']} />
+    <PageFrame title="Game Centre" description="Play Sudoku and 2048, and climb the leaderboards.">
+      <Suspense fallback={<p role="status">Loading games…</p>}>
+        <Leaderboards />
+        <Play2048 />
+        <PlaySudoku />
+      </Suspense>
+      <RelatedLinks paths={['/videos', '/community']} />
     </PageFrame>
   );
 }
@@ -220,20 +144,9 @@ function CommunityPage() {
       description="A home for conversations, announcements and shared experiences."
     >
       <div className="grid gap-5 lg:grid-cols-3">
-        <GlassPanel className="p-6 lg:col-span-2">
-          <StatusIndicator status="neutral">Chat is not connected in this preview</StatusIndicator>
-          <div className="community-placeholder">
-            <MessageCircle size={38} className="text-brand-cyan" aria-hidden="true" />
-            <h2 className="text-xl font-semibold">Your conversations belong here</h2>
-            <p className="max-w-md text-sm text-slate-300">
-              Existing messages, channels and presence remain on the published site. No sample
-              messages or online-user totals are invented.
-            </p>
-            <a className="ui-button ui-button--secondary" href={website}>
-              Visit the current community <ArrowUpRight size={16} aria-hidden="true" />
-            </a>
-          </div>
-        </GlassPanel>
+        <div className="lg:col-span-2">
+          <Chat />
+        </div>
         <div className="flex flex-col gap-5">
           <PlannedPanel
             title="Announcements"
@@ -250,92 +163,17 @@ function CommunityPage() {
   );
 }
 
-function ToolsPage() {
-  return (
-    <PageFrame
-      title="Tools"
-      description="Useful everyday, productivity, creative and developer utilities."
-    >
-      <GlassPanel className="p-5 sm:p-7">
-        <StatusIndicator status="neutral">Directory preview — no tools are enabled</StatusIndicator>
-        <p className="mt-3 text-sm text-slate-300">
-          These ideas are planned, not clickable apps. Working utilities will be added and tested in
-          future milestones.
-        </p>
-      </GlassPanel>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {utilities.map((item) => (
-          <GlassPanel key={item.name} className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <Wrench className="text-brand-cyan" size={23} aria-hidden="true" />
-              <span className="text-xs text-slate-300">{item.category}</span>
-            </div>
-            <h2 className="mt-4 text-lg font-semibold">{item.name}</h2>
-            <p className="mt-2 text-sm text-slate-300">{item.description}</p>
-            <div className="mt-5">
-              <StatusIndicator status="neutral">Planned</StatusIndicator>
-            </div>
-          </GlassPanel>
-        ))}
-      </div>
-      <RelatedLinks paths={['/explore', '/settings']} />
-    </PageFrame>
-  );
-}
-
-function CompetitionsPage() {
-  return (
-    <PageFrame
-      title="Competitions"
-      description="Challenges, community rankings and tournaments — without invented results."
-    >
-      <div className="grid gap-5 md:grid-cols-2">
-        <PlannedPanel
-          title="Daily challenges"
-          description="Challenge modes will be introduced after scoring and validation rules are ready. No daily winner or active timer is being claimed."
-        />
-        <PlannedPanel
-          title="Leaderboards"
-          description="Scoreboards and rankings will connect to verified backend records in a later milestone, not this preview."
-        />
-        <PlannedPanel
-          title="Tournaments"
-          description="There are no confirmed tournament dates or open sign-ups connected to this frontend."
-        />
-        <PlannedPanel
-          title="Achievements and XP"
-          description="Personal progression is planned; visitor stats and achievements are not simulated."
-        />
-      </div>
-      <RelatedLinks paths={['/games', '/community']} />
-    </PageFrame>
-  );
-}
-
 function ProfilePage() {
   return (
     <PageFrame
-      title="Guest profile"
-      description="Browse B24DUL without signing into the new frontend."
+      title="Your account"
+      description="Sign in to the new B24DUL site, or keep browsing without an account."
     >
-      <GlassPanel className="p-6 sm:p-8">
-        <div className="flex flex-wrap items-center gap-5">
-          <span className="guest-avatar">
-            <UserRound size={32} aria-hidden="true" />
-          </span>
-          <div>
-            <p className="text-xl font-semibold">Browsing as guest</p>
-            <StatusIndicator status="neutral">Not authenticated</StatusIndicator>
-          </div>
-        </div>
-        <p className="mt-5 max-w-2xl text-slate-300">
-          No account has been created or authenticated. The production Firebase identities and any
-          existing profile data are not accessed by this design preview.
-        </p>
-      </GlassPanel>
+      <AccountPanel />
+      <PrivacyRequest />
       <PlannedPanel
-        title="Registered profile preview"
-        description="Profiles, saved favourites and personal achievements are future capabilities. This is not a functioning sign-in screen."
+        title="Profile details"
+        description="Chat names, saved favourites and achievements will appear here as those features move to the new site."
       />
       <RelatedLinks paths={['/settings', '/community']} />
     </PageFrame>
@@ -349,20 +187,16 @@ function SettingsPage() {
       description="Change your local appearance and accessibility preferences."
     >
       <GlassPanel className="p-6 sm:p-8">
-        <Settings2 size={28} className="text-brand-cyan" aria-hidden="true" />
-        <h2 className="mt-3 text-xl font-semibold">Sidebar preference</h2>
+        <Settings2 size={28} className="text-brand-tangerine" aria-hidden="true" />
+        <h2 className="mt-3 text-xl font-semibold">Your preferences</h2>
         <p className="mt-2 max-w-2xl text-slate-300">
-          Use the navigation rail or the controls below. Your choices are saved only in this
+          Choose spacing, motion and the order of the home page. Your choices are saved only in this
           browser; no Firebase account or cloud record is changed.
         </p>
         <StatusIndicator status="neutral">Local, device-only preference</StatusIndicator>
       </GlassPanel>
       <PreferenceControls />
-      <PlannedPanel
-        title="Theme"
-        description="The verified dark theme remains active. A light theme is not offered until an accessible alternative is implemented and tested."
-      />
-      <RelatedLinks paths={['/profile', '/explore']} />
+      <RelatedLinks paths={['/profile', '/community']} />
     </PageFrame>
   );
 }
@@ -371,24 +205,11 @@ function AdminPage() {
   return (
     <PageFrame
       title="Admin"
-      description="Administrative tools are restricted and not available in this development preview."
+      description="Moderation for the new site: chat, people and privacy requests."
     >
-      <GlassPanel className="p-7 sm:p-10">
-        <Shield size={36} className="text-brand-violet" aria-hidden="true" />
-        <div className="mt-4">
-          <StatusIndicator status="warning">Restricted — no backend connection</StatusIndicator>
-        </div>
-        <h2 className="mt-4 text-xl font-semibold">Admin dashboard unavailable</h2>
-        <p className="mt-3 max-w-2xl text-slate-300">
-          This UI is not an access-control check. Existing live administrator permissions,
-          moderation, chat records and privacy requests remain protected by the production
-          implementation.
-        </p>
-        <div className="mt-5 flex items-center gap-2 text-sm text-slate-300">
-          <LockKeyhole size={17} aria-hidden="true" /> No privileged actions are available here
-        </div>
-      </GlassPanel>
-      <RelatedLinks paths={['/explore', '/profile']} />
+      <Suspense fallback={<LoadingSkeleton label="Loading admin tools" className="h-40" />}>
+        <AdminWorkspace />
+      </Suspense>
     </PageFrame>
   );
 }
@@ -403,10 +224,6 @@ export function DestinationPage({ path }: { path: string }) {
       return <GamesPage />;
     case '/community':
       return <CommunityPage />;
-    case '/tools':
-      return <ToolsPage />;
-    case '/competitions':
-      return <CompetitionsPage />;
     case '/profile':
       return <ProfilePage />;
     case '/settings':
@@ -420,17 +237,17 @@ export function DestinationPage({ path }: { path: string }) {
 
 export function NotFoundPage() {
   return (
-    <PageFrame title="Page not found" description="That preview destination does not exist.">
+    <PageFrame title="Page not found" description="That page does not exist.">
       <EmptyState
         title="Nothing at this address"
-        description="The URL may be mistyped. Return home or explore all available destinations."
+        description="The URL may be mistyped, or the page has moved. Return home to find your way."
         action={
           <Link className="ui-button ui-button--primary" to="/">
             Return home
           </Link>
         }
       />
-      <RelatedLinks paths={['/explore']} />
+      <RelatedLinks paths={['/watch', '/videos', '/games']} />
     </PageFrame>
   );
 }

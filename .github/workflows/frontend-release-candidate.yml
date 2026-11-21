@@ -6,10 +6,6 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-release-candidate.yml'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-release-candidate.yml'
   workflow_dispatch:
 
 # No deployment permission, Pages environment or deploy-pages step.

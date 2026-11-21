@@ -1008,7 +1008,7 @@ body.admin .adm-card-head h2 {font-size:24px;}
 
 
 /* B24DUL owner-provided component CSS / implementation revision.
-   Adapted to the existing IDs and working behaviours; see docs/DESIGN-SYSTEM.md. */
+   Adapted to the existing IDs and working behaviours; see docs/legacy-tactical-design-system.md. */
 :root {
   --bg-dark:#0B0C10;
   --hud-surface:rgba(20,24,34,.9);

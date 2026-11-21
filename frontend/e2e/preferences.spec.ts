@@ -6,20 +6,14 @@ test('settings controls update live UI and survive refresh and direct hash navig
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('./#/settings');
   const layout = page.locator('.app-layout');
-  await expect(layout).toHaveAttribute('data-accent', 'violet');
-  await page.getByRole('radio', { name: /Cyan/ }).check();
-  await expect(layout).toHaveAttribute('data-accent', 'cyan');
+  await expect(layout).toHaveAttribute('data-density', 'comfortable');
   await page.getByRole('radio', { name: /Compact/ }).check();
   await expect(layout).toHaveAttribute('data-density', 'compact');
   await page.getByRole('radio', { name: /Reduce motion/ }).check();
   await expect(layout).toHaveAttribute('data-motion', 'reduce');
   await page.getByRole('radio', { name: /Games first/ }).check();
-  await page.getByRole('radio', { name: /Collapsed/ }).check();
-  await expect(layout).toHaveAttribute('data-sidebar', 'collapsed');
   await page.reload();
-  await expect(layout).toHaveAttribute('data-accent', 'cyan');
   await expect(layout).toHaveAttribute('data-density', 'compact');
-  await expect(layout).toHaveAttribute('data-sidebar', 'collapsed');
   await expect(layout).toHaveAttribute('data-motion', 'reduce');
   await page.goto('./#/');
   await expect(page.locator('.home-feature-order')).toHaveAttribute('data-layout', 'games-first');
@@ -35,23 +29,23 @@ test('settings controls update live UI and survive refresh and direct hash navig
 
 test('reset preferences restores defaults and real keyboard options', async ({ page }) => {
   await page.goto('./#/settings');
-  await page.getByRole('radio', { name: /Cyan/ }).focus();
+  await page.getByRole('radio', { name: /Compact/ }).focus();
   await page.keyboard.press('Space');
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'compact');
   await page.getByRole('button', { name: 'Reset appearance settings' }).click();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'violet');
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'comfortable');
   await expect(
     page.getByRole('status', { name: '' }).filter({ hasText: /Appearance settings restored/ }),
   ).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('radio', { name: /Violet/ })).toBeChecked();
+  await expect(page.getByRole('radio', { name: /Comfortable/ })).toBeChecked();
 });
 
 test('invalid stored preferences safely recover without breaking the app', async ({ page }) => {
   await page.goto('./#/settings');
   await page.evaluate(() => window.localStorage.setItem('b24dul.preferences.v1', 'invalid json'));
   await page.reload();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'violet');
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'comfortable');
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 });
 

@@ -2,14 +2,12 @@ import { expect, test } from '@playwright/test';
 
 const paths = [
   '/',
-  '/explore',
   '/watch',
   '/videos',
   '/games',
   '/community',
-  '/tools',
-  '/competitions',
   '/profile',
+  '/privacy',
   '/settings',
   '/admin',
 ];
@@ -56,29 +54,33 @@ test('page shell and settings support keyboard and reduced motion', async ({ pag
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('./#/settings');
   await expect(page.locator('.app-layout')).toHaveAttribute('data-motion', 'reduce');
-  const accent = page.getByRole('radio', { name: /Cyan/ });
-  await accent.focus();
+  const compact = page.getByRole('radio', { name: /Compact/ });
+  await compact.focus();
   await page.keyboard.press('Space');
-  await expect(accent).toBeChecked();
-  await expect(page.locator('.app-layout')).toHaveAttribute('data-accent', 'cyan');
-  await page.getByRole('button', { name: 'Notifications' }).click();
-  await expect(page.getByRole('dialog', { name: 'Notifications' })).toBeVisible();
+  await expect(compact).toBeChecked();
+  await expect(page.locator('.app-layout')).toHaveAttribute('data-density', 'compact');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await expect(page.getByRole('navigation', { name: 'Site menu' })).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Notifications' })).toBeFocused();
+  await expect(page.getByRole('navigation', { name: 'Site menu' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeFocused();
 });
 
 test('read-only disconnected states work with external network blocked', async ({ page }) => {
   await page.route('https://**/*', (route) => route.abort());
+  await page.routeWebSocket(/.*/, (socket) => socket.close());
   await page.goto('./#/watch');
-  await expect(page.getByText('Verified playback available when live')).toBeVisible();
-  await expect(page.getByTestId('published-live-status')).toContainText('Status unavailable');
+  await expect(
+    page.getByRole('heading', { name: 'We couldn’t check whether B24DUL is live' }),
+  ).toBeVisible();
   await page.goto('./#/community');
-  await expect(page.getByText('Chat is not connected in this preview')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Live chat' })).toBeVisible();
+  await expect(page.getByText('Loading chat…')).toBeVisible();
   await page.goto('./#/videos');
   await expect(page.getByText(/Read-only archive snapshot/)).toBeVisible();
   await page.goto('./#/admin');
-  await expect(page.getByText('No privileged actions are available here')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Admin only' })).toBeVisible();
 });
 
 test('route controls avoid page-wide horizontal clipping in mobile landscape and zoom', async ({

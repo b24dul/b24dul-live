@@ -1,0 +1,69 @@
+name: Deploy React preview to GitHub Pages
+
+# Owner-authorised PREVIEW release (2026-11-18). This is NOT the production cutover:
+# frontend/production-gates.json stays blocked, and the dependency audit and Lighthouse
+# findings remain open. Since step 5 (owner-approved, 2026-11-18) the old site is no longer
+# published; /legacy/ only redirects to the new home page. Rollback steps: docs/rollback.md.
+
+on:
+  push:
+    branches: [release/react-preview]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check out the data files kept on main (video list, share image)
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          path: main-data
+          sparse-checkout: |
+            videos.json
+            og.png
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Validate static assets and Pages base path
+        run: node scripts/verify-release.mjs
+      - name: Assemble Pages site (React root, 404 fallback, /legacy/ redirect, data)
+        run: bash scripts/assemble-pages.sh ../main-data
+      - name: Check artifact excludes emulator and test material
+        run: node scripts/verify-preview-artifact.mjs dist
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: frontend/dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
